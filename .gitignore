@@ -1,0 +1,15 @@
+# Session cookies containing sensitive authentication tokens
+session_cookies.json
+
+# Python temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# Scratch or temporary local files
+scratch/
+test_*.py
+check_bts.py
+csv_to_excel.py

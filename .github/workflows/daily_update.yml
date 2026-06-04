@@ -1,0 +1,43 @@
+name: Daily OilChem Price Update
+
+on:
+  schedule:
+    # Runs at 18:00 UTC (20:00/21:00 Spanish/French time) every day
+    - cron: '0 18 * * *'
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas openpyxl requests
+
+    - name: Create Session Cookies File
+      run: |
+        echo '${{ secrets.OILCHEM_COOKIES }}' > "session_cookies.json"
+
+    - name: Run Downloader
+      run: |
+        python "oilchem_downloader.py"
+
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add "oilchem_all_data.csv" "oilchem_all_data.xlsx" data/*.csv
+        git diff-index --quiet HEAD || (git commit -m "Automated daily price update" && git push)
+
