@@ -41,13 +41,13 @@ if target not in df.columns:
 print(f"   Selected TARGET: {target}")
 
 # 2. Dynamic Feature Selection
-# We want to trace the dependencies: Brent_Crude_Yahoo -> Natural_Gas_Yahoo -> Methanol -> Propylene -> Acetic Acid -> n-Butanol -> Butyl Acetate
+# We want to trace the dependencies: Brent_Crude_Yahoo -> TTF_Natural_Gas_Yahoo -> Methanol -> Propylene -> Acetic Acid -> n-Butanol -> Butyl Acetate
 keywords = {
     'Brent': ['Brent_Crude_Yahoo'],
-    'Gas_Natural': ['Natural_Gas_Yahoo'],
-    'Methanol': ['Methanol_Domestic'],
+    'Gas_Natural': ['TTF_Natural_Gas_Yahoo'],
+    'Methanol': ['Methanol_Domestic', 'Methanol_US_Gulf_FOB', 'Methanol_Rotterdam_FOB'],
     'Propylene': ['Propylene_Domestic'],
-    'Acetic_Acid': ['Acetic_Acid_Domestic'],
+    'Acetic_Acid': ['Acetic_Acid_Domestic', 'Acetic_Acid_Europe_NWE_FD'],
     'n-Butanol': ['n-Butanol_Domestic']
 }
 
@@ -57,8 +57,8 @@ for group_name, kws in keywords.items():
     for kw in kws:
         group_cols.extend([col for col in df.columns if kw in col])
     
-    # Sort and take representative markets to keep output readable (e.g. 华东, 山东, 华南, Yahoo)
-    representative_keywords = ['华东', '山东', '江苏', '华南', 'Yahoo']
+    # Sort and take representative markets to keep output readable (e.g. 华东, 山东, 华南, Yahoo, US, EU)
+    representative_keywords = ['华东', '山东', '江苏', '华南', 'Yahoo', 'NWE', 'Gulf', 'Rotterdam']
     matched_reps = []
     for col in group_cols:
         if any(rep in col for rep in representative_keywords):
@@ -68,7 +68,7 @@ for group_name, kws in keywords.items():
     if not matched_reps:
         matched_reps = group_cols
         
-    features_to_test.extend(matched_reps[:3]) # Limit to top 3 representative markets per group for clarity
+    features_to_test.extend(matched_reps[:6]) # Limit to top 6 representative markets per group for clarity
 
 # Remove target from features list
 features_to_test = [f for f in features_to_test if f != target]
