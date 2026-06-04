@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OilChem China - Tableau de Bord Analytique</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- FontAwesome Icons for modern aesthetic -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="glow-bg-secondary"></div>
+
+    <div class="app-container">
+        <!-- Sidebar / Header Area -->
+        <header class="main-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-droplet"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>OilChem <span>Chine</span></h1>
+                    <p>Analyse des prix pétrochimiques</p>
+                </div>
+            </div>
+            
+            <div class="meta-status">
+                <span class="status-indicator online"></span>
+                <span class="status-text">Données actualisées : <strong id="last-updated-date">Chargement...</strong></span>
+            </div>
+        </header>
+
+        <!-- KPI / Metrics Grid -->
+        <section class="kpi-grid">
+            <div class="kpi-card" id="kpi-butyl">
+                <div class="kpi-info">
+                    <h3>Acétate de Butyle (Cible)</h3>
+                    <span class="kpi-market">Marché de référence : Est de la Chine (华东)</span>
+                    <div class="price-value" id="kpi-butyl-val">- ¥/t</div>
+                </div>
+                <div class="kpi-change" id="kpi-butyl-change">
+                    <span>-</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card" id="kpi-butanol">
+                <div class="kpi-info">
+                    <h3>n-Butanol (Feedstock)</h3>
+                    <span class="kpi-market">Marché de référence : Est de la Chine (华东)</span>
+                    <div class="price-value" id="kpi-butanol-val">- ¥/t</div>
+                </div>
+                <div class="kpi-change" id="kpi-butanol-change">
+                    <span>-</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card" id="kpi-acetic">
+                <div class="kpi-info">
+                    <h3>Acide Acétique (Feedstock)</h3>
+                    <span class="kpi-market">Marché de référence : Est de la Chine (华东)</span>
+                    <div class="price-value" id="kpi-acetic-val">- ¥/t</div>
+                </div>
+                <div class="kpi-change" id="kpi-acetic-change">
+                    <span>-</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card" id="kpi-methanol">
+                <div class="kpi-info">
+                    <h3>Méthanol (Amont)</h3>
+                    <span class="kpi-market">Marché de référence : Shandong (山东)</span>
+                    <div class="price-value" id="kpi-methanol-val">- ¥/t</div>
+                </div>
+                <div class="kpi-change" id="kpi-methanol-change">
+                    <span>-</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Workspace: Chart & Sidebar -->
+        <main class="main-workspace">
+            <!-- Chart Container Card -->
+            <section class="chart-workspace-card">
+                <div class="card-header">
+                    <div class="header-titles">
+                        <h2>Évolution des Séries de Prix</h2>
+                        <p>Visualisation et comparaison interactive de l'historique quotidien</p>
+                    </div>
+                    
+                    <div class="chart-controls">
+                        <button class="btn-range active" data-days="all">Tout</button>
+                        <button class="btn-range" data-days="365">1 An</button>
+                        <button class="btn-range" data-days="180">6 Mois</button>
+                        <button class="btn-range" data-days="90">3 Mois</button>
+                    </div>
+                </div>
+                
+                <div class="series-selector-container">
+                    <span class="selector-label"><i class="fa-solid fa-list-check"></i> Comparer :</span>
+                    <div class="selectors-wrapper" id="series-checkboxes">
+                        <!-- Filled dynamically by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="chart-container-inner">
+                    <div id="chart-loader" class="loader-container">
+                        <div class="spinner"></div>
+                        <p>Chargement des graphiques...</p>
+                    </div>
+                    <div id="main-chart"></div>
+                </div>
+            </section>
+
+            <!-- Lead Lag Analysis Sidebar Card -->
+            <aside class="sidebar-workspace-card">
+                <div class="card-header">
+                    <div class="header-titles">
+                        <h2>Analyse Lead-Lag</h2>
+                        <p>Corrélations vs. Butyl Acetate (Cible)</p>
+                    </div>
+                </div>
+                
+                <div class="lead-lag-info">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <p>Détermine le décalage optimal (en jours) pour qu'une variation de prix de la matière première se propage à la cible.</p>
+                </div>
+                
+                <div class="lead-lag-list" id="lead-lag-list-container">
+                    <!-- Filled dynamically by JavaScript -->
+                    <div class="loader-container min-h">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Data Explorer / Table Card -->
+        <section class="data-explorer-card">
+            <div class="card-header border-bottom">
+                <div class="header-titles">
+                    <h2>Explorateur de Données Historiques</h2>
+                    <p>Parcourez et filtrez le dataset d'OilChem Chine aligné et interpolé</p>
+                </div>
+                
+                <div class="table-controls">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="table-search" placeholder="Rechercher une date (YYYY-MM-DD)...">
+                    </div>
+                    <button class="btn-primary" id="btn-export-csv">
+                        <i class="fa-solid fa-download"></i> Exporter CSV
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="data-table" id="data-table-el">
+                    <thead>
+                        <tr id="table-headers">
+                            <!-- Filled dynamically by JS -->
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Filled dynamically by JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="table-pagination">
+                <span class="pagination-info" id="pagination-info-el">Page 1 sur --</span>
+                <div class="pagination-buttons">
+                    <button class="btn-page" id="btn-prev" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="btn-page" id="btn-next"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="app-footer">
+            <p>© 2026 OilChem Chine - Modèle prédictif des prix d'Acétate de Butyle. Intégration automatisée 100% Locale & GitHub Actions.</p>
+        </footer>
+    </div>
+
+    <!-- CDNs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
+    <!-- Custom Application Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
