@@ -2,8 +2,8 @@ name: Daily OilChem Price Update
 
 on:
   schedule:
-    # Runs at 18:00 UTC (20:00/21:00 Spanish/French time) every day
-    - cron: '0 18 * * *'
+    # Runs at 06:00 UTC (08:00/09:00 Spanish/French time) every morning
+    - cron: '0 6 * * *'
   workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
 
 jobs:
