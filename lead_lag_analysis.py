@@ -41,13 +41,11 @@ if target not in df.columns:
 print(f"   Selected TARGET: {target}")
 
 # 2. Dynamic Feature Selection
-# We want to trace the dependencies: Brent_Crude_Yahoo -> TTF_Natural_Gas_Yahoo -> Methanol -> Propylene -> Acetic Acid -> n-Butanol -> Butyl Acetate
+# We want to trace the dependencies: Methanol -> Propylene -> Acetic Acid -> n-Butanol -> Butyl Acetate
 keywords = {
-    'Brent': ['Brent_Crude_Yahoo'],
-    'Gas_Natural': ['TTF_Natural_Gas_Yahoo'],
-    'Methanol': ['Methanol_Domestic', 'Methanol_US_Gulf_FOB', 'Methanol_Rotterdam_FOB'],
+    'Methanol': ['Methanol_Domestic'],
     'Propylene': ['Propylene_Domestic'],
-    'Acetic_Acid': ['Acetic_Acid_Domestic', 'Acetic_Acid_Europe_NWE_FD'],
+    'Acetic_Acid': ['Acetic_Acid_Domestic'],
     'n-Butanol': ['n-Butanol_Domestic']
 }
 
