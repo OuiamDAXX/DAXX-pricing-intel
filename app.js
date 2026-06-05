@@ -1,5 +1,5 @@
 /* ==========================================================================
-   OILCHEM DASHBOARD APPLICATION LOGIC (VANILLA JS)
+   OILCHEM DASHBOARD APPLICATION LOGIC (VANILLA JS) - MULTI-PRODUCT VERSION
    ========================================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -7,46 +7,78 @@ document.addEventListener("DOMContentLoaded", () => {
     const PRICES_CSV_PATH = "oilchem_aligned_prices.csv";
     const LEAD_LAG_CSV_PATH = "oilchem_lead_lag_results.csv";
 
+    // Product configurations
+    const TARGET_CONFIGS = {
+        'Butyl_Acetate_Domestic_华东': {
+            title: "Acétate de Butyle",
+            precursors: {
+                butyl: 'Butyl_Acetate_Domestic_华东',
+                butanol: 'n-Butanol_Domestic_华东',
+                acetic: 'Acetic_Acid_Domestic_华南',
+                methanol: 'Methanol_Domestic_山东中部'
+            },
+            labels: {
+                butyl: "Acétate de Butyle (Cible)",
+                butanol: "n-Butanol (Feedstock)",
+                acetic: "Acide Acétique (Feedstock)",
+                methanol: "Méthanol (Amont)"
+            },
+            defaultChecked: [
+                'Butyl_Acetate_Domestic_华东',
+                'n-Butanol_Domestic_华东',
+                'Acetic_Acid_Domestic_华南',
+                'Methanol_Domestic_山东中部'
+            ]
+        },
+        'Ethyl_Acetate_Domestic_华东': {
+            title: "Acétate d'Éthyle",
+            precursors: {
+                butyl: 'Ethyl_Acetate_Domestic_华东',
+                butanol: 'Ethanol_Domestic_山东',
+                acetic: 'Acetic_Acid_Domestic_华南',
+                methanol: 'Methanol_Domestic_山东中部'
+            },
+            labels: {
+                butyl: "Acétate d'Éthyle (Cible)",
+                butanol: "Éthanol (Feedstock)",
+                acetic: "Acide Acétique (Feedstock)",
+                methanol: "Méthanol (Amont)"
+            },
+            defaultChecked: [
+                'Ethyl_Acetate_Domestic_华东',
+                'Ethanol_Domestic_山东',
+                'Acetic_Acid_Domestic_华南',
+                'Methanol_Domestic_山东中部'
+            ]
+        }
+    };
+
+    // Color palette for chart series (matching glassmorphism design)
+    const CHART_COLORS = [
+        '#06b6d4', // Electric Cyan (Target)
+        '#6366f1', // Indigo (n-Butanol / Ethanol)
+        '#10b981', // Emerald (Acetic Acid)
+        '#f59e0b', // Amber (Methanol)
+        '#f43f5e', // Rose (Propylene / Ethylene)
+        '#a855f7', // Purple
+        '#84cc16'  // Lime
+    ];
+
     // Application state
+    let currentTarget = 'Butyl_Acetate_Domestic_华东';
     let rawPricesData = [];      // Raw array of objects parsed from CSV
     let priceHeaders = [];       // Array of column names
     let alignedDates = [];       // Sorted array of Date objects
     let chartInstance = null;
     let selectedSeries = [];     // Column names selected for plot
     let timeRangeDays = "all";   // "all", 365, 180, 90
-    
-    // Financial analysis state
-    let weightButanol = 0.65;
-    let weightAcetic = 0.55;
-    let fixedCosts = 800;
-    let showMargin = false;
-    let showCost = false;
+    let rawLeadLagData = [];     // Raw array of lead-lag results
+    let KPI_COLUMNS = {};        // Dynamic columns mapping for KPIs
     
     // Pagination state
     let currentPage = 1;
     const rowsPerPage = 10;
     let filteredData = [];       // Data currently in table after search
-    
-    // Define target and key benchmark columns for KPIs
-    const KPI_COLUMNS = {
-        butyl: 'Butyl_Acetate_Domestic_华东',
-        butanol: 'n-Butanol_Domestic_华东',
-        acetic: 'Acetic_Acid_Domestic_华南',
-        methanol: 'Methanol_Domestic_山东中部'
-    };
-
-    // Color palette for chart series (matching glassmorphism design)
-    const CHART_COLORS = [
-        '#06b6d4', // Electric Cyan (Target)
-        '#6366f1', // Indigo (n-Butanol)
-        '#10b981', // Emerald (Acetic Acid)
-        '#f59e0b', // Amber (Methanol)
-        '#f43f5e', // Rose (Propylene)
-        '#a855f7', // Purple
-        '#ec4899', // Pink (Cost-Push)
-        '#eab308', // Gold (Margin)
-        '#84cc16'  // Lime
-    ];
 
     // ==========================================
     // INITIALIZATION & LOADING
@@ -79,7 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     skipEmptyLines: true,
                     dynamicTyping: true,
                     complete: function(results) {
-                        displayLeadLag(results.data);
+                        rawLeadLagData = results.data;
+                        displayLeadLag(rawLeadLagData);
                     }
                 });
             } else {
@@ -92,6 +125,45 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Initialization Error:", error);
             showErrorState();
         }
+    }
+
+    // Helper function to resolve exact column or fallback to a similar one
+    function resolveColumn(headers, pattern) {
+        if (headers.includes(pattern)) return pattern;
+        const matched = headers.find(h => h.includes(pattern));
+        if (matched) return matched;
+        const prod = pattern.split('_')[0];
+        const fallback = headers.find(h => h.includes(prod));
+        return fallback || pattern;
+    }
+
+    // Update active KPI columns based on current target config
+    function updateKPIColumns() {
+        const config = TARGET_CONFIGS[currentTarget];
+        KPI_COLUMNS = {
+            butyl: resolveColumn(priceHeaders, config.precursors.butyl),
+            butanol: resolveColumn(priceHeaders, config.precursors.butanol),
+            acetic: resolveColumn(priceHeaders, config.precursors.acetic),
+            methanol: resolveColumn(priceHeaders, config.precursors.methanol)
+        };
+    }
+
+    // Helper to check if a column header is related to the current target
+    function isColumnRelated(header, target) {
+        if (target.includes('Butyl_Acetate')) {
+            return header.includes('Butyl_Acetate') || 
+                   header.includes('n-Butanol') || 
+                   header.includes('Acetic_Acid') || 
+                   header.includes('Methanol') || 
+                   header.includes('Propylene');
+        } else if (target.includes('Ethyl_Acetate')) {
+            return header.includes('Ethyl_Acetate') || 
+                   header.includes('Ethanol') || 
+                   header.includes('Acetic_Acid') || 
+                   header.includes('Ethylene') || 
+                   header.includes('Methanol');
+        }
+        return false;
     }
 
     // ==========================================
@@ -112,8 +184,13 @@ document.addEventListener("DOMContentLoaded", () => {
         alignedDates = rawPricesData.map(row => row.Date);
         filteredData = [...rawPricesData];
 
-        // Recalculate margins and costs for rawPricesData
-        calculateFinancialSeries();
+        // Resolve current target from dropdown select value if it exists
+        const selectEl = document.getElementById('target-product-select');
+        if (selectEl) {
+            currentTarget = selectEl.value;
+        }
+
+        updateKPIColumns();
 
         // 1. Update Last Updated Meta info
         if (alignedDates.length > 0) {
@@ -133,12 +210,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // 5. Populate Data Table
         renderTable();
         
-        // 6. Update Performance Table
-        updatePerformanceTable();
-
-        // 7. Setup financial inputs listeners
-        setupFinancialListeners();
-        
         // Hide chart loader
         document.getElementById('chart-loader').style.display = 'none';
     }
@@ -157,12 +228,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const valEl = document.getElementById(`kpi-${key}-val`);
             const changeEl = document.getElementById(`kpi-${key}-change`);
             
-            // Check if column exists in the dataset
-            const actualCol = priceHeaders.find(h => h.includes(colName)) || colName;
-            
-            if (latestRow[actualCol] !== undefined && latestRow[actualCol] !== null) {
-                const currentVal = latestRow[actualCol];
-                const prevVal = previousRow[actualCol] || currentVal;
+            if (!valEl || !changeEl) return;
+
+            if (latestRow[colName] !== undefined && latestRow[colName] !== null) {
+                const currentVal = latestRow[colName];
+                const prevVal = previousRow[colName] || currentVal;
                 const absChange = currentVal - prevVal;
                 const pctChange = prevVal !== 0 ? (absChange / prevVal) * 100 : 0;
                 
@@ -186,38 +256,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 changeEl.textContent = "-";
             }
         });
-
-        // Update Margin KPI
-        const marginValEl = document.getElementById('kpi-margin-val');
-        const marginChangeEl = document.getElementById('kpi-margin-change');
-        
-        if (marginValEl && marginChangeEl) {
-            if (latestRow['Marge_de_Production'] !== undefined && latestRow['Marge_de_Production'] !== null) {
-                const currentMargin = latestRow['Marge_de_Production'];
-                const prevMargin = (previousRow['Marge_de_Production'] !== undefined && previousRow['Marge_de_Production'] !== null)
-                    ? previousRow['Marge_de_Production']
-                    : currentMargin;
-                const absChange = currentMargin - prevMargin;
-                const pctChange = prevMargin !== 0 ? (absChange / Math.abs(prevMargin)) * 100 : 0;
-                
-                marginValEl.textContent = `${Number(currentMargin).toLocaleString('fr-FR', {minimumFractionDigits: 1, maximumFractionDigits: 1})} ¥/t`;
-                
-                if (absChange > 0.05) {
-                    marginChangeEl.className = 'kpi-change up';
-                    marginChangeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> +${pctChange.toFixed(2)}%`;
-                } else if (absChange < -0.05) {
-                    marginChangeEl.className = 'kpi-change down';
-                    marginChangeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> ${pctChange.toFixed(2)}%`;
-                } else {
-                    marginChangeEl.className = 'kpi-change neutral';
-                    marginChangeEl.innerHTML = `<i class="fa-solid fa-minus"></i> Stable`;
-                }
-            } else {
-                marginValEl.textContent = "N/A";
-                marginChangeEl.className = 'kpi-change neutral';
-                marginChangeEl.textContent = "-";
-            }
-        }
     }
 
     // ==========================================
@@ -225,25 +263,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     function createSeriesSelectors() {
         const container = document.getElementById('series-checkboxes');
+        if (!container) return;
         container.innerHTML = "";
 
-        // Default columns to check
-        const defaultMatches = [
-            'Butyl_Acetate_Domestic_华东',
-            'n-Butanol_Domestic_华东',
-            'Acetic_Acid_Domestic_华南',
-            'Methanol_Domestic_山东中部'
-        ];
+        const config = TARGET_CONFIGS[currentTarget];
+        const defaultMatches = config.defaultChecked.map(col => resolveColumn(priceHeaders, col));
+        
+        // Filter headers to only show ones related to the active target
+        const relatedHeaders = priceHeaders.filter(h => isColumnRelated(h, currentTarget));
 
-        priceHeaders.forEach((header, index) => {
-            // Check if this matches any defaults
-            const shouldBeChecked = defaultMatches.some(match => header.includes(match));
-            if (shouldBeChecked) {
-                selectedSeries.push(header);
-            }
+        // Sync selectedSeries
+        selectedSeries = [...defaultMatches];
+
+        relatedHeaders.forEach((header) => {
+            const shouldBeChecked = defaultMatches.includes(header);
 
             const label = document.createElement('label');
-            label.className = `check-tag ${shouldBeChecked ? 'active' : ''} ${header.includes('Butyl') ? 'accent' : ''}`;
+            label.className = `check-tag ${shouldBeChecked ? 'active' : ''} ${header.includes(config.title.split(' ')[0]) ? 'accent' : ''}`;
             
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
@@ -263,11 +299,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             label.appendChild(checkbox);
             
-            // Clean up the name of the column for nice UI display (remove prefixes/suffixes if repetitive)
             let displayName = header
                 .replace('_Domestic', '')
-                .replace('_', ' ')
-                .replace('_', ' ');
+                .replace(/_/g, ' ');
             
             label.appendChild(document.createTextNode(displayName));
             container.appendChild(label);
@@ -285,29 +319,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 background: 'transparent',
                 foreColor: '#94a3b8',
                 toolbar: {
-                    show: true,
-                    tools: {
-                        download: true,
-                        selection: true,
-                        zoom: true,
-                        zoomin: true,
-                        zoomout: true,
-                        pan: true,
-                        reset: true
-                    }
+                    show: true
                 },
                 animations: {
                     enabled: true,
                     easing: 'easeinout',
-                    speed: 800,
-                    animateGradually: {
-                        enabled: true,
-                        delay: 150
-                    },
-                    dynamicAnimation: {
-                        enabled: true,
-                        speed: 350
-                    }
+                    speed: 800
                 }
             },
             theme: {
@@ -330,12 +347,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     style: {
                         fontFamily: 'Plus Jakarta Sans, sans-serif'
                     }
-                },
-                axisBorder: {
-                    show: false
-                },
-                axisTicks: {
-                    show: false
                 }
             },
             yaxis: {
@@ -362,44 +373,37 @@ document.addEventListener("DOMContentLoaded", () => {
                 intersect: false,
                 x: {
                     format: 'dd MMM yyyy'
-                },
-                style: {
-                    fontFamily: 'Plus Jakarta Sans, sans-serif'
                 }
             },
             legend: {
                 position: 'top',
                 horizontalAlign: 'left',
-                fontFamily: 'Plus Jakarta Sans, sans-serif',
-                markers: {
-                    radius: 12
-                }
+                fontFamily: 'Plus Jakarta Sans, sans-serif'
             }
         };
 
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
         chartInstance = new ApexCharts(document.querySelector("#main-chart"), options);
         chartInstance.render();
     }
 
     function getChartSeries() {
         let slicedData = rawPricesData;
-        
-        // Slice time range if selected
         if (timeRangeDays !== "all") {
-            const cutoffDays = parseInt(timeRangeDays);
-            slicedData = rawPricesData.slice(-cutoffDays);
+            slicedData = rawPricesData.slice(-parseInt(timeRangeDays));
         }
 
         const series = [];
-
-        // Base series from CSV
         selectedSeries.forEach((col, idx) => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
-            // Assign specific colors for key columns to ensure consistency
-            if (col.includes('Butyl_Acetate_Domestic_华东')) color = '#06b6d4';
-            else if (col.includes('n-Butanol_Domestic_华东')) color = '#6366f1';
-            else if (col.includes('Acetic_Acid_Domestic_华南')) color = '#10b981';
-            else if (col.includes('Methanol_Domestic_山东中部')) color = '#f59e0b';
+            
+            // Assign specific theme colors for key columns to keep consistency
+            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate')) color = '#06b6d4';
+            else if (col.includes('n-Butanol') || col.includes('Ethanol')) color = '#6366f1';
+            else if (col.includes('Acetic_Acid')) color = '#10b981';
+            else if (col.includes('Methanol')) color = '#f59e0b';
             
             series.push({
                 name: col.replace('_Domestic', '').replace(/_/g, ' '),
@@ -411,37 +415,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Add Marge de Production if checked
-        if (showMargin) {
-            series.push({
-                name: "Marge de Production",
-                color: '#eab308', // Gold
-                data: slicedData.map(row => ({
-                    x: new Date(row.Date).getTime(),
-                    y: row['Marge_de_Production']
-                }))
-            });
-        }
-
-        // Add Coût de Revient if checked
-        if (showCost) {
-            series.push({
-                name: "Coût de Revient (J-1)",
-                color: '#ec4899', // Pink
-                data: slicedData.map(row => ({
-                    x: new Date(row.Date).getTime(),
-                    y: row['Cost_Push']
-                }))
-            });
-        }
-
         return series;
     }
 
     function updateChartData() {
         if (!chartInstance) return;
         
-        // Extract sliced dates for categories
         let slicedData = rawPricesData;
         if (timeRangeDays !== "all") {
             slicedData = rawPricesData.slice(-parseInt(timeRangeDays));
@@ -462,31 +441,38 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     function displayLeadLag(data) {
         const container = document.getElementById('lead-lag-list-container');
+        if (!container) return;
         container.innerHTML = "";
 
-        // Sort data by absolute Max_Correlation descending
-        data.sort((a, b) => Math.abs(b.Max_Correlation) - Math.abs(a.Max_Correlation));
+        // Resolve current target column
+        const targetCol = resolveColumn(priceHeaders, currentTarget);
 
-        data.forEach(item => {
+        // Filter lead lag data for active target
+        const filtered = data.filter(item => item.Target === targetCol || item.Target === currentTarget);
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="lead-lag-info"><p>Aucun résultat de lead-lag disponible pour cette cible.</p></div>`;
+            return;
+        }
+
+        // Sort data by absolute Max_Correlation descending
+        filtered.sort((a, b) => Math.abs(b.Max_Correlation) - Math.abs(a.Max_Correlation));
+
+        filtered.forEach(item => {
             const featureName = item.Feature;
             const optLag = parseInt(item.Optimal_Lag_Days);
             const maxCorr = parseFloat(item.Max_Correlation);
-            const corr0 = parseFloat(item.Corr_at_Lag_0);
 
-            // Determine if Direct Feedstock (n-Butanol, Acetic Acid) or Upstream (Methanol, Propylene)
-            const isDirect = featureName.includes('n-Butanol') || featureName.includes('Acetic_Acid');
+            // Determine if Direct Feedstock or Upstream
+            const isDirect = featureName.includes('n-Butanol') || featureName.includes('Ethanol') || featureName.includes('Acetic_Acid');
             const tagClass = isDirect ? 'direct' : 'upstream';
             const tagLabel = isDirect ? 'Matière Directe' : 'Amont / Autre';
 
             const itemDiv = document.createElement('div');
             itemDiv.className = 'lead-lag-item';
 
-            // Correlation percentage absolute value
             const absPercent = Math.min(100, Math.round(Math.abs(maxCorr) * 100));
-            // Color of correlation bar
             const barColor = maxCorr >= 0 ? 'var(--color-cyan)' : 'var(--color-rose)';
-
-            // Clean UI name
             const cleanFeature = featureName.replace('_Domestic', '').replace(/_/g, ' ');
 
             itemDiv.innerHTML = `
@@ -509,7 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             container.appendChild(itemDiv);
 
-            // Trigger animation of progress bars after a slight delay
             setTimeout(() => {
                 const fillBar = itemDiv.querySelector('.corr-bar-fill');
                 if (fillBar) fillBar.style.width = `${absPercent}%`;
@@ -524,6 +509,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const tableHeaders = document.getElementById('table-headers');
         const tableBody = document.getElementById('table-body');
         
+        if (!tableHeaders || !tableBody) return;
+
         tableHeaders.innerHTML = "";
         tableBody.innerHTML = "";
 
@@ -533,7 +520,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // 1. Column headers: Date, then the first 4 main columns to avoid horizontal overflow
         const displayHeaders = ['Date', ...selectedSeries.slice(0, 4)];
         
         displayHeaders.forEach(col => {
@@ -542,11 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
             tableHeaders.appendChild(th);
         });
 
-        // 2. Paginated rows
         const startIdx = (currentPage - 1) * rowsPerPage;
-        const endIdx = Math.min(startIdx + rowsPerPage, filteredData.length);
-        
-        // Reverse array to show latest dates first in table
         const pageData = filteredData.slice().reverse().slice(startIdx, startIdx + rowsPerPage);
 
         pageData.forEach(row => {
@@ -569,20 +551,18 @@ document.addEventListener("DOMContentLoaded", () => {
             tableBody.appendChild(tr);
         });
 
-        // 3. Update pagination indicators
         const totalPages = Math.ceil(filteredData.length / rowsPerPage);
         document.getElementById('pagination-info-el').textContent = `Page ${currentPage} sur ${totalPages} (${filteredData.length} jours)`;
         
-        // Enable/Disable buttons
         document.getElementById('btn-prev').disabled = (currentPage === 1);
         document.getElementById('btn-next').disabled = (currentPage >= totalPages || totalPages === 0);
     }
 
     // ==========================================
-    // INTERACTION HANDLERS (SEARCH, EXPORT, TIME SELECT)
+    // INTERACTION HANDLERS
     // ==========================================
     
-    // Time range buttons click
+    // Time range buttons
     document.querySelectorAll('.btn-range').forEach(button => {
         button.addEventListener('click', (e) => {
             document.querySelectorAll('.btn-range').forEach(btn => btn.classList.remove('active'));
@@ -595,16 +575,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Search bar filter
     const searchInput = document.getElementById('table-search');
-    searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.trim().toLowerCase();
-        
-        filteredData = rawPricesData.filter(row => {
-            return row.Date.toLowerCase().includes(query);
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            filteredData = rawPricesData.filter(row => row.Date.toLowerCase().includes(query));
+            currentPage = 1;
+            renderTable();
         });
-        
-        currentPage = 1;
-        renderTable();
-    });
+    }
 
     // Pagination Click
     document.getElementById('btn-prev').addEventListener('click', () => {
@@ -625,236 +603,53 @@ document.addEventListener("DOMContentLoaded", () => {
     // CSV Export
     document.getElementById('btn-export-csv').addEventListener('click', () => {
         if (rawPricesData.length === 0) return;
-        
-        // Generate PapaParse CSV string
         const csvString = Papa.unparse(rawPricesData);
-        
-        // Create downloadable blob
         const blob = new Blob(["\ufeff" + csvString], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
-        
         const link = document.createElement("a");
         link.setAttribute("href", url);
         link.setAttribute("download", "oilchem_china_prices_aligned.csv");
         document.body.appendChild(link);
-        
         link.click();
         document.body.removeChild(link);
     });
 
-    // ==========================================
-    // FINANCIAL MODULE HELPER FUNCTIONS & LISTENERS
-    // ==========================================
-    function calculateFinancialSeries() {
-        for (let i = 0; i < rawPricesData.length; i++) {
-            const row = rawPricesData[i];
-            
-            const pButyl = row['Butyl_Acetate_Domestic_华东'];
-            const pButanol = row['n-Butanol_Domestic_华东'];
-            const pAcetic = row['Acetic_Acid_Domestic_华南'];
-            
-            if (pButyl !== undefined && pButanol !== undefined && pAcetic !== undefined &&
-                pButyl !== null && pButanol !== null && pAcetic !== null) {
-                row['Marge_de_Production'] = pButyl - (weightButanol * pButanol + weightAcetic * pAcetic + fixedCosts);
-            } else {
-                row['Marge_de_Production'] = null;
-            }
-            
-            if (i > 0) {
-                const prevRow = rawPricesData[i - 1];
-                const pButanolLag = prevRow['n-Butanol_Domestic_华东'];
-                const pAceticLag = prevRow['Acetic_Acid_Domestic_华南'];
-                if (pButanolLag !== undefined && pAceticLag !== undefined && pButanolLag !== null && pAceticLag !== null) {
-                    row['Cost_Push'] = weightButanol * pButanolLag + weightAcetic * pAceticLag + fixedCosts;
-                } else {
-                    row['Cost_Push'] = null;
-                }
-            } else {
-                if (pButanol !== undefined && pAcetic !== undefined && pButanol !== null && pAcetic !== null) {
-                    row['Cost_Push'] = weightButanol * pButanol + weightAcetic * pAcetic + fixedCosts;
-                } else {
-                    row['Cost_Push'] = null;
-                }
-            }
-        }
-    }
-
-    function updatePerformanceTable() {
-        const tbody = document.getElementById('perf-table-body');
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        
-        const targetCol = priceHeaders.find(h => h.includes(KPI_COLUMNS.butyl)) || KPI_COLUMNS.butyl;
-        const totalRows = rawPricesData.length;
-        if (totalRows === 0) return;
-        
-        const latestPrice = rawPricesData[totalRows - 1][targetCol];
-        
-        const periods = [
-            { label: "7 Jours", days: 7 },
-            { label: "30 Jours", days: 30 },
-            { label: "90 Jours", days: 90 },
-            { label: "1 An (365j)", days: 365 }
-        ];
-        
-        periods.forEach(p => {
-            const days = p.days;
-            let tr = document.createElement('tr');
-            
-            let returnStr = "N/A";
-            let returnClass = "";
-            let volStr = "N/A";
-            
-            if (totalRows > days) {
-                const startPrice = rawPricesData[totalRows - 1 - days][targetCol];
-                if (startPrice && latestPrice) {
-                    const retVal = ((latestPrice - startPrice) / startPrice) * 100;
-                    returnStr = `${retVal >= 0 ? '+' : ''}${retVal.toFixed(2)}%`;
-                    returnClass = retVal >= 0 ? "up-val" : "down-val";
-                }
-                
-                const subData = rawPricesData.slice(totalRows - 1 - days);
-                const dailyReturns = [];
-                for (let i = 1; i < subData.length; i++) {
-                    const pPrev = subData[i-1][targetCol];
-                    const pCurr = subData[i][targetCol];
-                    if (pPrev && pCurr) {
-                        dailyReturns.push((pCurr - pPrev) / pPrev);
-                    }
-                }
-                
-                if (dailyReturns.length > 1) {
-                    const mean = dailyReturns.reduce((sum, r) => sum + r, 0) / dailyReturns.length;
-                    const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / (dailyReturns.length - 1);
-                    const stdDev = Math.sqrt(variance);
-                    const annVol = stdDev * Math.sqrt(252) * 100;
-                    volStr = `${annVol.toFixed(2)}%`;
-                }
-            }
-            
-            tr.innerHTML = `
-                <td class="bold-val">${p.label}</td>
-                <td class="${returnClass}">${returnStr}</td>
-                <td>${volStr}</td>
-            `;
-            tbody.appendChild(tr);
+    // Target Selector Event Listener
+    const targetSelect = document.getElementById('target-product-select');
+    if (targetSelect) {
+        targetSelect.addEventListener('change', (e) => {
+            currentTarget = e.target.value;
+            handleTargetProductChange();
         });
     }
 
-    function setupFinancialListeners() {
-        const weightButanolInput = document.getElementById('weight-butanol');
-        const weightAceticInput = document.getElementById('weight-acetic');
-        const fixedCostsInput = document.getElementById('fixed-costs');
-        const chkShowMargin = document.getElementById('chk-show-margin');
-        const chkShowCost = document.getElementById('chk-show-cost');
+    function handleTargetProductChange() {
+        const config = TARGET_CONFIGS[currentTarget];
+        if (!config) return;
 
-        const weightButanolLabel = document.getElementById('weight-butanol-label');
-        const weightAceticLabel = document.getElementById('weight-acetic-label');
-        const fixedCostsLabel = document.getElementById('fixed-costs-label');
+        updateKPIColumns();
 
-        const chkMarginTag = document.getElementById('chk-margin-tag');
-        const chkCostTag = document.getElementById('chk-cost-tag');
+        // Update titles of KPIs
+        document.querySelector('#kpi-butyl h3').textContent = config.labels.butyl;
+        document.querySelector('#kpi-butanol h3').textContent = config.labels.butanol;
+        document.querySelector('#kpi-acetic h3').textContent = config.labels.acetic;
+        document.querySelector('#kpi-methanol h3').textContent = config.labels.methanol;
 
-        // Presets Buttons
-        const presetStandard = document.getElementById('preset-standard');
-        const presetModern = document.getElementById('preset-modern');
-        const presetOld = document.getElementById('preset-old');
-        const presetBtns = [presetStandard, presetModern, presetOld];
-
-        function deactivatePresets() {
-            presetBtns.forEach(btn => { if (btn) btn.classList.remove('active'); });
+        // Update Lead-Lag card header subtitle
+        const leadLagDesc = document.querySelector('#lead-lag-card .card-header p');
+        if (leadLagDesc) {
+            leadLagDesc.textContent = `Corrélations vs. ${config.title} (Cible)`;
         }
 
-        function handlePresetClick(btn, butanolVal, aceticVal, opexVal) {
-            if (!btn) return;
-            btn.addEventListener('click', () => {
-                deactivatePresets();
-                btn.classList.add('active');
+        // Reset selections
+        selectedSeries = config.defaultChecked.map(col => resolveColumn(priceHeaders, col));
 
-                // Update state
-                weightButanol = butanolVal;
-                weightAcetic = aceticVal;
-                fixedCosts = opexVal;
-
-                // Update Inputs & Labels
-                if (weightButanolInput) {
-                    weightButanolInput.value = weightButanol;
-                    weightButanolLabel.textContent = weightButanol.toFixed(2);
-                }
-                if (weightAceticInput) {
-                    weightAceticInput.value = weightAcetic;
-                    weightAceticLabel.textContent = weightAcetic.toFixed(2);
-                }
-                if (fixedCostsInput) {
-                    fixedCostsInput.value = fixedCosts;
-                    fixedCostsLabel.textContent = `${fixedCosts} ¥/t`;
-                }
-
-                recalculateAllFinancials();
-            });
-        }
-
-        handlePresetClick(presetStandard, 0.65, 0.55, 800);
-        handlePresetClick(presetModern, 0.61, 0.52, 500);
-        handlePresetClick(presetOld, 0.70, 0.60, 1100);
-
-        if (weightButanolInput) {
-            weightButanolInput.addEventListener('input', (e) => {
-                deactivatePresets();
-                weightButanol = parseFloat(e.target.value);
-                weightButanolLabel.textContent = weightButanol.toFixed(2);
-                recalculateAllFinancials();
-            });
-        }
-
-        if (weightAceticInput) {
-            weightAceticInput.addEventListener('input', (e) => {
-                deactivatePresets();
-                weightAcetic = parseFloat(e.target.value);
-                weightAceticLabel.textContent = weightAcetic.toFixed(2);
-                recalculateAllFinancials();
-            });
-        }
-
-        if (fixedCostsInput) {
-            fixedCostsInput.addEventListener('input', (e) => {
-                deactivatePresets();
-                fixedCosts = parseInt(e.target.value);
-                fixedCostsLabel.textContent = `${fixedCosts} ¥/t`;
-                recalculateAllFinancials();
-            });
-        }
-
-        if (chkShowMargin) {
-            chkShowMargin.addEventListener('change', (e) => {
-                showMargin = e.target.checked;
-                if (showMargin) {
-                    chkMarginTag.classList.add('active');
-                } else {
-                    chkMarginTag.classList.remove('active');
-                }
-                updateChartData();
-            });
-        }
-
-        if (chkShowCost) {
-            chkShowCost.addEventListener('change', (e) => {
-                showCost = e.target.checked;
-                if (showCost) {
-                    chkCostTag.classList.add('active');
-                } else {
-                    chkCostTag.classList.remove('active');
-                }
-                updateChartData();
-            });
-        }
-    }
-
-    function recalculateAllFinancials() {
-        calculateFinancialSeries();
+        // Recompute KPIs, rebuild selectors, redraw chart & table, redraw Lead-Lag
         updateKPIs();
+        createSeriesSelectors();
         updateChartData();
-        updatePerformanceTable();
+        renderTable();
+        displayLeadLag(rawLeadLagData);
     }
 
     // Error UI view if load fails

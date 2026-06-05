@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -93,7 +93,13 @@
                 <div class="card-header">
                     <div class="header-titles">
                         <h2>Évolution des Séries de Prix</h2>
-                        <p>Visualisation et comparaison interactive de l'historique quotidien</p>
+                        <div class="target-select-wrapper">
+                            <span class="target-select-label"><i class="fa-solid fa-crosshairs"></i> Produit Cible :</span>
+                            <select id="target-product-select" class="target-select">
+                                <option value="Butyl_Acetate_Domestic_华东" selected>Acétate de Butyle (Est de la Chine)</option>
+                                <option value="Ethyl_Acetate_Domestic_华东">Acétate d'Éthyle (Est de la Chine)</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="chart-controls">
@@ -127,7 +133,7 @@
                     <div class="card-header">
                         <div class="header-titles">
                             <h2>Analyse Lead-Lag</h2>
-                            <p>Corrélations vs. Butyl Acetate (Cible)</p>
+                            <p>Corrélations vs. Acétate de Butyle (Cible)</p>
                         </div>
                     </div>
                     <div class="lead-lag-info">
@@ -186,7 +192,7 @@
         </section>
         
         <footer class="app-footer">
-            <p>© 2026 OilChem Chine - Modèle prédictif des prix d'Acétate de Butyle. Intégration automatisée 100% Locale & GitHub Actions.</p>
+            <p>© 2026 OilChem Chine - Modèles prédictifs des prix d'Acétates (Butyle / Éthyle). Intégration automatisée 100% Locale & GitHub Actions.</p>
         </footer>
     </div>
 
@@ -195,6 +201,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>

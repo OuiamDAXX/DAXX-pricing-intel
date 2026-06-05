@@ -55,7 +55,10 @@ PRODUCTS = [
     ("Propylene_Domestic", "丙烯", 3),
     ("Methanol_Domestic", "甲醇", 3),
     ("LNG_Domestic", "液化天然气", 3),
-    ("Gas_Natural_Domestic", "管道天然气", 3)
+    ("Gas_Natural_Domestic", "管道天然气", 3),
+    ("Ethyl_Acetate_Domestic", "醋酸乙酯", 3),
+    ("Ethanol_Domestic", "乙醇", 3),
+    ("Ethylene_Domestic", "乙烯", 3)
 ]
 
 # Create session

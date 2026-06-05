@@ -20,7 +20,7 @@ INPUT_CSV = os.path.normpath(os.path.join(BASE_DIR, "oilchem_aligned_prices.csv"
 OUTPUT_CSV = os.path.normpath(os.path.join(BASE_DIR, "oilchem_lead_lag_results.csv"))
 
 print("==================================================")
-print("[START] LEAD-LAG & CROSS-CORRELATION ANALYSIS")
+print("[START] MULTI-PRODUCT LEAD-LAG ANALYSIS")
 print("==================================================")
 
 if not os.path.exists(INPUT_CSV):
@@ -31,112 +31,111 @@ if not os.path.exists(INPUT_CSV):
 df = pd.read_csv(INPUT_CSV, index_col='Date', parse_dates=True)
 print(f"   Loaded aligned dataset with {len(df)} days and {len(df.columns)} price series.")
 
-# 1. Define Target
-# We prioritize 'Butyl_Acetate_Domestic_华东' as our primary target (East China is the reference market)
-target = 'Butyl_Acetate_Domestic_华东'
-if target not in df.columns:
-    # Fallback to any Butyl_Acetate_Domestic series
-    targets = [col for col in df.columns if 'Butyl_Acetate_Domestic' in col]
-    if targets:
-        target = targets[0]
-    else:
-        print("[ERROR] No domestic Butyl Acetate target series found.")
-        sys.exit(1)
+# 1. Define Target Candidates
+targets_to_process = []
 
-print(f"   Selected TARGET: {target}")
+# Target 1: Butyl Acetate
+butyl_targets = [col for col in df.columns if 'Butyl_Acetate_Domestic_华东' in col]
+if not butyl_targets:
+    butyl_targets = [col for col in df.columns if 'Butyl_Acetate_Domestic' in col]
+if butyl_targets:
+    targets_to_process.append(butyl_targets[0])
 
-# 2. Dynamic Feature Selection
-# We want to trace the dependencies: Methanol -> Propylene -> Acetic Acid -> n-Butanol -> Butyl Acetate
-keywords = {
-    'Methanol': ['Methanol_Domestic'],
-    'Propylene': ['Propylene_Domestic'],
-    'Acetic_Acid': ['Acetic_Acid_Domestic'],
-    'n-Butanol': ['n-Butanol_Domestic']
-}
+# Target 2: Ethyl Acetate
+ethyl_targets = [col for col in df.columns if 'Ethyl_Acetate_Domestic_华东' in col]
+if not ethyl_targets:
+    ethyl_targets = [col for col in df.columns if 'Ethyl_Acetate_Domestic' in col]
+if ethyl_targets:
+    targets_to_process.append(ethyl_targets[0])
 
-features_to_test = []
-for group_name, kws in keywords.items():
-    group_cols = []
-    for kw in kws:
-        group_cols.extend([col for col in df.columns if kw in col])
-    
-    # Sort and take representative markets to keep output readable (e.g. 华东, 山东, 华南, Yahoo, US, EU)
-    representative_keywords = ['华东', '山东', '江苏', '华南', 'Yahoo', 'NWE', 'Gulf', 'Rotterdam']
-    matched_reps = []
-    for col in group_cols:
-        if any(rep in col for rep in representative_keywords):
-            matched_reps.append(col)
-    
-    # If no representative matched, take all matched ones
-    if not matched_reps:
-        matched_reps = group_cols
-        
-    features_to_test.extend(matched_reps[:6]) # Limit to top 6 representative markets per group for clarity
+print(f"   Targets to process: {targets_to_process}")
 
-# Remove target from features list
-features_to_test = [f for f in features_to_test if f != target]
-# Deduplicate
-features_to_test = list(dict.fromkeys(features_to_test))
-
-print(f"   Selected {len(features_to_test)} dependency series for lead-lag analysis.")
-for f in features_to_test:
-    print(f"     - {f}")
-
-# 3. Calculate Cross-Correlations for Lags 0 to 60 days
-print("\n3. Calculating cross-correlations for lags 0 to 60 days...")
-lags = range(0, 61)
+# 2. Process each target
 lead_lag_results = []
 
-for feat in features_to_test:
-    feat_corrs = {}
-    for lag in lags:
-        # Shift the feedstock prices forward (t - lag) to model the transmission delay to target at t
-        shifted_feat = df[feat].shift(lag)
-        corr = df[target].corr(shifted_feat)
-        feat_corrs[lag] = corr
+for target in targets_to_process:
+    print(f"\n   Running Lead-Lag for target: {target}")
     
-    s_corr = pd.Series(feat_corrs)
-    # Get optimal lag (highest absolute correlation)
-    opt_lag = s_corr.abs().idxmax()
-    opt_corr = s_corr[opt_lag]
+    # Define features based on target product
+    if 'Butyl_Acetate' in target:
+        keywords = {
+            'n-Butanol': ['n-Butanol_Domestic'],
+            'Acetic_Acid': ['Acetic_Acid_Domestic'],
+            'Propylene': ['Propylene_Domestic'],
+            'Methanol': ['Methanol_Domestic']
+        }
+    elif 'Ethyl_Acetate' in target:
+        keywords = {
+            'Ethanol': ['Ethanol_Domestic'],
+            'Acetic_Acid': ['Acetic_Acid_Domestic'],
+            'Ethylene': ['Ethylene_Domestic'],
+            'Methanol': ['Methanol_Domestic']
+        }
+    else:
+        continue
+        
+    features_to_test = []
+    for group_name, kws in keywords.items():
+        group_cols = []
+        for kw in kws:
+            group_cols.extend([col for col in df.columns if kw in col])
+        
+        # Sort and take representative markets
+        representative_keywords = ['华东', '山东', '江苏', '华南', 'Yahoo', 'NWE', 'Gulf']
+        matched_reps = []
+        for col in group_cols:
+            if any(rep in col for rep in representative_keywords):
+                matched_reps.append(col)
+        
+        if not matched_reps:
+            matched_reps = group_cols
+            
+        features_to_test.extend(matched_reps[:6])
+        
+    # Remove target from features
+    features_to_test = [f for f in features_to_test if f != target]
+    # Deduplicate
+    features_to_test = list(dict.fromkeys(features_to_test))
     
-    lead_lag_results.append({
-        'Feature': feat,
-        'Optimal_Lag_Days': int(opt_lag),
-        'Max_Correlation': float(opt_corr),
-        'Corr_at_Lag_0': float(s_corr[0]),
-        'Lags': s_corr.to_dict()
-    })
+    print(f"     Testing {len(features_to_test)} feedstocks/upstream series:")
+    for f in features_to_test:
+        print(f"       - {f}")
+        
+    # 3. Calculate Cross-Correlations for Lags 0 to 60 days
+    for feat in features_to_test:
+        # Check if the feature has sufficient historical data (at least 180 non-NaN days)
+        non_nan_count = df[feat].notna().sum()
+        if non_nan_count < 180:
+            print(f"       - Skipping {feat} due to insufficient historical data ({non_nan_count} non-NaN days)")
+            continue
+            
+        feat_corrs = {}
+        for lag in range(0, 61):
+            shifted_feat = df[feat].shift(lag)
+            corr = df[target].corr(shifted_feat)
+            feat_corrs[lag] = corr
+        
+        s_corr = pd.Series(feat_corrs)
+        if s_corr.isna().all():
+            print(f"       - Skipping {feat} because all lagged correlations are NaN")
+            continue
+            
+        opt_lag = s_corr.abs().idxmax()
+        max_corr = s_corr[opt_lag]
+        corr_0 = s_corr[0]
+        
+        lead_lag_results.append({
+            'Target': target,
+            'Feature': feat,
+            'Optimal_Lag_Days': opt_lag,
+            'Max_Correlation': max_corr,
+            'Corr_at_Lag_0': corr_0
+        })
 
 # 4. Save results to CSV
-print("4. Saving detailed results to CSV...")
-detailed_rows = []
-for res in lead_lag_results:
-    row = {
-        'Feature': res['Feature'],
-        'Optimal_Lag_Days': res['Optimal_Lag_Days'],
-        'Max_Correlation': res['Max_Correlation'],
-        'Corr_at_Lag_0': res['Corr_at_Lag_0']
-    }
-    for lag in lags:
-        row[f'Lag_{lag}'] = res['Lags'][lag]
-    detailed_rows.append(row)
-
-df_detailed = pd.DataFrame(detailed_rows)
-df_detailed.to_csv(OUTPUT_CSV, index=False, encoding='utf-8-sig')
-print(f"   Saved detailed matrix to: {OUTPUT_CSV}")
-
-# 5. Output Summary table
-print("\n==================================================")
-print("LEAD-LAG CORRELATION SUMMARY TABLE")
-print("Target:", target)
-print("==================================================")
-print(f"{'Feature / Feedstock':<40} | {'Lag 0 Corr':<10} | {'Opt Lag (Days)':<14} | {'Max Corr':<10}")
-print("-" * 85)
-
-for res in lead_lag_results:
-    print(f"{res['Feature']:<40} | {res['Corr_at_Lag_0']:<10.4f} | {res['Optimal_Lag_Days']:<14} | {res['Max_Correlation']:<10.4f}")
-
-print("==================================================")
-print("[SUCCESS] LEAD-LAG ANALYSIS COMPLETE!")
-print("==================================================")
+if lead_lag_results:
+    results_df = pd.DataFrame(lead_lag_results)
+    results_df.to_csv(OUTPUT_CSV, index=False)
+    print(f"\n[SUCCESS] Multi-product lead-lag analysis written to {OUTPUT_CSV}")
+else:
+    print("\n[ERROR] No lead-lag results calculated.")
