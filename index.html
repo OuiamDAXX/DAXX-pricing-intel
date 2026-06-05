@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -122,80 +122,6 @@
 
             <!-- Sidebar Container -->
             <div class="sidebar-container">
-                <!-- Financial Settings Card -->
-                <aside class="sidebar-workspace-card" id="financial-settings-card">
-                    <div class="card-header border-bottom-thin">
-                        <div class="header-titles">
-                            <h2>Outils Financiers</h2>
-                            <p>Simulateur de marge & coût de revient</p>
-                        </div>
-                    </div>
-                    <div class="financial-sliders">
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>Ratio n-Butanol</label>
-                                <span id="weight-butanol-label">0.65</span>
-                            </div>
-                            <input type="range" id="weight-butanol" min="0.50" max="0.80" step="0.01" value="0.65">
-                        </div>
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>Ratio Acide Acétique</label>
-                                <span id="weight-acetic-label">0.55</span>
-                            </div>
-                            <input type="range" id="weight-acetic" min="0.40" max="0.70" step="0.01" value="0.55">
-                        </div>
-                        <div class="slider-group">
-                            <div class="slider-header">
-                                <label>Coûts Opérationnels</label>
-                                <span id="fixed-costs-label">800 ¥/t</span>
-                            </div>
-                            <input type="range" id="fixed-costs" min="200" max="1500" step="50" value="800">
-                        </div>
-                    </div>
-                    
-                    <div class="scenario-presets">
-                        <span class="presets-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Profils Usine :</span>
-                        <div class="presets-buttons">
-                            <button type="button" class="btn-preset active" id="preset-standard">Standard</button>
-                            <button type="button" class="btn-preset" id="preset-modern">Moderne</button>
-                            <button type="button" class="btn-preset" id="preset-old">Ancienne</button>
-                        </div>
-                    </div>
-
-                    <div class="financial-checkboxes">
-                        <label class="check-tag" id="chk-cost-tag">
-                            <input type="checkbox" id="chk-show-cost"> Coût de Revient (J-1)
-                        </label>
-                    </div>
-                </aside>
-
-                <!-- Interpretive Guide Card -->
-                <aside class="sidebar-workspace-card" id="guide-card">
-                    <div class="card-header border-bottom-thin">
-                        <div class="header-titles">
-                            <h2>Guide de Lecture</h2>
-                            <p>Comment interpréter le marché ?</p>
-                        </div>
-                    </div>
-                    <div class="guide-legend">
-                        <div class="legend-item">
-                            <span class="legend-dot" style="background-color: var(--color-cyan)"></span>
-                            <div class="legend-text">
-                                <strong>Acétate de Butyle (Cible)</strong>
-                                <p>Le prix de vente du produit final sur le marché chinois.</p>
-                            </div>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot" style="background-color: var(--color-rose)"></span>
-                            <div class="legend-text">
-                                <strong>Coût de Revient J-1</strong>
-                                <p>Coût de fabrication théorique d'hier. Si supérieur à la cible, le marché va être poussé à la hausse.</p>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-
                 <!-- Lead Lag Analysis Sidebar Card -->
                 <aside class="sidebar-workspace-card" id="lead-lag-card">
                     <div class="card-header">
@@ -213,31 +139,6 @@
                         <div class="loader-container min-h">
                             <div class="spinner"></div>
                         </div>
-                    </div>
-                </aside>
-
-                <!-- Volatility & Performance Card -->
-                <aside class="sidebar-workspace-card" id="performance-card">
-                    <div class="card-header border-bottom-thin">
-                        <div class="header-titles">
-                            <h2>Volatilité & Rendements</h2>
-                            <p>Analyses de performance (Butyl Acetate)</p>
-                        </div>
-                    </div>
-                    <div class="perf-table-container">
-                        <table class="perf-table">
-                            <thead>
-                                <tr>
-                                    <th>Période</th>
-                                    <th>Rendement</th>
-                                    <th>Volatilité (30j)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="perf-table-body">
-                                <!-- Filled dynamically by JS -->
-                                <tr><td colspan="3" style="text-align: center; color: var(--text-muted)">Calcul en cours...</td></tr>
-                            </tbody>
-                        </table>
                     </div>
                 </aside>
             </div>
@@ -294,6 +195,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>
