@@ -50,6 +50,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Acetic_Acid_Domestic_华南',
                 'Methanol_Domestic_山东中部'
             ]
+        },
+        'n_Propyl_Acetate_Domestic_华东': {
+            title: "Acétate d'Isopropyle",
+            precursors: {
+                butyl: 'n_Propyl_Acetate_Domestic_华东',
+                butanol: 'Isopropanol_Domestic_山东',
+                acetic: 'Acetic_Acid_Domestic_华南',
+                methanol: 'Methanol_Domestic_山东中部'
+            },
+            labels: {
+                butyl: "Acétate d'Isopropyle (Proxy)",
+                butanol: "Isopropanol (Feedstock)",
+                acetic: "Acide Acétique (Feedstock)",
+                methanol: "Méthanol (Amont)"
+            },
+            defaultChecked: [
+                'n_Propyl_Acetate_Domestic_华东',
+                'Isopropanol_Domestic_山东',
+                'Acetic_Acid_Domestic_华南',
+                'Methanol_Domestic_山东中部'
+            ]
         }
     };
 
@@ -161,6 +182,12 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Ethanol') || 
                    header.includes('Acetic_Acid') || 
                    header.includes('Ethylene') || 
+                   header.includes('Methanol');
+        } else if (target.includes('n_Propyl_Acetate')) {
+            return header.includes('n_Propyl_Acetate') || 
+                   header.includes('Isopropanol') || 
+                   header.includes('Acetic_Acid') || 
+                   header.includes('Propylene') || 
                    header.includes('Methanol');
         }
         return false;
@@ -400,8 +427,8 @@ document.addEventListener("DOMContentLoaded", () => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
             
             // Assign specific theme colors for key columns to keep consistency
-            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate')) color = '#06b6d4';
-            else if (col.includes('n-Butanol') || col.includes('Ethanol')) color = '#6366f1';
+            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate')) color = '#06b6d4';
+            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol')) color = '#6366f1';
             else if (col.includes('Acetic_Acid')) color = '#10b981';
             else if (col.includes('Methanol')) color = '#f59e0b';
             
@@ -464,7 +491,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const maxCorr = parseFloat(item.Max_Correlation);
 
             // Determine if Direct Feedstock or Upstream
-            const isDirect = featureName.includes('n-Butanol') || featureName.includes('Ethanol') || featureName.includes('Acetic_Acid');
+            const isDirect = featureName.includes('n-Butanol') || featureName.includes('Ethanol') || featureName.includes('Isopropanol') || featureName.includes('Acetic_Acid');
             const tagClass = isDirect ? 'direct' : 'upstream';
             const tagLabel = isDirect ? 'Matière Directe' : 'Amont / Autre';
 

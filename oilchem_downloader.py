@@ -58,7 +58,9 @@ PRODUCTS = [
     ("Gas_Natural_Domestic", "管道天然气", 3),
     ("Ethyl_Acetate_Domestic", "醋酸乙酯", 3),
     ("Ethanol_Domestic", "乙醇", 3),
-    ("Ethylene_Domestic", "乙烯", 3)
+    ("Ethylene_Domestic", "乙烯", 3),
+    ("n_Propyl_Acetate_Domestic", "醋酸正丙酯", 3),
+    ("Isopropanol_Domestic", "异丙醇", 3)
 ]
 
 # Create session
