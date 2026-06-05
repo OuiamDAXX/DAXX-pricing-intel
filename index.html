@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -81,17 +81,6 @@
                     <div class="price-value" id="kpi-methanol-val">- ¥/t</div>
                 </div>
                 <div class="kpi-change" id="kpi-methanol-change">
-                    <span>-</span>
-                </div>
-            </div>
-
-            <div class="kpi-card" id="kpi-margin">
-                <div class="kpi-info">
-                    <h3>Marge de Prod. (Spread)</h3>
-                    <span class="kpi-market">Modèle stœchiométrique</span>
-                    <div class="price-value" id="kpi-margin-val">- ¥/t</div>
-                </div>
-                <div class="kpi-change" id="kpi-margin-change">
                     <span>-</span>
                 </div>
             </div>
@@ -175,9 +164,6 @@
                     </div>
 
                     <div class="financial-checkboxes">
-                        <label class="check-tag" id="chk-margin-tag">
-                            <input type="checkbox" id="chk-show-margin"> Tracer la Marge
-                        </label>
                         <label class="check-tag" id="chk-cost-tag">
                             <input type="checkbox" id="chk-show-cost"> Coût de Revient (J-1)
                         </label>
@@ -198,13 +184,6 @@
                             <div class="legend-text">
                                 <strong>Acétate de Butyle (Cible)</strong>
                                 <p>Le prix de vente du produit final sur le marché chinois.</p>
-                            </div>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot" style="background-color: var(--color-warning)"></span>
-                            <div class="legend-text">
-                                <strong>Marge de Production (Spread)</strong>
-                                <p>Si <span class="badge-neg">Négative (&lt;0)</span>, les usines produisent à perte. Risque de baisse de l'offre et hausse future des prix.</p>
                             </div>
                         </div>
                         <div class="legend-item">
@@ -315,6 +294,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
 </body>
 </html>
