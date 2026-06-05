@@ -49,20 +49,12 @@ DATE_END = datetime.today().strftime('%Y-%m-%d')
 # businessType=3 -> China Domestic prices
 # businessType=4 -> International prices
 PRODUCTS = [
-    ("Butyl_Acetate", "醋酸丁酯", 4),
     ("Butyl_Acetate_Domestic", "醋酸丁酯", 3),
-    ("n-Butanol", "正丁醇", 4),
     ("n-Butanol_Domestic", "正丁醇", 3),
-    ("Acetic_Acid", "冰醋酸", 4),
     ("Acetic_Acid_Domestic", "冰醋酸", 3),
-    ("Propylene", "丙烯", 4),
     ("Propylene_Domestic", "丙烯", 3),
-    ("Methanol", "甲醇", 4),
     ("Methanol_Domestic", "甲醇", 3),
-    ("Brent", "布伦特", 4),
-    ("LNG", "液化天然气", 4),
     ("LNG_Domestic", "液化天然气", 3),
-    ("Gas_Natural", "管道天然气", 4),
     ("Gas_Natural_Domestic", "管道天然气", 3)
 ]
 
@@ -336,15 +328,11 @@ def main():
         master_path = os.path.join(BASE_DIR, "oilchem_all_data.csv")
         master_df.to_csv(master_path, index=False, encoding="utf-8-sig")
         
-        # Also export to Excel format
-        excel_path = os.path.join(BASE_DIR, "oilchem_all_data.xlsx")
-        print(f"Exporting to Excel: {excel_path}...")
-        master_df.to_excel(excel_path, index=False, engine='openpyxl')
-        print("Excel export complete.")
+        # Excel export of raw master file disabled to optimize memory and run time
         
         print("\n==================================================")
         print("[SUCCESS] DATA RETRIEVAL COMPLETE!")
-        print(f"Master files saved to:\n  - CSV: {master_path}\n  - Excel: {excel_path}")
+        print(f"Master files saved to:\n  - CSV: {master_path}")
         print(f"Total entries: {len(master_df)}")
         print("==================================================")
         
