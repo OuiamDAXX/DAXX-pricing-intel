@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -164,6 +164,16 @@
                             <input type="range" id="fixed-costs" min="200" max="1500" step="50" value="800">
                         </div>
                     </div>
+                    
+                    <div class="scenario-presets">
+                        <span class="presets-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Profils Usine :</span>
+                        <div class="presets-buttons">
+                            <button type="button" class="btn-preset active" id="preset-standard">Standard</button>
+                            <button type="button" class="btn-preset" id="preset-modern">Moderne</button>
+                            <button type="button" class="btn-preset" id="preset-old">Ancienne</button>
+                        </div>
+                    </div>
+
                     <div class="financial-checkboxes">
                         <label class="check-tag" id="chk-margin-tag">
                             <input type="checkbox" id="chk-show-margin"> Tracer la Marge
@@ -171,6 +181,39 @@
                         <label class="check-tag" id="chk-cost-tag">
                             <input type="checkbox" id="chk-show-cost"> Coût de Revient (J-1)
                         </label>
+                    </div>
+                </aside>
+
+                <!-- Interpretive Guide Card -->
+                <aside class="sidebar-workspace-card" id="guide-card">
+                    <div class="card-header border-bottom-thin">
+                        <div class="header-titles">
+                            <h2>Guide de Lecture</h2>
+                            <p>Comment interpréter le marché ?</p>
+                        </div>
+                    </div>
+                    <div class="guide-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: var(--color-cyan)"></span>
+                            <div class="legend-text">
+                                <strong>Acétate de Butyle (Cible)</strong>
+                                <p>Le prix de vente du produit final sur le marché chinois.</p>
+                            </div>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: var(--color-warning)"></span>
+                            <div class="legend-text">
+                                <strong>Marge de Production (Spread)</strong>
+                                <p>Si <span class="badge-neg">Négative (&lt;0)</span>, les usines produisent à perte. Risque de baisse de l'offre et hausse future des prix.</p>
+                            </div>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: var(--color-rose)"></span>
+                            <div class="legend-text">
+                                <strong>Coût de Revient J-1</strong>
+                                <p>Coût de fabrication théorique d'hier. Si supérieur à la cible, le marché va être poussé à la hausse.</p>
+                            </div>
+                        </div>
                     </div>
                 </aside>
 
@@ -272,6 +315,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=2"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>

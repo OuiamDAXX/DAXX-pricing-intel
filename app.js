@@ -755,8 +755,52 @@ document.addEventListener("DOMContentLoaded", () => {
         const chkMarginTag = document.getElementById('chk-margin-tag');
         const chkCostTag = document.getElementById('chk-cost-tag');
 
+        // Presets Buttons
+        const presetStandard = document.getElementById('preset-standard');
+        const presetModern = document.getElementById('preset-modern');
+        const presetOld = document.getElementById('preset-old');
+        const presetBtns = [presetStandard, presetModern, presetOld];
+
+        function deactivatePresets() {
+            presetBtns.forEach(btn => { if (btn) btn.classList.remove('active'); });
+        }
+
+        function handlePresetClick(btn, butanolVal, aceticVal, opexVal) {
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                deactivatePresets();
+                btn.classList.add('active');
+
+                // Update state
+                weightButanol = butanolVal;
+                weightAcetic = aceticVal;
+                fixedCosts = opexVal;
+
+                // Update Inputs & Labels
+                if (weightButanolInput) {
+                    weightButanolInput.value = weightButanol;
+                    weightButanolLabel.textContent = weightButanol.toFixed(2);
+                }
+                if (weightAceticInput) {
+                    weightAceticInput.value = weightAcetic;
+                    weightAceticLabel.textContent = weightAcetic.toFixed(2);
+                }
+                if (fixedCostsInput) {
+                    fixedCostsInput.value = fixedCosts;
+                    fixedCostsLabel.textContent = `${fixedCosts} ¥/t`;
+                }
+
+                recalculateAllFinancials();
+            });
+        }
+
+        handlePresetClick(presetStandard, 0.65, 0.55, 800);
+        handlePresetClick(presetModern, 0.61, 0.52, 500);
+        handlePresetClick(presetOld, 0.70, 0.60, 1100);
+
         if (weightButanolInput) {
             weightButanolInput.addEventListener('input', (e) => {
+                deactivatePresets();
                 weightButanol = parseFloat(e.target.value);
                 weightButanolLabel.textContent = weightButanol.toFixed(2);
                 recalculateAllFinancials();
@@ -765,6 +809,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (weightAceticInput) {
             weightAceticInput.addEventListener('input', (e) => {
+                deactivatePresets();
                 weightAcetic = parseFloat(e.target.value);
                 weightAceticLabel.textContent = weightAcetic.toFixed(2);
                 recalculateAllFinancials();
@@ -773,6 +818,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (fixedCostsInput) {
             fixedCostsInput.addEventListener('input', (e) => {
+                deactivatePresets();
                 fixedCosts = parseInt(e.target.value);
                 fixedCostsLabel.textContent = `${fixedCosts} ¥/t`;
                 recalculateAllFinancials();
