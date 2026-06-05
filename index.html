@@ -84,6 +84,17 @@
                     <span>-</span>
                 </div>
             </div>
+
+            <div class="kpi-card" id="kpi-margin">
+                <div class="kpi-info">
+                    <h3>Marge de Prod. (Spread)</h3>
+                    <span class="kpi-market">Modèle stœchiométrique</span>
+                    <div class="price-value" id="kpi-margin-val">- ¥/t</div>
+                </div>
+                <div class="kpi-change" id="kpi-margin-change">
+                    <span>-</span>
+                </div>
+            </div>
         </section>
 
         <!-- Main Workspace: Chart & Sidebar -->
@@ -120,27 +131,94 @@
                 </div>
             </section>
 
-            <!-- Lead Lag Analysis Sidebar Card -->
-            <aside class="sidebar-workspace-card">
-                <div class="card-header">
-                    <div class="header-titles">
-                        <h2>Analyse Lead-Lag</h2>
-                        <p>Corrélations vs. Butyl Acetate (Cible)</p>
+            <!-- Sidebar Container -->
+            <div class="sidebar-container">
+                <!-- Financial Settings Card -->
+                <aside class="sidebar-workspace-card" id="financial-settings-card">
+                    <div class="card-header border-bottom-thin">
+                        <div class="header-titles">
+                            <h2>Outils Financiers</h2>
+                            <p>Simulateur de marge & coût de revient</p>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="lead-lag-info">
-                    <i class="fa-solid fa-circle-info"></i>
-                    <p>Détermine le décalage optimal (en jours) pour qu'une variation de prix de la matière première se propage à la cible.</p>
-                </div>
-                
-                <div class="lead-lag-list" id="lead-lag-list-container">
-                    <!-- Filled dynamically by JavaScript -->
-                    <div class="loader-container min-h">
-                        <div class="spinner"></div>
+                    <div class="financial-sliders">
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <label>Ratio n-Butanol</label>
+                                <span id="weight-butanol-label">0.65</span>
+                            </div>
+                            <input type="range" id="weight-butanol" min="0.50" max="0.80" step="0.01" value="0.65">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <label>Ratio Acide Acétique</label>
+                                <span id="weight-acetic-label">0.55</span>
+                            </div>
+                            <input type="range" id="weight-acetic" min="0.40" max="0.70" step="0.01" value="0.55">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <label>Coûts Opérationnels</label>
+                                <span id="fixed-costs-label">800 ¥/t</span>
+                            </div>
+                            <input type="range" id="fixed-costs" min="200" max="1500" step="50" value="800">
+                        </div>
                     </div>
-                </div>
-            </aside>
+                    <div class="financial-checkboxes">
+                        <label class="check-tag" id="chk-margin-tag">
+                            <input type="checkbox" id="chk-show-margin"> Tracer la Marge
+                        </label>
+                        <label class="check-tag" id="chk-cost-tag">
+                            <input type="checkbox" id="chk-show-cost"> Coût de Revient (J-1)
+                        </label>
+                    </div>
+                </aside>
+
+                <!-- Lead Lag Analysis Sidebar Card -->
+                <aside class="sidebar-workspace-card" id="lead-lag-card">
+                    <div class="card-header">
+                        <div class="header-titles">
+                            <h2>Analyse Lead-Lag</h2>
+                            <p>Corrélations vs. Butyl Acetate (Cible)</p>
+                        </div>
+                    </div>
+                    <div class="lead-lag-info">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <p>Détermine le décalage optimal (en jours) pour qu'une variation de prix de la matière première se propage à la cible.</p>
+                    </div>
+                    <div class="lead-lag-list" id="lead-lag-list-container">
+                        <!-- Filled dynamically by JavaScript -->
+                        <div class="loader-container min-h">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Volatility & Performance Card -->
+                <aside class="sidebar-workspace-card" id="performance-card">
+                    <div class="card-header border-bottom-thin">
+                        <div class="header-titles">
+                            <h2>Volatilité & Rendements</h2>
+                            <p>Analyses de performance (Butyl Acetate)</p>
+                        </div>
+                    </div>
+                    <div class="perf-table-container">
+                        <table class="perf-table">
+                            <thead>
+                                <tr>
+                                    <th>Période</th>
+                                    <th>Rendement</th>
+                                    <th>Volatilité (30j)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="perf-table-body">
+                                <!-- Filled dynamically by JS -->
+                                <tr><td colspan="3" style="text-align: center; color: var(--text-muted)">Calcul en cours...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </aside>
+            </div>
         </main>
 
         <!-- Data Explorer / Table Card -->

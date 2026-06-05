@@ -15,11 +15,18 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedSeries = [];     // Column names selected for plot
     let timeRangeDays = "all";   // "all", 365, 180, 90
     
+    // Financial analysis state
+    let weightButanol = 0.65;
+    let weightAcetic = 0.55;
+    let fixedCosts = 800;
+    let showMargin = false;
+    let showCost = false;
+    
     // Pagination state
     let currentPage = 1;
     const rowsPerPage = 10;
     let filteredData = [];       // Data currently in table after search
-
+    
     // Define target and key benchmark columns for KPIs
     const KPI_COLUMNS = {
         butyl: 'Butyl_Acetate_Domestic_华东',
@@ -36,7 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
         '#f59e0b', // Amber (Methanol)
         '#f43f5e', // Rose (Propylene)
         '#a855f7', // Purple
-        '#ec4899', // Pink
+        '#ec4899', // Pink (Cost-Push)
+        '#eab308', // Gold (Margin)
         '#84cc16'  // Lime
     ];
 
@@ -104,6 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
         alignedDates = rawPricesData.map(row => row.Date);
         filteredData = [...rawPricesData];
 
+        // Recalculate margins and costs for rawPricesData
+        calculateFinancialSeries();
+
         // 1. Update Last Updated Meta info
         if (alignedDates.length > 0) {
             const lastDate = alignedDates[alignedDates.length - 1];
@@ -121,6 +132,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 5. Populate Data Table
         renderTable();
+        
+        // 6. Update Performance Table
+        updatePerformanceTable();
+
+        // 7. Setup financial inputs listeners
+        setupFinancialListeners();
         
         // Hide chart loader
         document.getElementById('chart-loader').style.display = 'none';
@@ -169,6 +186,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 changeEl.textContent = "-";
             }
         });
+
+        // Update Margin KPI
+        const marginValEl = document.getElementById('kpi-margin-val');
+        const marginChangeEl = document.getElementById('kpi-margin-change');
+        
+        if (marginValEl && marginChangeEl) {
+            if (latestRow['Marge_de_Production'] !== undefined && latestRow['Marge_de_Production'] !== null) {
+                const currentMargin = latestRow['Marge_de_Production'];
+                const prevMargin = (previousRow['Marge_de_Production'] !== undefined && previousRow['Marge_de_Production'] !== null)
+                    ? previousRow['Marge_de_Production']
+                    : currentMargin;
+                const absChange = currentMargin - prevMargin;
+                const pctChange = prevMargin !== 0 ? (absChange / Math.abs(prevMargin)) * 100 : 0;
+                
+                marginValEl.textContent = `${Number(currentMargin).toLocaleString('fr-FR', {minimumFractionDigits: 1, maximumFractionDigits: 1})} ¥/t`;
+                
+                if (absChange > 0.05) {
+                    marginChangeEl.className = 'kpi-change up';
+                    marginChangeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> +${pctChange.toFixed(2)}%`;
+                } else if (absChange < -0.05) {
+                    marginChangeEl.className = 'kpi-change down';
+                    marginChangeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> ${pctChange.toFixed(2)}%`;
+                } else {
+                    marginChangeEl.className = 'kpi-change neutral';
+                    marginChangeEl.innerHTML = `<i class="fa-solid fa-minus"></i> Stable`;
+                }
+            } else {
+                marginValEl.textContent = "N/A";
+                marginChangeEl.className = 'kpi-change neutral';
+                marginChangeEl.textContent = "-";
+            }
+        }
     }
 
     // ==========================================
@@ -341,17 +390,52 @@ document.addEventListener("DOMContentLoaded", () => {
             slicedData = rawPricesData.slice(-cutoffDays);
         }
 
-        return selectedSeries.map(col => {
-            return {
+        const series = [];
+
+        // Base series from CSV
+        selectedSeries.forEach((col, idx) => {
+            let color = CHART_COLORS[idx % CHART_COLORS.length];
+            // Assign specific colors for key columns to ensure consistency
+            if (col.includes('Butyl_Acetate_Domestic_华东')) color = '#06b6d4';
+            else if (col.includes('n-Butanol_Domestic_华东')) color = '#6366f1';
+            else if (col.includes('Acetic_Acid_Domestic_华南')) color = '#10b981';
+            else if (col.includes('Methanol_Domestic_山东中部')) color = '#f59e0b';
+            
+            series.push({
                 name: col.replace('_Domestic', '').replace(/_/g, ' '),
-                data: slicedData.map(row => {
-                    return {
-                        x: new Date(row.Date).getTime(),
-                        y: row[col]
-                    };
-                })
-            };
+                color: color,
+                data: slicedData.map(row => ({
+                    x: new Date(row.Date).getTime(),
+                    y: row[col]
+                }))
+            });
         });
+
+        // Add Marge de Production if checked
+        if (showMargin) {
+            series.push({
+                name: "Marge de Production",
+                color: '#eab308', // Gold
+                data: slicedData.map(row => ({
+                    x: new Date(row.Date).getTime(),
+                    y: row['Marge_de_Production']
+                }))
+            });
+        }
+
+        // Add Coût de Revient if checked
+        if (showCost) {
+            series.push({
+                name: "Coût de Revient (J-1)",
+                color: '#ec4899', // Pink
+                data: slicedData.map(row => ({
+                    x: new Date(row.Date).getTime(),
+                    y: row['Cost_Push']
+                }))
+            });
+        }
+
+        return series;
     }
 
     function updateChartData() {
@@ -557,6 +641,175 @@ document.addEventListener("DOMContentLoaded", () => {
         link.click();
         document.body.removeChild(link);
     });
+
+    // ==========================================
+    // FINANCIAL MODULE HELPER FUNCTIONS & LISTENERS
+    // ==========================================
+    function calculateFinancialSeries() {
+        for (let i = 0; i < rawPricesData.length; i++) {
+            const row = rawPricesData[i];
+            
+            const pButyl = row['Butyl_Acetate_Domestic_华东'];
+            const pButanol = row['n-Butanol_Domestic_华东'];
+            const pAcetic = row['Acetic_Acid_Domestic_华南'];
+            
+            if (pButyl !== undefined && pButanol !== undefined && pAcetic !== undefined &&
+                pButyl !== null && pButanol !== null && pAcetic !== null) {
+                row['Marge_de_Production'] = pButyl - (weightButanol * pButanol + weightAcetic * pAcetic + fixedCosts);
+            } else {
+                row['Marge_de_Production'] = null;
+            }
+            
+            if (i > 0) {
+                const prevRow = rawPricesData[i - 1];
+                const pButanolLag = prevRow['n-Butanol_Domestic_华东'];
+                const pAceticLag = prevRow['Acetic_Acid_Domestic_华南'];
+                if (pButanolLag !== undefined && pAceticLag !== undefined && pButanolLag !== null && pAceticLag !== null) {
+                    row['Cost_Push'] = weightButanol * pButanolLag + weightAcetic * pAceticLag + fixedCosts;
+                } else {
+                    row['Cost_Push'] = null;
+                }
+            } else {
+                if (pButanol !== undefined && pAcetic !== undefined && pButanol !== null && pAcetic !== null) {
+                    row['Cost_Push'] = weightButanol * pButanol + weightAcetic * pAcetic + fixedCosts;
+                } else {
+                    row['Cost_Push'] = null;
+                }
+            }
+        }
+    }
+
+    function updatePerformanceTable() {
+        const tbody = document.getElementById('perf-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        
+        const targetCol = priceHeaders.find(h => h.includes(KPI_COLUMNS.butyl)) || KPI_COLUMNS.butyl;
+        const totalRows = rawPricesData.length;
+        if (totalRows === 0) return;
+        
+        const latestPrice = rawPricesData[totalRows - 1][targetCol];
+        
+        const periods = [
+            { label: "7 Jours", days: 7 },
+            { label: "30 Jours", days: 30 },
+            { label: "90 Jours", days: 90 },
+            { label: "1 An (365j)", days: 365 }
+        ];
+        
+        periods.forEach(p => {
+            const days = p.days;
+            let tr = document.createElement('tr');
+            
+            let returnStr = "N/A";
+            let returnClass = "";
+            let volStr = "N/A";
+            
+            if (totalRows > days) {
+                const startPrice = rawPricesData[totalRows - 1 - days][targetCol];
+                if (startPrice && latestPrice) {
+                    const retVal = ((latestPrice - startPrice) / startPrice) * 100;
+                    returnStr = `${retVal >= 0 ? '+' : ''}${retVal.toFixed(2)}%`;
+                    returnClass = retVal >= 0 ? "up-val" : "down-val";
+                }
+                
+                const subData = rawPricesData.slice(totalRows - 1 - days);
+                const dailyReturns = [];
+                for (let i = 1; i < subData.length; i++) {
+                    const pPrev = subData[i-1][targetCol];
+                    const pCurr = subData[i][targetCol];
+                    if (pPrev && pCurr) {
+                        dailyReturns.push((pCurr - pPrev) / pPrev);
+                    }
+                }
+                
+                if (dailyReturns.length > 1) {
+                    const mean = dailyReturns.reduce((sum, r) => sum + r, 0) / dailyReturns.length;
+                    const variance = dailyReturns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / (dailyReturns.length - 1);
+                    const stdDev = Math.sqrt(variance);
+                    const annVol = stdDev * Math.sqrt(252) * 100;
+                    volStr = `${annVol.toFixed(2)}%`;
+                }
+            }
+            
+            tr.innerHTML = `
+                <td class="bold-val">${p.label}</td>
+                <td class="${returnClass}">${returnStr}</td>
+                <td>${volStr}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function setupFinancialListeners() {
+        const weightButanolInput = document.getElementById('weight-butanol');
+        const weightAceticInput = document.getElementById('weight-acetic');
+        const fixedCostsInput = document.getElementById('fixed-costs');
+        const chkShowMargin = document.getElementById('chk-show-margin');
+        const chkShowCost = document.getElementById('chk-show-cost');
+
+        const weightButanolLabel = document.getElementById('weight-butanol-label');
+        const weightAceticLabel = document.getElementById('weight-acetic-label');
+        const fixedCostsLabel = document.getElementById('fixed-costs-label');
+
+        const chkMarginTag = document.getElementById('chk-margin-tag');
+        const chkCostTag = document.getElementById('chk-cost-tag');
+
+        if (weightButanolInput) {
+            weightButanolInput.addEventListener('input', (e) => {
+                weightButanol = parseFloat(e.target.value);
+                weightButanolLabel.textContent = weightButanol.toFixed(2);
+                recalculateAllFinancials();
+            });
+        }
+
+        if (weightAceticInput) {
+            weightAceticInput.addEventListener('input', (e) => {
+                weightAcetic = parseFloat(e.target.value);
+                weightAceticLabel.textContent = weightAcetic.toFixed(2);
+                recalculateAllFinancials();
+            });
+        }
+
+        if (fixedCostsInput) {
+            fixedCostsInput.addEventListener('input', (e) => {
+                fixedCosts = parseInt(e.target.value);
+                fixedCostsLabel.textContent = `${fixedCosts} ¥/t`;
+                recalculateAllFinancials();
+            });
+        }
+
+        if (chkShowMargin) {
+            chkShowMargin.addEventListener('change', (e) => {
+                showMargin = e.target.checked;
+                if (showMargin) {
+                    chkMarginTag.classList.add('active');
+                } else {
+                    chkMarginTag.classList.remove('active');
+                }
+                updateChartData();
+            });
+        }
+
+        if (chkShowCost) {
+            chkShowCost.addEventListener('change', (e) => {
+                showCost = e.target.checked;
+                if (showCost) {
+                    chkCostTag.classList.add('active');
+                } else {
+                    chkCostTag.classList.remove('active');
+                }
+                updateChartData();
+            });
+        }
+    }
+
+    function recalculateAllFinancials() {
+        calculateFinancialSeries();
+        updateKPIs();
+        updateChartData();
+        updatePerformanceTable();
+    }
 
     // Error UI view if load fails
     function showErrorState() {
