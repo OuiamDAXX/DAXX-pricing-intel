@@ -10,9 +10,14 @@ if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
     except Exception:
         pass
 
-BASE_DIR = r"c:\Documents\A4\Satge\Prediction des prix\OilChem"
-INPUT_CSV = os.path.join(BASE_DIR, "oilchem_aligned_prices.csv")
-OUTPUT_CSV = os.path.join(BASE_DIR, "oilchem_lead_lag_results.csv")
+DEFAULT_DIR = r"c:\Documents\A4\Satge\Prediction des prix\OilChem"
+if os.path.exists(DEFAULT_DIR):
+    BASE_DIR = DEFAULT_DIR
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+INPUT_CSV = os.path.normpath(os.path.join(BASE_DIR, "oilchem_aligned_prices.csv"))
+OUTPUT_CSV = os.path.normpath(os.path.join(BASE_DIR, "oilchem_lead_lag_results.csv"))
 
 print("==================================================")
 print("[START] LEAD-LAG & CROSS-CORRELATION ANALYSIS")
