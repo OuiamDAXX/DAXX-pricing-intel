@@ -92,6 +92,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Acetic_Acid_Domestic_华南',
                 'Methanol_Domestic_山东中部'
             ]
+        },
+        'Acrylic_Acid_Domestic_华东': {
+            title: "Acide Acrylique",
+            precursors: {
+                butyl: 'Acrylic_Acid_Domestic_华东',
+                butanol: 'Propylene_Domestic_华东',
+                acetic: 'Naphtha_Domestic_华东',
+                methanol: 'Methanol_Domestic_山东中部'
+            },
+            labels: {
+                butyl: "Acide Acrylique (Cible)",
+                butanol: "Propylène (Feedstock)",
+                acetic: "Naphta (Feedstock)",
+                methanol: "Méthanol (Amont)"
+            },
+            defaultChecked: [
+                'Acrylic_Acid_Domestic_华东',
+                'Propylene_Domestic_华东',
+                'Naphtha_Domestic_华东',
+                'Methanol_Domestic_山东中部'
+            ]
         }
     };
 
@@ -210,6 +231,11 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Isopropanol') || 
                    header.includes('Acetic_Acid') || 
                    header.includes('Propylene') || 
+                   header.includes('Methanol');
+        } else if (target.includes('Acrylic_Acid')) {
+            return header.includes('Acrylic_Acid') || 
+                   header.includes('Propylene') || 
+                   header.includes('Naphtha') || 
                    header.includes('Methanol');
         }
         return false;
@@ -449,10 +475,10 @@ document.addEventListener("DOMContentLoaded", () => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
             
             // Assign specific theme colors for key columns to keep consistency
-            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate')) color = '#06b6d4';
+            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid')) color = '#06b6d4';
             else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol')) color = '#6366f1';
-            else if (col.includes('Acetic_Acid')) color = '#10b981';
-            else if (col.includes('Methanol')) color = '#f59e0b';
+            else if (col.includes('Acetic_Acid') || col.includes('Naphtha')) color = '#10b981';
+            else if (col.includes('Methanol') || col.includes('Propylene')) color = '#f59e0b';
             
             series.push({
                 name: col.replace('_Domestic', '').replace(/_/g, ' '),

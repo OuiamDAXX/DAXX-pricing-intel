@@ -55,6 +55,13 @@ if not isopropyl_targets:
 if isopropyl_targets:
     targets_to_process.append(isopropyl_targets[0])
 
+# Target 4: Acrylic Acid
+acrylic_targets = [col for col in df.columns if 'Acrylic_Acid_Domestic_华东' in col]
+if not acrylic_targets:
+    acrylic_targets = [col for col in df.columns if 'Acrylic_Acid_Domestic' in col]
+if acrylic_targets:
+    targets_to_process.append(acrylic_targets[0])
+
 print(f"   Targets to process: {targets_to_process}")
 
 # 2. Process each target
@@ -80,9 +87,16 @@ for target in targets_to_process:
         }
     elif 'n_Propyl_Acetate' in target:
         keywords = {
+            'n-Propanol': ['n-Propanol_Domestic'],
             'Isopropanol': ['Isopropanol_Domestic'],
             'Acetic_Acid': ['Acetic_Acid_Domestic'],
             'Propylene': ['Propylene_Domestic'],
+            'Methanol': ['Methanol_Domestic']
+        }
+    elif 'Acrylic_Acid' in target:
+        keywords = {
+            'Propylene': ['Propylene_Domestic'],
+            'Naphtha': ['Naphtha_Domestic'],
             'Methanol': ['Methanol_Domestic']
         }
     else:

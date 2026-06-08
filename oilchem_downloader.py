@@ -60,7 +60,10 @@ PRODUCTS = [
     ("Ethanol_Domestic", "乙醇", 3),
     ("Ethylene_Domestic", "乙烯", 3),
     ("n_Propyl_Acetate_Domestic", "醋酸正丙酯", 3),
-    ("Isopropanol_Domestic", "异丙醇", 3)
+    ("Isopropanol_Domestic", "异丙醇", 3),
+    ("n-Propanol_Domestic", "正丙醇", 3),
+    ("Acrylic_Acid_Domestic", "丙烯酸", 3),
+    ("Naphtha_Domestic", "石脑油", 3)
 ]
 
 # Create session
