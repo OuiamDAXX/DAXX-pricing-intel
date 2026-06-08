@@ -14,6 +14,7 @@ if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
         pass
 
 DEFAULT_DIR = r"c:\Documents\A4\Satge\Prediction des prix\OilChem"
+# Dynamically determine the base directory: if local C:\ path exists, use it; otherwise use the script's directory (portable)
 if os.path.exists(DEFAULT_DIR):
     BASE_DIR = DEFAULT_DIR
 else:
