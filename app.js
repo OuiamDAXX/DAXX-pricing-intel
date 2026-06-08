@@ -113,6 +113,68 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Naphtha_Domestic_华东',
                 'Methanol_Domestic_山东中部'
             ]
+        },
+        'Phthalic_Anhydride_Domestic_华东': {
+            title: "Anhydride Phtalique",
+            precursors: {
+                butyl: 'Phthalic_Anhydride_Domestic_华东',
+                butanol: 'o_Xylene_Domestic_华东',
+                acetic: 'Reformed_Naphtha_Domestic_华东',
+                methanol: 'Methanol_Domestic_山东中部'
+            },
+            labels: {
+                butyl: "Anhydride Phtalique (Cible)",
+                butanol: "o-Xilène (Feedstock)",
+                acetic: "Naphta Reformé (Feedstock)",
+                methanol: "Méthanol (Amont)"
+            },
+            defaultChecked: [
+                'Phthalic_Anhydride_Domestic_华东',
+                'o_Xylene_Domestic_华东',
+                'Reformed_Naphtha_Domestic_华东',
+                'Methanol_Domestic_山东中部'
+            ]
+        },
+        'Maleic_Anhydride_Domestic_华东': {
+            title: "Anhydride Maléique",
+            precursors: {
+                butyl: 'Maleic_Anhydride_Domestic_华东',
+                butanol: 'n_Butane_Domestic_华东',
+                acetic: 'Methanol_Domestic_山东中部', // Fallback for 3rd spot
+                methanol: 'Methanol_Domestic_山东中部'
+            },
+            labels: {
+                butyl: "Anhydride Maléique (Cible)",
+                butanol: "n-Butane (Feedstock)",
+                acetic: "Méthanol (Amont)",
+                methanol: "Méthanol (Amont)"
+            },
+            defaultChecked: [
+                'Maleic_Anhydride_Domestic_华东',
+                'n_Butane_Domestic_华东',
+                'Methanol_Domestic_山东中部'
+            ]
+        },
+        'MMA_Domestic_华东': {
+            title: "Méthacrylate de Méthyle",
+            precursors: {
+                butyl: 'MMA_Domestic_华东',
+                butanol: 'Acetone_Domestic_华东',
+                acetic: 'Propylene_Domestic_华东',
+                methanol: 'Methanol_Domestic_山东中部'
+            },
+            labels: {
+                butyl: "MMA (Cible)",
+                butanol: "Acétone (Feedstock)",
+                acetic: "Propylène (Feedstock)",
+                methanol: "Méthanol (Amont)"
+            },
+            defaultChecked: [
+                'MMA_Domestic_华东',
+                'Acetone_Domestic_华东',
+                'Propylene_Domestic_华东',
+                'Methanol_Domestic_山东中部'
+            ]
         }
     };
 
@@ -236,6 +298,20 @@ document.addEventListener("DOMContentLoaded", () => {
             return header.includes('Acrylic_Acid') || 
                    header.includes('Propylene') || 
                    header.includes('Naphtha') || 
+                   header.includes('Methanol');
+        } else if (target.includes('Phthalic_Anhydride')) {
+            return header.includes('Phthalic_Anhydride') || 
+                   header.includes('o_Xylene') || 
+                   header.includes('Reformed_Naphtha') || 
+                   header.includes('Methanol');
+        } else if (target.includes('Maleic_Anhydride')) {
+            return header.includes('Maleic_Anhydride') || 
+                   header.includes('n_Butane') || 
+                   header.includes('Methanol');
+        } else if (target.includes('MMA')) {
+            return header.includes('MMA') || 
+                   header.includes('Acetone') || 
+                   header.includes('Propylene') || 
                    header.includes('Methanol');
         }
         return false;
@@ -475,9 +551,9 @@ document.addEventListener("DOMContentLoaded", () => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
             
             // Assign specific theme colors for key columns to keep consistency
-            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid')) color = '#06b6d4';
-            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol')) color = '#6366f1';
-            else if (col.includes('Acetic_Acid') || col.includes('Naphtha')) color = '#10b981';
+            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA')) color = '#06b6d4';
+            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone')) color = '#6366f1';
+            else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha')) color = '#10b981';
             else if (col.includes('Methanol') || col.includes('Propylene')) color = '#f59e0b';
             
             series.push({

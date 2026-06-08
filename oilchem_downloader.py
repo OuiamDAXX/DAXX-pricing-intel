@@ -54,8 +54,6 @@ PRODUCTS = [
     ("Acetic_Acid_Domestic", "冰醋酸", 3),
     ("Propylene_Domestic", "丙烯", 3),
     ("Methanol_Domestic", "甲醇", 3),
-    ("LNG_Domestic", "液化天然气", 3),
-    ("Gas_Natural_Domestic", "管道天然气", 3),
     ("Ethyl_Acetate_Domestic", "醋酸乙酯", 3),
     ("Ethanol_Domestic", "乙醇", 3),
     ("Ethylene_Domestic", "乙烯", 3),
@@ -63,7 +61,14 @@ PRODUCTS = [
     ("Isopropanol_Domestic", "异丙醇", 3),
     ("n-Propanol_Domestic", "正丙醇", 3),
     ("Acrylic_Acid_Domestic", "丙烯酸", 3),
-    ("Naphtha_Domestic", "石脑油", 3)
+    ("Naphtha_Domestic", "石脑油", 3),
+    ("Phthalic_Anhydride_Domestic", "苯酐", 3),
+    ("o_Xylene_Domestic", "邻二甲苯", 3),
+    ("Reformed_Naphtha_Domestic", "重整石脑油", 3),
+    ("Maleic_Anhydride_Domestic", "顺酐", 3),
+    ("n_Butane_Domestic", "正丁烷", 3),
+    ("MMA_Domestic", "甲基丙烯酸甲酯", 3),
+    ("Acetone_Domestic", "丙酮", 3)
 ]
 
 # Create session

@@ -62,6 +62,27 @@ if not acrylic_targets:
 if acrylic_targets:
     targets_to_process.append(acrylic_targets[0])
 
+# Target 5: Phthalic Anhydride
+phthalic_targets = [col for col in df.columns if 'Phthalic_Anhydride_Domestic_华东' in col]
+if not phthalic_targets:
+    phthalic_targets = [col for col in df.columns if 'Phthalic_Anhydride_Domestic' in col]
+if phthalic_targets:
+    targets_to_process.append(phthalic_targets[0])
+
+# Target 6: Maleic Anhydride
+maleic_targets = [col for col in df.columns if 'Maleic_Anhydride_Domestic_华东' in col]
+if not maleic_targets:
+    maleic_targets = [col for col in df.columns if 'Maleic_Anhydride_Domestic' in col]
+if maleic_targets:
+    targets_to_process.append(maleic_targets[0])
+
+# Target 7: MMA
+mma_targets = [col for col in df.columns if 'MMA_Domestic_华东' in col]
+if not mma_targets:
+    mma_targets = [col for col in df.columns if 'MMA_Domestic' in col]
+if mma_targets:
+    targets_to_process.append(mma_targets[0])
+
 print(f"   Targets to process: {targets_to_process}")
 
 # 2. Process each target
@@ -97,6 +118,23 @@ for target in targets_to_process:
         keywords = {
             'Propylene': ['Propylene_Domestic'],
             'Naphtha': ['Naphtha_Domestic'],
+            'Methanol': ['Methanol_Domestic']
+        }
+    elif 'Phthalic_Anhydride' in target:
+        keywords = {
+            'o_Xylene': ['o_Xylene_Domestic'],
+            'Reformed_Naphtha': ['Reformed_Naphtha_Domestic'],
+            'Methanol': ['Methanol_Domestic']
+        }
+    elif 'Maleic_Anhydride' in target:
+        keywords = {
+            'n_Butane': ['n_Butane_Domestic'],
+            'Methanol': ['Methanol_Domestic']
+        }
+    elif 'MMA' in target:
+        keywords = {
+            'Acetone': ['Acetone_Domestic'],
+            'Propylene': ['Propylene_Domestic'],
             'Methanol': ['Methanol_Domestic']
         }
     else:

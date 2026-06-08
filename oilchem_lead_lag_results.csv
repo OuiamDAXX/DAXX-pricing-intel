@@ -13,7 +13,7 @@ Ethyl_Acetate_Domestic_华东,Ethanol_Domestic_山东,0,0.8522875529264166,0.852
 Ethyl_Acetate_Domestic_华东,Acetic_Acid_Domestic_华南,0,0.8412794684232147,0.8412794684232147
 Ethyl_Acetate_Domestic_华东,Acetic_Acid_Domestic_山东,0,0.8008058200668643,0.8008058200668643
 Ethyl_Acetate_Domestic_华东,Acetic_Acid_Domestic_江苏,0,0.8395791528794635,0.8395791528794635
-Ethyl_Acetate_Domestic_华东,Ethylene_Domestic_华东,0,0.35007861020868464,0.35007861020868464
+Ethyl_Acetate_Domestic_华东,Ethylene_Domestic_华东,0,0.3499921966016627,0.3499921966016627
 Ethyl_Acetate_Domestic_华东,Methanol_Domestic_山东中部,0,0.3233165727623141,0.3233165727623141
 n_Propyl_Acetate_Domestic_华东,n-Propanol_Domestic_华东,0,0.765234921473795,0.765234921473795
 n_Propyl_Acetate_Domestic_华东,Isopropanol_Domestic_华南,5,0.592608383000765,0.5857314448915653
@@ -30,3 +30,14 @@ Acrylic_Acid_Domestic_华东,Propylene_Domestic_华东,0,0.7842752432559785,0.78
 Acrylic_Acid_Domestic_华东,Propylene_Domestic_华南,0,0.7758810513623432,0.7758810513623432
 Acrylic_Acid_Domestic_华东,Propylene_Domestic_山东,0,0.7293330135500995,0.7293330135500995
 Acrylic_Acid_Domestic_华东,Methanol_Domestic_山东中部,0,0.6602473644527341,0.6602473644527341
+Phthalic_Anhydride_Domestic_华东,o_Xylene_Domestic_华东,0,0.953227057430325,0.953227057430325
+Phthalic_Anhydride_Domestic_华东,o_Xylene_Domestic_华南,0,0.953227057430325,0.953227057430325
+Phthalic_Anhydride_Domestic_华东,Methanol_Domestic_山东中部,0,0.6442326948776667,0.6442326948776667
+Maleic_Anhydride_Domestic_华南,Methanol_Domestic_山东中部,0,0.6213697095909757,0.6213697095909757
+MMA_Domestic_华东,Acetone_Domestic_华南,0,0.7736903151780321,0.7736903151780321
+MMA_Domestic_华东,Acetone_Domestic_山东,0,0.7927089522548252,0.7927089522548252
+MMA_Domestic_华东,Acetone_Domestic_江苏,0,0.7928186698840115,0.7928186698840115
+MMA_Domestic_华东,Propylene_Domestic_华东,0,0.41075700802074966,0.41075700802074966
+MMA_Domestic_华东,Propylene_Domestic_华南,0,0.413764685370805,0.413764685370805
+MMA_Domestic_华东,Propylene_Domestic_山东,0,0.3688009550595385,0.3688009550595385
+MMA_Domestic_华东,Methanol_Domestic_山东中部,0,0.3264019697003071,0.3264019697003071
