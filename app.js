@@ -52,9 +52,30 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         'n_Propyl_Acetate_Domestic_华东': {
-            title: "Acétate d'Isopropyle",
+            title: "Acétate de Propyle",
             precursors: {
                 butyl: 'n_Propyl_Acetate_Domestic_华东',
+                butanol: 'n-Propanol_Domestic_华东',
+                acetic: 'Acetic_Acid_Domestic_华南',
+                methanol: 'Methanol_Domestic_山东中部'
+            },
+            labels: {
+                butyl: "Acétate de Propyle (Cible)",
+                butanol: "n-Propanol (Feedstock)",
+                acetic: "Acide Acétique (Feedstock)",
+                methanol: "Méthanol (Amont)"
+            },
+            defaultChecked: [
+                'n_Propyl_Acetate_Domestic_华东',
+                'n-Propanol_Domestic_华东',
+                'Acetic_Acid_Domestic_华南',
+                'Methanol_Domestic_山东中部'
+            ]
+        },
+        'Isopropyl_Acetate_Domestic_Proxy_华东': {
+            title: "Acétate d'Isopropyle",
+            precursors: {
+                butyl: 'n_Propyl_Acetate_Domestic_华东', // Proxy
                 butanol: 'Isopropanol_Domestic_山东',
                 acetic: 'Acetic_Acid_Domestic_华南',
                 methanol: 'Methanol_Domestic_山东中部'
@@ -183,8 +204,9 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Acetic_Acid') || 
                    header.includes('Ethylene') || 
                    header.includes('Methanol');
-        } else if (target.includes('n_Propyl_Acetate')) {
+        } else if (target.includes('n_Propyl_Acetate') || target.includes('Isopropyl_Acetate')) {
             return header.includes('n_Propyl_Acetate') || 
+                   header.includes('n-Propanol') || 
                    header.includes('Isopropanol') || 
                    header.includes('Acetic_Acid') || 
                    header.includes('Propylene') || 
@@ -428,7 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // Assign specific theme colors for key columns to keep consistency
             if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate')) color = '#06b6d4';
-            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol')) color = '#6366f1';
+            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol')) color = '#6366f1';
             else if (col.includes('Acetic_Acid')) color = '#10b981';
             else if (col.includes('Methanol')) color = '#f59e0b';
             
