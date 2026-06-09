@@ -286,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
             title: "Acétone (V2)",
             precursors: {
                 butyl: 'Acetone_Domestic_华东',
-                butanol: 'Benzene_Domestic_山东',
+                butanol: 'Benzene_Domestic_华东',
                 acetic: 'Propylene_Domestic_华东',
                 methanol: 'Naphtha_Domestic_华东'
             },
@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             defaultChecked: [
                 'Acetone_Domestic_华东',
-                'Benzene_Domestic_山东',
+                'Benzene_Domestic_华东',
                 'Propylene_Domestic_华东',
                 'Naphtha_Domestic_华东'
             ]
@@ -591,6 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
         relatedHeaders.forEach((header) => {
             const shouldBeChecked = defaultMatches.includes(header);
 
+            const label = document.createElement('label');
             const isTargetCol = header.includes('Acetone') || header.includes(config.title.split(' ')[0]);
             label.className = `check-tag ${shouldBeChecked ? 'active' : ''} ${isTargetCol ? 'accent' : ''}`;
             
