@@ -299,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (headers.includes(pattern)) return pattern;
         const matched = headers.find(h => h.includes(pattern));
         if (matched) return matched;
-        const prod = pattern.split('_')[0];
+        const prod = pattern.split('_Domestic')[0].split('_Proxy')[0];
         const fallback = headers.find(h => h.includes(prod));
         return fallback || pattern;
     }
