@@ -591,8 +591,8 @@ document.addEventListener("DOMContentLoaded", () => {
         relatedHeaders.forEach((header) => {
             const shouldBeChecked = defaultMatches.includes(header);
 
-            const label = document.createElement('label');
-            label.className = `check-tag ${shouldBeChecked ? 'active' : ''} ${header.includes(config.title.split(' ')[0]) ? 'accent' : ''}`;
+            const isTargetCol = header.includes('Acetone') || header.includes(config.title.split(' ')[0]);
+            label.className = `check-tag ${shouldBeChecked ? 'active' : ''} ${isTargetCol ? 'accent' : ''}`;
             
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
