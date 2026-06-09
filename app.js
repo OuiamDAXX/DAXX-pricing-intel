@@ -411,6 +411,18 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Naphtha') || 
                    header.includes('Ethanol') || 
                    header.includes('Methanol');
+        } else if (target.includes('2_EHA')) {
+            return header.includes('2_EHA') || 
+                   header.includes('Acrylic_Acid') || 
+                   header.includes('Octanol') || 
+                   header.includes('Propylene') || 
+                   header.includes('Methanol');
+        } else if (target.includes('Ethyl_Acrylate')) {
+            return header.includes('Ethyl_Acrylate') || 
+                   header.includes('Acrylic_Acid') || 
+                   header.includes('Ethanol') || 
+                   header.includes('Propylene') || 
+                   header.includes('Ethylene');
         }
         return false;
     }
