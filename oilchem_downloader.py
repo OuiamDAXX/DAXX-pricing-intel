@@ -70,7 +70,10 @@ PRODUCTS = [
     ("MMA_Domestic", "甲基丙烯酸甲酯", 3),
     ("Acetone_Domestic", "丙酮", 3),
     ("Butyl_Acrylate_Domestic", "丙烯酸丁酯", 3),
-    ("VAM_Domestic", "醋酸乙烯", 3)
+    ("VAM_Domestic", "醋酸乙烯", 3),
+    ("2_EHA_Domestic", "丙烯酸异辛酯", 3),
+    ("Octanol_Domestic", "辛醇", 3),
+    ("Ethyl_Acrylate_Domestic", "丙烯酸乙酯", 3)
 ]
 
 # Create session

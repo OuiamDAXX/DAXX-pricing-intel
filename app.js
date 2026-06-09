@@ -218,6 +218,48 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Methanol_Domestic_山东中部',
                 'Naphtha_Domestic_华东'
             ]
+        },
+        '2_EHA_Domestic_华东': {
+            title: "Acrylate de 2-éthylhexyle",
+            precursors: {
+                butyl: '2_EHA_Domestic_华东',
+                butanol: 'Acrylic_Acid_Domestic_华东',
+                acetic: 'Octanol_Domestic_华东',
+                methanol: 'Propylene_Domestic_华东'
+            },
+            labels: {
+                butyl: "2-EHA (Cible)",
+                butanol: "Acide Acrylique (Feedstock)",
+                acetic: "2-Éthylhexanol (Feedstock)",
+                methanol: "Propylène (Amont)"
+            },
+            defaultChecked: [
+                '2_EHA_Domestic_华东',
+                'Acrylic_Acid_Domestic_华东',
+                'Octanol_Domestic_华东',
+                'Propylene_Domestic_华东'
+            ]
+        },
+        'Ethyl_Acrylate_Domestic_华东': {
+            title: "Acrylate d'éthyle",
+            precursors: {
+                butyl: 'Ethyl_Acrylate_Domestic_华东',
+                butanol: 'Acrylic_Acid_Domestic_华东',
+                acetic: 'Ethanol_Domestic_山东',
+                methanol: 'Propylene_Domestic_华东'
+            },
+            labels: {
+                butyl: "Acrylate d'éthyle (Cible)",
+                butanol: "Acide Acrylique (Feedstock)",
+                acetic: "Éthanol (Feedstock)",
+                methanol: "Propylène (Amont)"
+            },
+            defaultChecked: [
+                'Ethyl_Acrylate_Domestic_华东',
+                'Acrylic_Acid_Domestic_华东',
+                'Ethanol_Domestic_山东',
+                'Propylene_Domestic_华东'
+            ]
         }
     };
 
@@ -607,8 +649,8 @@ document.addEventListener("DOMContentLoaded", () => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
             
             // Assign specific theme colors for key columns to keep consistency
-            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM')) color = '#06b6d4';
-            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone')) color = '#6366f1';
+            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate')) color = '#06b6d4';
+            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol')) color = '#6366f1';
             else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha')) color = '#10b981';
             else if (col.includes('Methanol') || col.includes('Propylene')) color = '#f59e0b';
             

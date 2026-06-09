@@ -97,6 +97,20 @@ if not vam_targets:
 if vam_targets:
     targets_to_process.append(vam_targets[0])
 
+# Target 10: 2-EHA
+eha_targets = [col for col in df.columns if '2_EHA_Domestic_华东' in col]
+if not eha_targets:
+    eha_targets = [col for col in df.columns if '2_EHA_Domestic' in col]
+if eha_targets:
+    targets_to_process.append(eha_targets[0])
+
+# Target 11: Ethyl Acrylate
+ea_targets = [col for col in df.columns if 'Ethyl_Acrylate_Domestic_华东' in col]
+if not ea_targets:
+    ea_targets = [col for col in df.columns if 'Ethyl_Acrylate_Domestic' in col]
+if ea_targets:
+    targets_to_process.append(ea_targets[0])
+
 print(f"   Targets to process: {targets_to_process}")
 
 # 2. Process each target
@@ -164,6 +178,20 @@ for target in targets_to_process:
             'Acetic_Acid': ['Acetic_Acid_Domestic'],
             'Naphtha': ['Naphtha_Domestic'],
             'Methanol': ['Methanol_Domestic']
+        }
+    elif '2_EHA' in target:
+        keywords = {
+            'Acrylic_Acid': ['Acrylic_Acid_Domestic'],
+            'Octanol': ['Octanol_Domestic'],
+            'Propylene': ['Propylene_Domestic'],
+            'Methanol': ['Methanol_Domestic']
+        }
+    elif 'Ethyl_Acrylate' in target:
+        keywords = {
+            'Acrylic_Acid': ['Acrylic_Acid_Domestic'],
+            'Ethanol': ['Ethanol_Domestic'],
+            'Propylene': ['Propylene_Domestic'],
+            'Ethylene': ['Ethylene_Domestic']
         }
     else:
         continue
