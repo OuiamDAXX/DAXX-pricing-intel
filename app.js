@@ -246,18 +246,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'Ethyl_Acrylate_Domestic_华东',
                 butanol: 'Acrylic_Acid_Domestic_华东',
                 acetic: 'Ethanol_Domestic_山东',
-                methanol: 'Propylene_Domestic_华东'
+                methanol: 'Ethylene_Domestic_华东'
             },
             labels: {
                 butyl: "Acrylate d'éthyle (Cible)",
                 butanol: "Acide Acrylique (Feedstock)",
                 acetic: "Éthanol (Feedstock)",
-                methanol: "Propylène (Amont)"
+                methanol: "Éthylène (Amont)"
             },
             defaultChecked: [
                 'Ethyl_Acrylate_Domestic_华东',
                 'Acrylic_Acid_Domestic_华东',
                 'Ethanol_Domestic_山东',
+                'Ethylene_Domestic_华东',
                 'Propylene_Domestic_华东'
             ]
         }
