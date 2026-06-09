@@ -73,7 +73,8 @@ PRODUCTS = [
     ("VAM_Domestic", "醋酸乙烯", 3),
     ("2_EHA_Domestic", "丙烯酸异辛酯", 3),
     ("Octanol_Domestic", "辛醇", 3),
-    ("Ethyl_Acrylate_Domestic", "丙烯酸乙酯", 3)
+    ("Ethyl_Acrylate_Domestic", "丙烯酸乙酯", 3),
+    ("Benzene_Domestic", "纯苯", 3)
 ]
 
 # Create session

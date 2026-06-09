@@ -111,6 +111,13 @@ if not ea_targets:
 if ea_targets:
     targets_to_process.append(ea_targets[0])
 
+# Target 12 & 13: Acetone (V1 & V2)
+acetone_targets = [col for col in df.columns if 'Acetone_Domestic_华东' in col]
+if not acetone_targets:
+    acetone_targets = [col for col in df.columns if 'Acetone_Domestic' in col]
+if acetone_targets:
+    targets_to_process.append(acetone_targets[0])
+
 print(f"   Targets to process: {targets_to_process}")
 
 # 2. Process each target
@@ -192,6 +199,14 @@ for target in targets_to_process:
             'Ethanol': ['Ethanol_Domestic'],
             'Propylene': ['Propylene_Domestic'],
             'Ethylene': ['Ethylene_Domestic']
+        }
+    elif 'Acetone' in target:
+        keywords = {
+            'Isopropanol': ['Isopropanol_Domestic'],
+            'Benzene': ['Benzene_Domestic'],
+            'Propylene': ['Propylene_Domestic'],
+            'Reformed_Naphtha': ['Reformed_Naphtha_Domestic'],
+            'Naphtha': ['Naphtha_Domestic']
         }
     else:
         continue

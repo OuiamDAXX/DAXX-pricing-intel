@@ -261,6 +261,47 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Ethylene_Domestic_华东',
                 'Propylene_Domestic_华东'
             ]
+        },
+        'Acetone_Domestic_V1_华东': {
+            title: "Acétone (V1)",
+            precursors: {
+                butyl: 'Acetone_Domestic_华东',
+                butanol: 'Isopropanol_Domestic_山东',
+                acetic: 'Propylene_Domestic_华东',
+                methanol: 'Propylene_Domestic_华东'
+            },
+            labels: {
+                butyl: "Acétone (Cible)",
+                butanol: "Isopropanol (Feedstock)",
+                acetic: "Propylène (Feedstock)",
+                methanol: "Propylène (Amont)"
+            },
+            defaultChecked: [
+                'Acetone_Domestic_华东',
+                'Isopropanol_Domestic_山东',
+                'Propylene_Domestic_华东'
+            ]
+        },
+        'Acetone_Domestic_V2_华东': {
+            title: "Acétone (V2)",
+            precursors: {
+                butyl: 'Acetone_Domestic_华东',
+                butanol: 'Benzene_Domestic_山东',
+                acetic: 'Propylene_Domestic_华东',
+                methanol: 'Naphtha_Domestic_华东'
+            },
+            labels: {
+                butyl: "Acétone (Cible)",
+                butanol: "Benzène (Feedstock)",
+                acetic: "Propylène (Feedstock)",
+                methanol: "Naphta (Amont)"
+            },
+            defaultChecked: [
+                'Acetone_Domestic_华东',
+                'Benzene_Domestic_山东',
+                'Propylene_Domestic_华东',
+                'Naphtha_Domestic_华东'
+            ]
         }
     };
 
@@ -424,6 +465,16 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Ethanol') || 
                    header.includes('Propylene') || 
                    header.includes('Ethylene');
+        } else if (target.includes('Acetone_Domestic_V1')) {
+            return header.includes('Acetone') || 
+                   header.includes('Isopropanol') || 
+                   header.includes('Propylene');
+        } else if (target.includes('Acetone_Domestic_V2')) {
+            return header.includes('Acetone') || 
+                   header.includes('Benzene') || 
+                   header.includes('Propylene') || 
+                   header.includes('Reformed_Naphtha') || 
+                   header.includes('Naphtha');
         }
         return false;
     }
@@ -663,7 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // Assign specific theme colors for key columns to keep consistency
             if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate')) color = '#06b6d4';
-            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol')) color = '#6366f1';
+            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene')) color = '#6366f1';
             else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha')) color = '#10b981';
             else if (col.includes('Methanol') || col.includes('Propylene')) color = '#f59e0b';
             
