@@ -68,7 +68,9 @@ PRODUCTS = [
     ("Maleic_Anhydride_Domestic", "顺酐", 3),
     ("n_Butane_Domestic", "正丁烷", 3),
     ("MMA_Domestic", "甲基丙烯酸甲酯", 3),
-    ("Acetone_Domestic", "丙酮", 3)
+    ("Acetone_Domestic", "丙酮", 3),
+    ("Butyl_Acrylate_Domestic", "丙烯酸丁酯", 3),
+    ("VAM_Domestic", "醋酸乙烯", 3)
 ]
 
 # Create session
@@ -336,12 +338,18 @@ def main():
         time.sleep(1)
         
     # 3. Consolidate all data into a single master file
-    if all_downloaded_data:
-        master_df = pd.concat(all_downloaded_data, ignore_index=True)
+    csv_files = [os.path.join(DATA_DIR, f) for f in os.listdir(DATA_DIR) if f.endswith('.csv')]
+    all_dfs = []
+    for f in csv_files:
+        try:
+            all_dfs.append(pd.read_csv(f))
+        except Exception as e:
+            print(f"[WARNING] Error reading {f}: {e}")
+            
+    if all_dfs:
+        master_df = pd.concat(all_dfs, ignore_index=True)
         master_path = os.path.join(BASE_DIR, "oilchem_all_data.csv")
         master_df.to_csv(master_path, index=False, encoding="utf-8-sig")
-        
-        # Excel export of raw master file disabled to optimize memory and run time
         
         print("\n==================================================")
         print("[SUCCESS] DATA RETRIEVAL COMPLETE!")
