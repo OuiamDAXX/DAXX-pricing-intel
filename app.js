@@ -203,18 +203,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'VAM_Domestic_华东',
                 butanol: 'Ethylene_Domestic_华东',
                 acetic: 'Acetic_Acid_Domestic_华南',
-                methanol: 'Naphtha_Domestic_华东'
+                methanol: 'Methanol_Domestic_山东中部'
             },
             labels: {
                 butyl: "VAM (Cible)",
                 butanol: "Éthylène (Feedstock)",
                 acetic: "Acide Acétique (Feedstock)",
-                methanol: "Naphta (Amont)"
+                methanol: "Méthanol (Amont)"
             },
             defaultChecked: [
                 'VAM_Domestic_华东',
                 'Ethylene_Domestic_华东',
                 'Acetic_Acid_Domestic_华南',
+                'Methanol_Domestic_山东中部',
                 'Naphtha_Domestic_华东'
             ]
         }
