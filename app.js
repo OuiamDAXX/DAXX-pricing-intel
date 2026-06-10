@@ -1,5 +1,5 @@
 /* ==========================================================================
-   OILCHEM DASHBOARD APPLICATION LOGIC (VANILLA JS) - MULTI-PRODUCT VERSION
+   OILCHEM DASHBOARD APPLICATION LOGIC (VANILLA JS) - MULTI-PRODUCT & REGION
    ========================================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -7,300 +7,364 @@ document.addEventListener("DOMContentLoaded", () => {
     const PRICES_CSV_PATH = "oilchem_aligned_prices.csv";
     const LEAD_LAG_CSV_PATH = "oilchem_lead_lag_results.csv";
 
-    // Product configurations
+    // Region translations map
+    const REGION_MAP = {
+        '华东': 'East China',
+        '华南': 'South China',
+        '华北': 'North China',
+        '山东': 'Shandong',
+        '江苏': 'Jiangsu',
+        '宁波': 'Ningbo',
+        '四川': 'Sichuan',
+        '河南': 'Henan',
+        '湖北': 'Hubei',
+        '东北': 'Northeast',
+        '西北': 'Northwest',
+        '西南': 'Southwest',
+        '山西': 'Shanxi',
+        '浙江': 'Zhejiang',
+        '辽宁': 'Liaoning',
+        '吉林': 'Jilin',
+        '云南': 'Yunnan',
+        '广东': 'Guangdong',
+        '广西': 'Guangxi',
+        '河北': 'Hebei',
+        '川渝': 'Sichuan-Chongqing',
+        '重庆': 'Chongqing',
+        '东莞': 'Dongguan',
+        '苏北': 'North Jiangsu',
+        '苏南': 'South Jiangsu',
+        '锦州': 'Jinzhou',
+        '黑龙江': 'Heilongjiang',
+        '东营': 'Dongying',
+        '华中': 'Central China',
+        '山东鲁中': 'Central Shandong',
+        '鲁东': 'East Shandong',
+        '临沂': 'Linyi',
+        '云南中东部地区': 'Central-East Yunnan',
+        '内蒙古': 'Inner Mongolia',
+        '唐山': 'Tangshan',
+        '天津': 'Tianjin',
+        '新疆北疆': 'North Xinjiang',
+        '新疆南疆': 'South Xinjiang',
+        '新疆疆外': 'Outside Xinjiang',
+        '昭通': 'Zhaotong',
+        '格尔木': 'Golmud',
+        '榆林': 'Yulin',
+        '济宁': 'Jining',
+        '淄bo': 'Zibo',
+        '淄博': 'Zibo',
+        '甘肃': 'Gansu',
+        'Fujian': 'Fujian',
+        '福建': 'Fujian',
+        '贵州': 'Guizhou',
+        '鄂尔多斯北线': 'Ordos North',
+        '鄂尔多斯南线': 'Ordos South',
+        '银川': 'Yinchuan',
+        '陕西关中': 'Shaanxi Guanzhong',
+        '连云港': 'Lianyungang',
+        '鲁西南': 'Southwest Shandong',
+        '黄海西岸': 'West Yellow Sea Coast',
+        'Yahoo': 'Yahoo Finance',
+        'NWE': 'Northwest Europe',
+        'Gulf': 'US Gulf Coast'
+    };
+
+    // Product configurations using base product keys
     const TARGET_CONFIGS = {
-        'Butyl_Acetate_Domestic_华东': {
-            title: "Acétate de Butyle",
+        'Butyl_Acetate': {
+            title: "Butyl Acetate",
             precursors: {
-                butyl: 'Butyl_Acetate_Domestic_华东',
-                butanol: 'n-Butanol_Domestic_华东',
-                acetic: 'Acetic_Acid_Domestic_华南',
-                methanol: 'Methanol_Domestic_山东中部'
+                butyl: 'Butyl_Acetate',
+                butanol: 'n-Butanol',
+                acetic: 'Acetic_Acid',
+                methanol: 'Methanol'
             },
             labels: {
-                butyl: "Acétate de Butyle (Cible)",
+                butyl: "Butyl Acetate (Target)",
                 butanol: "n-Butanol (Feedstock)",
-                acetic: "Acide Acétique (Feedstock)",
-                methanol: "Méthanol (Amont)"
+                acetic: "Acetic Acid (Feedstock)",
+                methanol: "Methanol (Upstream)"
             },
             defaultChecked: [
-                'Butyl_Acetate_Domestic_华东',
-                'n-Butanol_Domestic_华东',
-                'Acetic_Acid_Domestic_华南',
-                'Methanol_Domestic_山东中部'
+                'Butyl_Acetate',
+                'n-Butanol',
+                'Acetic_Acid',
+                'Methanol',
+                'Propylene'
             ]
         },
-        'Ethyl_Acetate_Domestic_华东': {
-            title: "Acétate d'Éthyle",
+        'Ethyl_Acetate': {
+            title: "Ethyl Acetate",
             precursors: {
-                butyl: 'Ethyl_Acetate_Domestic_华东',
-                butanol: 'Ethanol_Domestic_山东',
-                acetic: 'Acetic_Acid_Domestic_华南',
-                methanol: 'Methanol_Domestic_山东中部'
+                butyl: 'Ethyl_Acetate',
+                butanol: 'Ethanol',
+                acetic: 'Acetic_Acid',
+                methanol: 'Methanol'
             },
             labels: {
-                butyl: "Acétate d'Éthyle (Cible)",
-                butanol: "Éthanol (Feedstock)",
-                acetic: "Acide Acétique (Feedstock)",
-                methanol: "Méthanol (Amont)"
+                butyl: "Ethyl Acetate (Target)",
+                butanol: "Ethanol (Feedstock)",
+                acetic: "Acetic Acid (Feedstock)",
+                methanol: "Methanol (Upstream)"
             },
             defaultChecked: [
-                'Ethyl_Acetate_Domestic_华东',
-                'Ethanol_Domestic_山东',
-                'Acetic_Acid_Domestic_华南',
-                'Methanol_Domestic_山东中部'
+                'Ethyl_Acetate',
+                'Ethanol',
+                'Acetic_Acid',
+                'Methanol'
             ]
         },
-        'n_Propyl_Acetate_Domestic_华东': {
-            title: "Acétate de Propyle",
+        'n_Propyl_Acetate': {
+            title: "Propyl Acetate",
             precursors: {
-                butyl: 'n_Propyl_Acetate_Domestic_华东',
-                butanol: 'n-Propanol_Domestic_华东',
-                acetic: 'Acetic_Acid_Domestic_华南',
-                methanol: 'Methanol_Domestic_山东中部'
+                butyl: 'n_Propyl_Acetate',
+                butanol: 'n-Propanol',
+                acetic: 'Acetic_Acid',
+                methanol: 'Methanol'
             },
             labels: {
-                butyl: "Acétate de Propyle (Cible)",
+                butyl: "Propyl Acetate (Target)",
                 butanol: "n-Propanol (Feedstock)",
-                acetic: "Acide Acétique (Feedstock)",
-                methanol: "Méthanol (Amont)"
+                acetic: "Acetic Acid (Feedstock)",
+                methanol: "Methanol (Upstream)"
             },
             defaultChecked: [
-                'n_Propyl_Acetate_Domestic_华东',
-                'n-Propanol_Domestic_华东',
-                'Acetic_Acid_Domestic_华南',
-                'Methanol_Domestic_山东中部'
+                'n_Propyl_Acetate',
+                'n-Propanol',
+                'Acetic_Acid',
+                'Methanol'
             ]
         },
-        'Isopropyl_Acetate_Domestic_Proxy_华东': {
-            title: "Acétate d'Isopropyle",
+        'Isopropyl_Acetate_Proxy': {
+            title: "Isopropyl Acetate",
             precursors: {
-                butyl: 'n_Propyl_Acetate_Domestic_华东', // Proxy
-                butanol: 'Isopropanol_Domestic_山东',
-                acetic: 'Acetic_Acid_Domestic_华南',
-                methanol: 'Methanol_Domestic_山东中部'
+                butyl: 'n_Propyl_Acetate', // Proxy
+                butanol: 'Isopropanol',
+                acetic: 'Acetic_Acid',
+                methanol: 'Methanol'
             },
             labels: {
-                butyl: "Acétate d'Isopropyle (Proxy)",
+                butyl: "Isopropyl Acetate (Proxy)",
                 butanol: "Isopropanol (Feedstock)",
-                acetic: "Acide Acétique (Feedstock)",
-                methanol: "Méthanol (Amont)"
+                acetic: "Acetic Acid (Feedstock)",
+                methanol: "Methanol (Upstream)"
             },
             defaultChecked: [
-                'n_Propyl_Acetate_Domestic_华东',
-                'Isopropanol_Domestic_山东',
-                'Acetic_Acid_Domestic_华南',
-                'Methanol_Domestic_山东中部'
+                'n_Propyl_Acetate',
+                'Isopropanol',
+                'Acetic_Acid',
+                'Methanol'
             ]
         },
-        'Acrylic_Acid_Domestic_华东': {
-            title: "Acide Acrylique",
+        'Acrylic_Acid': {
+            title: "Acrylic Acid",
             precursors: {
-                butyl: 'Acrylic_Acid_Domestic_华东',
-                butanol: 'Propylene_Domestic_华东',
-                acetic: 'Naphtha_Domestic_华东',
-                methanol: 'Methanol_Domestic_山东中部'
+                butyl: 'Acrylic_Acid',
+                butanol: 'Propylene',
+                acetic: 'Naphtha',
+                methanol: 'Methanol'
             },
             labels: {
-                butyl: "Acide Acrylique (Cible)",
-                butanol: "Propylène (Feedstock)",
-                acetic: "Naphta (Feedstock)",
-                methanol: "Méthanol (Amont)"
+                butyl: "Acrylic Acid (Target)",
+                butanol: "Propylene (Feedstock)",
+                acetic: "Naphtha (Feedstock)",
+                methanol: "Methanol (Upstream)"
             },
             defaultChecked: [
-                'Acrylic_Acid_Domestic_华东',
-                'Propylene_Domestic_华东',
-                'Naphtha_Domestic_华东',
-                'Methanol_Domestic_山东中部'
+                'Acrylic_Acid',
+                'Propylene',
+                'Naphtha',
+                'Methanol'
             ]
         },
-        'Phthalic_Anhydride_Domestic_华东': {
-            title: "Anhydride Phtalique",
+        'Phthalic_Anhydride': {
+            title: "Phthalic Anhydride",
             precursors: {
-                butyl: 'Phthalic_Anhydride_Domestic_华东',
-                butanol: 'o_Xylene_Domestic_华东',
-                acetic: 'Reformed_Naphtha_Domestic_华东',
-                methanol: 'Methanol_Domestic_山东中部'
+                butyl: 'Phthalic_Anhydride',
+                butanol: 'o_Xylene',
+                acetic: 'Reformed_Naphtha',
+                methanol: 'Methanol'
             },
             labels: {
-                butyl: "Anhydride Phtalique (Cible)",
-                butanol: "o-Xilène (Feedstock)",
-                acetic: "Naphta Reformé (Feedstock)",
-                methanol: "Méthanol (Amont)"
+                butyl: "Phthalic Anhydride (Target)",
+                butanol: "o-Xylene (Feedstock)",
+                acetic: "Reformed Naphtha (Feedstock)",
+                methanol: "Methanol (Upstream)"
             },
             defaultChecked: [
-                'Phthalic_Anhydride_Domestic_华东',
-                'o_Xylene_Domestic_华东',
-                'Reformed_Naphtha_Domestic_华东',
-                'Methanol_Domestic_山东中部'
+                'Phthalic_Anhydride',
+                'o_Xylene',
+                'Reformed_Naphtha',
+                'Methanol'
             ]
         },
-        'Maleic_Anhydride_Domestic_华东': {
-            title: "Anhydride Maléique",
+        'Maleic_Anhydride': {
+            title: "Maleic Anhydride",
             precursors: {
-                butyl: 'Maleic_Anhydride_Domestic_华东',
-                butanol: 'n_Butane_Domestic_华东',
-                acetic: 'Methanol_Domestic_山东中部', // Fallback for 3rd spot
-                methanol: 'Methanol_Domestic_山东中部'
+                butyl: 'Maleic_Anhydride',
+                butanol: 'n_Butane',
+                acetic: 'Methanol',
+                methanol: 'Methanol'
             },
             labels: {
-                butyl: "Anhydride Maléique (Cible)",
+                butyl: "Maleic Anhydride (Target)",
                 butanol: "n-Butane (Feedstock)",
-                acetic: "Méthanol (Amont)",
-                methanol: "Méthanol (Amont)"
+                acetic: "Methanol (Upstream)",
+                methanol: "Methanol (Upstream)"
             },
             defaultChecked: [
-                'Maleic_Anhydride_Domestic_华东',
-                'n_Butane_Domestic_华东',
-                'Methanol_Domestic_山东中部'
+                'Maleic_Anhydride',
+                'n_Butane',
+                'Methanol'
             ]
         },
-        'MMA_Domestic_华东': {
-            title: "Méthacrylate de Méthyle",
+        'MMA': {
+            title: "Methyl Methacrylate",
             precursors: {
-                butyl: 'MMA_Domestic_华东',
-                butanol: 'Acetone_Domestic_华东',
-                acetic: 'Propylene_Domestic_华东',
-                methanol: 'Methanol_Domestic_山东中部'
+                butyl: 'MMA',
+                butanol: 'Acetone',
+                acetic: 'Propylene',
+                methanol: 'Methanol'
             },
             labels: {
-                butyl: "MMA (Cible)",
-                butanol: "Acétone (Feedstock)",
-                acetic: "Propylène (Feedstock)",
-                methanol: "Méthanol (Amont)"
+                butyl: "MMA (Target)",
+                butanol: "Acetone (Feedstock)",
+                acetic: "Propylene (Feedstock)",
+                methanol: "Methanol (Upstream)"
             },
             defaultChecked: [
-                'MMA_Domestic_华东',
-                'Acetone_Domestic_华东',
-                'Propylene_Domestic_华东',
-                'Methanol_Domestic_山东中部'
+                'MMA',
+                'Acetone',
+                'Propylene',
+                'Methanol'
             ]
         },
-        'Butyl_Acrylate_Domestic_华东': {
-            title: "Acrylate de Butyle",
+        'Butyl_Acrylate': {
+            title: "Butyl Acrylate",
             precursors: {
-                butyl: 'Butyl_Acrylate_Domestic_华东',
-                butanol: 'Acrylic_Acid_Domestic_华东',
-                acetic: 'n-Butanol_Domestic_华东',
-                methanol: 'Propylene_Domestic_华东'
+                butyl: 'Butyl_Acrylate',
+                butanol: 'Acrylic_Acid',
+                acetic: 'n-Butanol',
+                methanol: 'Propylene'
             },
             labels: {
-                butyl: "Acrylate de Butyle (Cible)",
-                butanol: "Acide Acrylique (Feedstock)",
+                butyl: "Butyl Acrylate (Target)",
+                butanol: "Acrylic Acid (Feedstock)",
                 acetic: "n-Butanol (Feedstock)",
-                methanol: "Propylène (Amont)"
+                methanol: "Propylene (Upstream)"
             },
             defaultChecked: [
-                'Butyl_Acrylate_Domestic_华东',
-                'Acrylic_Acid_Domestic_华东',
-                'n-Butanol_Domestic_华东',
-                'Propylene_Domestic_华东'
+                'Butyl_Acrylate',
+                'Acrylic_Acid',
+                'n-Butanol',
+                'Propylene'
             ]
         },
-        'VAM_Domestic_华东': {
-            title: "Monomère Acétate de Vinyle",
+        'VAM': {
+            title: "Vinyl Acetate Monomer",
             precursors: {
-                butyl: 'VAM_Domestic_华东',
-                butanol: 'Ethylene_Domestic_华东',
-                acetic: 'Acetic_Acid_Domestic_华南',
-                methanol: 'Methanol_Domestic_山东中部'
+                butyl: 'VAM',
+                butanol: 'Ethylene',
+                acetic: 'Acetic_Acid',
+                methanol: 'Methanol'
             },
             labels: {
-                butyl: "VAM (Cible)",
-                butanol: "Éthylène (Feedstock)",
-                acetic: "Acide Acétique (Feedstock)",
-                methanol: "Méthanol (Amont)"
+                butyl: "VAM (Target)",
+                butanol: "Ethylene (Feedstock)",
+                acetic: "Acetic Acid (Feedstock)",
+                methanol: "Methanol (Upstream)"
             },
             defaultChecked: [
-                'VAM_Domestic_华东',
-                'Ethylene_Domestic_华东',
-                'Acetic_Acid_Domestic_华南',
-                'Methanol_Domestic_山东中部',
-                'Naphtha_Domestic_华东'
+                'VAM',
+                'Ethylene',
+                'Acetic_Acid',
+                'Methanol',
+                'Naphtha'
             ]
         },
-        '2_EHA_Domestic_华东': {
-            title: "Acrylate de 2-éthylhexyle",
+        '2_EHA': {
+            title: "2-Ethylhexyl Acrylate",
             precursors: {
-                butyl: '2_EHA_Domestic_华东',
-                butanol: 'Acrylic_Acid_Domestic_华东',
-                acetic: 'Octanol_Domestic_华东',
-                methanol: 'Propylene_Domestic_华东'
+                butyl: '2_EHA',
+                butanol: 'Acrylic_Acid',
+                acetic: 'Octanol',
+                methanol: 'Propylene'
             },
             labels: {
-                butyl: "2-EHA (Cible)",
-                butanol: "Acide Acrylique (Feedstock)",
-                acetic: "2-Éthylhexanol (Feedstock)",
-                methanol: "Propylène (Amont)"
+                butyl: "2-EHA (Target)",
+                butanol: "Acrylic Acid (Feedstock)",
+                acetic: "2-Ethylhexanol (Feedstock)",
+                methanol: "Propylene (Upstream)"
             },
             defaultChecked: [
-                '2_EHA_Domestic_华东',
-                'Acrylic_Acid_Domestic_华东',
-                'Octanol_Domestic_华东',
-                'Propylene_Domestic_华东'
+                '2_EHA',
+                'Acrylic_Acid',
+                'Octanol',
+                'Propylene'
             ]
         },
-        'Ethyl_Acrylate_Domestic_华东': {
-            title: "Acrylate d'éthyle",
+        'Ethyl_Acrylate': {
+            title: "Ethyl Acrylate",
             precursors: {
-                butyl: 'Ethyl_Acrylate_Domestic_华东',
-                butanol: 'Acrylic_Acid_Domestic_华东',
-                acetic: 'Ethanol_Domestic_山东',
-                methanol: 'Ethylene_Domestic_华东'
+                butyl: 'Ethyl_Acrylate',
+                butanol: 'Acrylic_Acid',
+                acetic: 'Ethanol',
+                methanol: 'Ethylene'
             },
             labels: {
-                butyl: "Acrylate d'éthyle (Cible)",
-                butanol: "Acide Acrylique (Feedstock)",
-                acetic: "Éthanol (Feedstock)",
-                methanol: "Éthylène (Amont)"
+                butyl: "Ethyl Acrylate (Target)",
+                butanol: "Acrylic Acid (Feedstock)",
+                acetic: "Ethanol (Feedstock)",
+                methanol: "Ethylene (Upstream)"
             },
             defaultChecked: [
-                'Ethyl_Acrylate_Domestic_华东',
-                'Acrylic_Acid_Domestic_华东',
-                'Ethanol_Domestic_山东',
-                'Ethylene_Domestic_华东',
-                'Propylene_Domestic_华东'
+                'Ethyl_Acrylate',
+                'Acrylic_Acid',
+                'Ethanol',
+                'Ethylene',
+                'Propylene'
             ]
         },
-        'Acetone_Domestic_V1_华东': {
-            title: "Acétone (V1)",
+        'Acetone_V1': {
+            title: "Acetone (Route 1)",
             precursors: {
-                butyl: 'Acetone_Domestic_华东',
-                butanol: 'Isopropanol_Domestic_山东',
-                acetic: 'Propylene_Domestic_华东',
-                methanol: 'Propylene_Domestic_华东'
+                butyl: 'Acetone',
+                butanol: 'Isopropanol',
+                acetic: 'Propylene',
+                methanol: 'Propylene'
             },
             labels: {
-                butyl: "Acétone (Cible)",
+                butyl: "Acetone (Target)",
                 butanol: "Isopropanol (Feedstock)",
-                acetic: "Propylène (Feedstock)",
-                methanol: "Propylène (Amont)"
+                acetic: "Propylene (Feedstock)",
+                methanol: "Propylene (Upstream)"
             },
             defaultChecked: [
-                'Acetone_Domestic_华东',
-                'Isopropanol_Domestic_山东',
-                'Propylene_Domestic_华东'
+                'Acetone',
+                'Isopropanol',
+                'Propylene'
             ]
         },
-        'Acetone_Domestic_V2_华东': {
-            title: "Acétone (V2)",
+        'Acetone_V2': {
+            title: "Acetone (Route 2)",
             precursors: {
-                butyl: 'Acetone_Domestic_华东',
-                butanol: 'Benzene_Domestic_华东',
-                acetic: 'Propylene_Domestic_华东',
-                methanol: 'Naphtha_Domestic_华东'
+                butyl: 'Acetone',
+                butanol: 'Benzene',
+                acetic: 'Propylene',
+                methanol: 'Naphtha'
             },
             labels: {
-                butyl: "Acétone (Cible)",
-                butanol: "Benzène (Feedstock)",
-                acetic: "Propylène (Feedstock)",
-                methanol: "Naphta (Amont)"
+                butyl: "Acetone (Target)",
+                butanol: "Benzene (Feedstock)",
+                acetic: "Propylene (Feedstock)",
+                methanol: "Naphtha (Upstream)"
             },
             defaultChecked: [
-                'Acetone_Domestic_华东',
-                'Benzene_Domestic_华东',
-                'Propylene_Domestic_华东',
-                'Naphtha_Domestic_华东'
+                'Acetone',
+                'Benzene',
+                'Propylene',
+                'Naphtha'
             ]
         }
     };
@@ -317,7 +381,9 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
 
     // Application state
-    let currentTarget = 'Butyl_Acetate_Domestic_华东';
+    let currentProduct = 'Butyl_Acetate';
+    let currentRegion = '华东';
+    let currentTarget = '';      // Resolved complete column name
     let rawPricesData = [];      // Raw array of objects parsed from CSV
     let priceHeaders = [];       // Array of column names
     let alignedDates = [];       // Sorted array of Date objects
@@ -364,13 +430,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     dynamicTyping: true,
                     complete: function(results) {
                         rawLeadLagData = results.data;
-                        displayLeadLag(rawLeadLagData);
+                        if (currentTarget) {
+                            displayLeadLag(rawLeadLagData);
+                        }
                     }
                 });
             } else {
                 console.warn("Could not find lead-lag results file.");
                 document.getElementById('lead-lag-list-container').innerHTML = 
-                    `<div class="lead-lag-info"><p>Aucun résultat de lead-lag disponible.</p></div>`;
+                    `<div class="lead-lag-info"><p>No lead-lag results available.</p></div>`;
             }
             
         } catch (error) {
@@ -379,97 +447,154 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Helper function to resolve exact column or fallback to a similar one
-    function resolveColumn(headers, pattern) {
-        if (headers.includes(pattern)) return pattern;
-        const matched = headers.find(h => h.includes(pattern));
-        if (matched) return matched;
-        const prod = pattern.split('_Domestic')[0].split('_Proxy')[0];
-        const fallback = headers.find(h => h.includes(prod));
-        return fallback || pattern;
+    // Helper to resolve the correct column name with region fallback
+    function resolveColumnForRegion(baseProd, region) {
+        // Find exact match for baseProd and region
+        const exact = priceHeaders.find(h => h.startsWith(baseProd + '_') && h.includes(region));
+        if (exact) return exact;
+        const partial = priceHeaders.find(h => h.includes(baseProd) && h.includes(region));
+        if (partial) return partial;
+        // Fallback: exact baseProd but any region
+        const fallbackExact = priceHeaders.find(h => h.startsWith(baseProd + '_'));
+        if (fallbackExact) return fallbackExact;
+        // Fallback: any partial match
+        const fallbackPartial = priceHeaders.find(h => h.includes(baseProd));
+        return fallbackPartial || baseProd;
     }
 
-    // Update active KPI columns based on current target config
+    // Resolve exact target column based on select product and region
+    function resolveTargetColumn(product, region) {
+        if (product === 'Isopropyl_Acetate_Proxy') {
+            return priceHeaders.find(h => h.includes('n_Propyl_Acetate') && h.includes(region)) || 'n_Propyl_Acetate_Domestic_华东';
+        }
+        if (product === 'Acetone_V1' || product === 'Acetone_V2') {
+            return priceHeaders.find(h => h.includes('Acetone_Domestic') && h.includes(region)) || 'Acetone_Domestic_华东';
+        }
+        return priceHeaders.find(h => h.includes(product) && h.includes(region)) || `${product}_Domestic_${region}`;
+    }
+
+    // Extract regions available in CSV for a given product
+    function getAvailableRegionsForProduct(product) {
+        let searchPattern = product;
+        if (product === 'Isopropyl_Acetate_Proxy') {
+            searchPattern = 'n_Propyl_Acetate_Domestic';
+        } else if (product === 'Acetone_V1' || product === 'Acetone_V2') {
+            searchPattern = 'Acetone_Domestic';
+        } else {
+            searchPattern = product + '_Domestic';
+        }
+
+        const matchedCols = priceHeaders.filter(h => h.includes(searchPattern));
+        const regions = [];
+        matchedCols.forEach(col => {
+            const parts = col.split('_');
+            const region = parts[parts.length - 1];
+            if (region && !regions.includes(region)) {
+                regions.push(region);
+            }
+        });
+        return regions.length > 0 ? regions : ['华东'];
+    }
+
+    // Populate region select dynamically
+    function populateRegionSelector(product) {
+        const regionSelect = document.getElementById('market-region-select');
+        if (!regionSelect) return;
+        regionSelect.innerHTML = "";
+
+        const regions = getAvailableRegionsForProduct(product);
+        regions.forEach(region => {
+            const opt = document.createElement('option');
+            opt.value = region;
+            opt.textContent = REGION_MAP[region] || region;
+            regionSelect.appendChild(opt);
+        });
+
+        regionSelect.selectedIndex = 0;
+        currentRegion = regionSelect.value;
+    }
+
+    // Update active KPI columns based on current target config and region
     function updateKPIColumns() {
-        const config = TARGET_CONFIGS[currentTarget];
+        const config = TARGET_CONFIGS[currentProduct];
         KPI_COLUMNS = {
-            butyl: resolveColumn(priceHeaders, config.precursors.butyl),
-            butanol: resolveColumn(priceHeaders, config.precursors.butanol),
-            acetic: resolveColumn(priceHeaders, config.precursors.acetic),
-            methanol: resolveColumn(priceHeaders, config.precursors.methanol)
+            butyl: resolveColumnForRegion(config.precursors.butyl, currentRegion),
+            butanol: resolveColumnForRegion(config.precursors.butanol, currentRegion),
+            acetic: resolveColumnForRegion(config.precursors.acetic, currentRegion),
+            methanol: resolveColumnForRegion(config.precursors.methanol, currentRegion)
         };
     }
 
-    // Helper to check if a column header is related to the current target
-    function isColumnRelated(header, target) {
-        if (target.includes('Butyl_Acetate')) {
+    // Check if a header is related to the active product
+    function isColumnRelated(header, product) {
+        if (product === 'Butyl_Acetate') {
             return header.includes('Butyl_Acetate') || 
                    header.includes('n-Butanol') || 
                    header.includes('Acetic_Acid') || 
                    header.includes('Methanol') || 
                    header.includes('Propylene');
-        } else if (target.includes('Ethyl_Acetate')) {
+        } else if (product === 'Ethyl_Acetate') {
             return header.includes('Ethyl_Acetate') || 
                    header.includes('Ethanol') || 
                    header.includes('Acetic_Acid') || 
                    header.includes('Ethylene') || 
                    header.includes('Methanol');
-        } else if (target.includes('n_Propyl_Acetate') || target.includes('Isopropyl_Acetate')) {
+        } else if (product === 'n_Propyl_Acetate' || product === 'Isopropyl_Acetate_Proxy') {
             return header.includes('n_Propyl_Acetate') || 
                    header.includes('n-Propanol') || 
                    header.includes('Isopropanol') || 
                    header.includes('Acetic_Acid') || 
                    header.includes('Propylene') || 
                    header.includes('Methanol');
-        } else if (target.includes('Acrylic_Acid')) {
+        } else if (product === 'Acrylic_Acid') {
             return header.includes('Acrylic_Acid') || 
                    header.includes('Propylene') || 
                    header.includes('Naphtha') || 
                    header.includes('Methanol');
-        } else if (target.includes('Phthalic_Anhydride')) {
+        } else if (product === 'Phthalic_Anhydride') {
             return header.includes('Phthalic_Anhydride') || 
                    header.includes('o_Xylene') || 
                    header.includes('Reformed_Naphtha') || 
                    header.includes('Methanol');
-        } else if (target.includes('Maleic_Anhydride')) {
+        } else if (product === 'Maleic_Anhydride') {
             return header.includes('Maleic_Anhydride') || 
                    header.includes('n_Butane') || 
                    header.includes('Methanol');
-        } else if (target.includes('MMA')) {
+        } else if (product === 'MMA') {
             return header.includes('MMA') || 
                    header.includes('Acetone') || 
                    header.includes('Propylene') || 
                    header.includes('Methanol');
-        } else if (target.includes('Butyl_Acrylate')) {
+        } else if (product === 'Butyl_Acrylate') {
             return header.includes('Butyl_Acrylate') || 
                    header.includes('Acrylic_Acid') || 
                    header.includes('n-Butanol') || 
                    header.includes('Propylene') || 
                    header.includes('Methanol');
-        } else if (target.includes('VAM')) {
+        } else if (product === 'VAM') {
             return header.includes('VAM') || 
                    header.includes('Ethylene') || 
                    header.includes('Acetic_Acid') || 
                    header.includes('Naphtha') || 
                    header.includes('Ethanol') || 
                    header.includes('Methanol');
-        } else if (target.includes('2_EHA')) {
+        } else if (product === '2_EHA') {
             return header.includes('2_EHA') || 
                    header.includes('Acrylic_Acid') || 
                    header.includes('Octanol') || 
                    header.includes('Propylene') || 
                    header.includes('Methanol');
-        } else if (target.includes('Ethyl_Acrylate')) {
+        } else if (product === 'Ethyl_Acrylate') {
             return header.includes('Ethyl_Acrylate') || 
                    header.includes('Acrylic_Acid') || 
                    header.includes('Ethanol') || 
                    header.includes('Propylene') || 
                    header.includes('Ethylene');
-        } else if (target.includes('Acetone_Domestic_V1')) {
+        } else if (product === 'Acetone_V1') {
             return header.includes('Acetone') || 
                    header.includes('Isopropanol') || 
                    header.includes('Propylene');
-        } else if (target.includes('Acetone_Domestic_V2')) {
+        } else if (product === 'Acetone_V2') {
             return header.includes('Acetone') || 
                    header.includes('Benzene') || 
                    header.includes('Propylene') || 
@@ -486,44 +611,36 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!data || data.length === 0) return;
         
         rawPricesData = data;
-        
-        // Extract headers (exclude Date if it exists as a column value)
         priceHeaders = Object.keys(data[0]).filter(header => header !== 'Date');
-        
-        // Order data by Date ascending
         rawPricesData.sort((a, b) => new Date(a.Date) - new Date(b.Date));
-        
-        // Format dates
         alignedDates = rawPricesData.map(row => row.Date);
         filteredData = [...rawPricesData];
 
-        // Resolve current target from dropdown select value if it exists
-        const selectEl = document.getElementById('target-product-select');
-        if (selectEl) {
-            currentTarget = selectEl.value;
+        // Set default values from DOM
+        const selectProductEl = document.getElementById('target-product-select');
+        if (selectProductEl) {
+            selectProductEl.selectedIndex = 0;
+            currentProduct = selectProductEl.value;
         }
 
+        populateRegionSelector(currentProduct);
+        currentTarget = resolveTargetColumn(currentProduct, currentRegion);
         updateKPIColumns();
 
-        // 1. Update Last Updated Meta info
         if (alignedDates.length > 0) {
             const lastDate = alignedDates[alignedDates.length - 1];
             document.getElementById('last-updated-date').textContent = lastDate;
         }
 
-        // 2. Compute and Display KPIs
         updateKPIs();
-
-        // 3. Create Series Checkbox Selectors
         createSeriesSelectors();
-
-        // 4. Initialize Main Chart
         initializeChart();
-
-        // 5. Populate Data Table
         renderTable();
         
-        // Hide chart loader
+        if (rawLeadLagData && rawLeadLagData.length > 0) {
+            displayLeadLag(rawLeadLagData);
+        }
+        
         document.getElementById('chart-loader').style.display = 'none';
     }
 
@@ -549,10 +666,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const absChange = currentVal - prevVal;
                 const pctChange = prevVal !== 0 ? (absChange / prevVal) * 100 : 0;
                 
-                // Set value text
-                valEl.textContent = `${Number(currentVal).toLocaleString('fr-FR', {minimumFractionDigits: 1, maximumFractionDigits: 1})} ¥/t`;
+                valEl.textContent = `${Number(currentVal).toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})} ¥/t`;
                 
-                // Format change indicator
                 if (absChange > 0.05) {
                     changeEl.className = 'kpi-change up';
                     changeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> +${pctChange.toFixed(2)}%`;
@@ -579,13 +694,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
         container.innerHTML = "";
 
-        const config = TARGET_CONFIGS[currentTarget];
-        const defaultMatches = config.defaultChecked.map(col => resolveColumn(priceHeaders, col));
-        
-        // Filter headers to only show ones related to the active target
-        const relatedHeaders = priceHeaders.filter(h => isColumnRelated(h, currentTarget));
+        const config = TARGET_CONFIGS[currentProduct];
+        const defaultMatches = config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion));
+        const relatedHeaders = priceHeaders.filter(h => isColumnRelated(h, currentProduct));
 
-        // Sync selectedSeries
         selectedSeries = [...defaultMatches];
 
         relatedHeaders.forEach((header) => {
@@ -665,7 +777,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             yaxis: {
                 title: {
-                    text: 'Prix de Marché (¥/Tonne)',
+                    text: 'Market Price (¥/Ton)',
                     style: {
                         color: '#94a3b8',
                         fontSize: '12px',
@@ -674,7 +786,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 labels: {
                     formatter: function (val) {
-                        return val ? val.toLocaleString('fr-FR') : '';
+                        return val ? val.toLocaleString('en-US') : '';
                     },
                     style: {
                         fontFamily: 'Plus Jakarta Sans, sans-serif'
@@ -713,7 +825,6 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedSeries.forEach((col, idx) => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
             
-            // Assign specific theme colors for key columns to keep consistency
             if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate')) color = '#06b6d4';
             else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene')) color = '#6366f1';
             else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha')) color = '#10b981';
@@ -758,18 +869,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
         container.innerHTML = "";
 
-        // Resolve current target column
-        const targetCol = resolveColumn(priceHeaders, currentTarget);
-
-        // Filter lead lag data for active target
-        const filtered = data.filter(item => item.Target === targetCol || item.Target === currentTarget);
+        const filtered = data.filter(item => item.Target === currentTarget);
 
         if (filtered.length === 0) {
-            container.innerHTML = `<div class="lead-lag-info"><p>Aucun résultat de lead-lag disponible pour cette cible.</p></div>`;
+            container.innerHTML = `<div class="lead-lag-info"><p>No lead-lag results available for this target region.</p></div>`;
             return;
         }
 
-        // Sort data by absolute Max_Correlation descending
         filtered.sort((a, b) => Math.abs(b.Max_Correlation) - Math.abs(a.Max_Correlation));
 
         filtered.forEach(item => {
@@ -777,10 +883,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const optLag = parseInt(item.Optimal_Lag_Days);
             const maxCorr = parseFloat(item.Max_Correlation);
 
-            // Determine if Direct Feedstock or Upstream
             const isDirect = featureName.includes('n-Butanol') || featureName.includes('Ethanol') || featureName.includes('Isopropanol') || featureName.includes('Acetic_Acid');
             const tagClass = isDirect ? 'direct' : 'upstream';
-            const tagLabel = isDirect ? 'Matière Directe' : 'Amont / Autre';
+            const tagLabel = isDirect ? 'Direct Feedstock' : 'Upstream / Other';
 
             const itemDiv = document.createElement('div');
             itemDiv.className = 'lead-lag-item';
@@ -796,10 +901,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
                 <div class="lead-lag-metrics">
                     <div class="metric-box">
-                        Corrélation max : <strong>${maxCorr >= 0 ? '+' : ''}${maxCorr.toFixed(3)}</strong>
+                        Max Correlation: <strong>${maxCorr >= 0 ? '+' : ''}${maxCorr.toFixed(3)}</strong>
                     </div>
                     <div class="metric-box">
-                        Décalage opt. : <span class="lag-badge">${optLag} Jour${optLag > 1 ? 's' : ''}</span>
+                        Optimal Lag: <span class="lag-badge">${optLag} Day${optLag > 1 ? 's' : ''}</span>
                     </div>
                 </div>
                 <div class="corr-bar-wrapper">
@@ -829,8 +934,8 @@ document.addEventListener("DOMContentLoaded", () => {
         tableBody.innerHTML = "";
 
         if (filteredData.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary)">Aucun résultat trouvé</td></tr>`;
-            document.getElementById('pagination-info-el').textContent = "Page 0 sur 0";
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary)">No results found</td></tr>`;
+            document.getElementById('pagination-info-el').textContent = "Page 0 of 0";
             return;
         }
 
@@ -856,7 +961,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     const val = row[col];
                     td.textContent = (val !== null && val !== undefined) 
-                        ? Number(val).toLocaleString('fr-FR', {minimumFractionDigits: 1, maximumFractionDigits: 1}) 
+                        ? Number(val).toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) 
                         : '-';
                 }
                 tr.appendChild(td);
@@ -866,7 +971,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-        document.getElementById('pagination-info-el').textContent = `Page ${currentPage} sur ${totalPages} (${filteredData.length} jours)`;
+        document.getElementById('pagination-info-el').textContent = `Page ${currentPage} of ${totalPages} (${filteredData.length} days)`;
         
         document.getElementById('btn-prev').disabled = (currentPage === 1);
         document.getElementById('btn-next').disabled = (currentPage >= totalPages || totalPages === 0);
@@ -928,17 +1033,29 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.removeChild(link);
     });
 
-    // Target Selector Event Listener
+    // Target Select Change Event Listener
     const targetSelect = document.getElementById('target-product-select');
     if (targetSelect) {
         targetSelect.addEventListener('change', (e) => {
-            currentTarget = e.target.value;
+            currentProduct = e.target.value;
+            populateRegionSelector(currentProduct);
+            currentTarget = resolveTargetColumn(currentProduct, currentRegion);
+            handleTargetProductChange();
+        });
+    }
+
+    // Region Select Change Event Listener
+    const regionSelect = document.getElementById('market-region-select');
+    if (regionSelect) {
+        regionSelect.addEventListener('change', (e) => {
+            currentRegion = e.target.value;
+            currentTarget = resolveTargetColumn(currentProduct, currentRegion);
             handleTargetProductChange();
         });
     }
 
     function handleTargetProductChange() {
-        const config = TARGET_CONFIGS[currentTarget];
+        const config = TARGET_CONFIGS[currentProduct];
         if (!config) return;
 
         updateKPIColumns();
@@ -952,11 +1069,12 @@ document.addEventListener("DOMContentLoaded", () => {
         // Update Lead-Lag card header subtitle
         const leadLagDesc = document.querySelector('#lead-lag-card .card-header p');
         if (leadLagDesc) {
-            leadLagDesc.textContent = `Corrélations vs. ${config.title} (Cible)`;
+            leadLagDesc.textContent = `Correlations vs. ${config.title} (Target)`;
         }
 
-        // Reset selections
-        selectedSeries = config.defaultChecked.map(col => resolveColumn(priceHeaders, col));
+        // Reset selections based on newly selected target & region
+        const defaultMatches = config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion));
+        selectedSeries = [...defaultMatches];
 
         // Recompute KPIs, rebuild selectors, redraw chart & table, redraw Lead-Lag
         updateKPIs();
@@ -970,8 +1088,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function showErrorState() {
         document.getElementById('chart-loader').innerHTML = `
             <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: var(--color-rose)"></i>
-            <p>Erreur lors du chargement des fichiers CSV locaux.</p>
-            <p style="font-size:12px; color: var(--text-secondary)">Vérifiez que vous utilisez un serveur HTTP (ex: live-server ou python -m http.server).</p>
+            <p>Error loading local CSV files.</p>
+            <p style="font-size:12px; color: var(--text-secondary)">Verify that you are using an HTTP server (e.g., live-server or python -m http.server).</p>
         `;
     }
 });

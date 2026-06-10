@@ -391,8 +391,6 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    max-height: 80px;
-    overflow-y: auto;
     padding-right: 5px;
 }
 

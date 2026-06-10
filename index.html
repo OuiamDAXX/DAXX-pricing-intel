@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OilChem China - Tableau de Bord Analytique</title>
+    <title>OilChem China - Analytical Dashboard</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=13">
+    <link rel="stylesheet" href="style.css?v=14">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -28,14 +28,14 @@
                     <i class="fa-solid fa-droplet"></i>
                 </div>
                 <div class="logo-text">
-                    <h1>OilChem <span>Chine</span></h1>
-                    <p>Analyse des prix pétrochimiques</p>
+                    <h1>OilChem <span>China</span></h1>
+                    <p>Petrochemical Price Analysis</p>
                 </div>
             </div>
             
             <div class="meta-status">
                 <span class="status-indicator online"></span>
-                <span class="status-text">Données actualisées : <strong id="last-updated-date">Chargement...</strong></span>
+                <span class="status-text">Data Updated: <strong id="last-updated-date">Loading...</strong></span>
             </div>
         </header>
 
@@ -43,8 +43,8 @@
         <section class="kpi-grid">
             <div class="kpi-card" id="kpi-butyl">
                 <div class="kpi-info">
-                    <h3>Acétate de Butyle (Cible)</h3>
-                    <span class="kpi-market">Marché de référence : Est de la Chine (华东)</span>
+                    <h3>Butyl Acetate (Target)</h3>
+                    <span class="kpi-market">Reference Market: East China (华东)</span>
                     <div class="price-value" id="kpi-butyl-val">- ¥/t</div>
                 </div>
                 <div class="kpi-change" id="kpi-butyl-change">
@@ -55,7 +55,7 @@
             <div class="kpi-card" id="kpi-butanol">
                 <div class="kpi-info">
                     <h3>n-Butanol (Feedstock)</h3>
-                    <span class="kpi-market">Marché de référence : Est de la Chine (华东)</span>
+                    <span class="kpi-market">Reference Market: East China (华东)</span>
                     <div class="price-value" id="kpi-butanol-val">- ¥/t</div>
                 </div>
                 <div class="kpi-change" id="kpi-butanol-change">
@@ -65,8 +65,8 @@
             
             <div class="kpi-card" id="kpi-acetic">
                 <div class="kpi-info">
-                    <h3>Acide Acétique (Feedstock)</h3>
-                    <span class="kpi-market">Marché de référence : Est de la Chine (华东)</span>
+                    <h3>Acetic Acid (Feedstock)</h3>
+                    <span class="kpi-market">Reference Market: East China (华东)</span>
                     <div class="price-value" id="kpi-acetic-val">- ¥/t</div>
                 </div>
                 <div class="kpi-change" id="kpi-acetic-change">
@@ -76,8 +76,8 @@
             
             <div class="kpi-card" id="kpi-methanol">
                 <div class="kpi-info">
-                    <h3>Méthanol (Amont)</h3>
-                    <span class="kpi-market">Marché de référence : Shandong (山东)</span>
+                    <h3>Methanol (Upstream)</h3>
+                    <span class="kpi-market">Reference Market: Shandong (山东)</span>
                     <div class="price-value" id="kpi-methanol-val">- ¥/t</div>
                 </div>
                 <div class="kpi-change" id="kpi-methanol-change">
@@ -92,38 +92,43 @@
             <section class="chart-workspace-card">
                 <div class="card-header">
                     <div class="header-titles">
-                        <h2>Évolution des Séries de Prix</h2>
+                        <h2>Price Series Trend</h2>
                         <div class="target-select-wrapper">
-                            <span class="target-select-label"><i class="fa-solid fa-crosshairs"></i> Produit Cible :</span>
+                            <span class="target-select-label"><i class="fa-solid fa-crosshairs"></i> Target Product:</span>
                             <select id="target-product-select" class="target-select">
-                                <option value="Butyl_Acetate_Domestic_华东" selected>Acétate de Butyle (Est de la Chine)</option>
-                                <option value="Ethyl_Acetate_Domestic_华东">Acétate d'Éthyle (Est de la Chine)</option>
-                                <option value="n_Propyl_Acetate_Domestic_华东">Acétate de Propyle (Est de la Chine)</option>
-                                <option value="Isopropyl_Acetate_Domestic_Proxy_华东">Acétate d'Isopropyle (Est de la Chine)</option>
-                                <option value="Acrylic_Acid_Domestic_华东">Acide Acrylique (Est de la Chine)</option>
-                                <option value="Phthalic_Anhydride_Domestic_华东">Anhydride Phtalique (Est de la Chine)</option>
-                                <option value="Maleic_Anhydride_Domestic_华东">Anhydride Maléique (Est de la Chine)</option>
-                                <option value="MMA_Domestic_华东">Méthacrylate de Méthyle (Est de la Chine)</option>
-                                <option value="Butyl_Acrylate_Domestic_华东">Acrylate de Butyle (Est de la Chine)</option>
-                                <option value="VAM_Domestic_华东">Monomère Acétate de Vinyle (Est de la Chine)</option>
-                                <option value="2_EHA_Domestic_华东">Acrylate de 2-éthylhexyle (Est de la Chine)</option>
-                                <option value="Ethyl_Acrylate_Domestic_华东">Acrylate d'éthyle (Est de la Chine)</option>
-                                <option value="Acetone_Domestic_V1_华东">Acétone - Voie 1 (Est de la Chine)</option>
-                                <option value="Acetone_Domestic_V2_华东">Acétone - Voie 2 (Est de la Chine)</option>
+                                <option value="Butyl_Acetate" selected>Butyl Acetate</option>
+                                <option value="Ethyl_Acetate">Ethyl Acetate</option>
+                                <option value="n_Propyl_Acetate">Propyl Acetate</option>
+                                <option value="Isopropyl_Acetate_Proxy">Isopropyl Acetate</option>
+                                <option value="Acrylic_Acid">Acrylic Acid</option>
+                                <option value="Phthalic_Anhydride">Phthalic Anhydride</option>
+                                <option value="Maleic_Anhydride">Maleic Anhydride</option>
+                                <option value="MMA">Methyl Methacrylate</option>
+                                <option value="Butyl_Acrylate">Butyl Acrylate</option>
+                                <option value="VAM">Vinyl Acetate Monomer</option>
+                                <option value="2_EHA">2-Ethylhexyl Acrylate</option>
+                                <option value="Ethyl_Acrylate">Ethyl Acrylate</option>
+                                <option value="Acetone_V1">Acetone (Route 1)</option>
+                                <option value="Acetone_V2">Acetone (Route 2)</option>
+                            </select>
+                            
+                            <span class="target-select-label" style="margin-left: 15px;"><i class="fa-solid fa-map-location-dot"></i> Region:</span>
+                            <select id="market-region-select" class="target-select">
+                                <!-- Populated dynamically by JavaScript -->
                             </select>
                         </div>
                     </div>
                     
                     <div class="chart-controls">
-                        <button class="btn-range active" data-days="all">Tout</button>
-                        <button class="btn-range" data-days="365">1 An</button>
-                        <button class="btn-range" data-days="180">6 Mois</button>
-                        <button class="btn-range" data-days="90">3 Mois</button>
+                        <button class="btn-range active" data-days="all">All</button>
+                        <button class="btn-range" data-days="365">1 Year</button>
+                        <button class="btn-range" data-days="180">6 Months</button>
+                        <button class="btn-range" data-days="90">3 Months</button>
                     </div>
                 </div>
                 
                 <div class="series-selector-container">
-                    <span class="selector-label"><i class="fa-solid fa-list-check"></i> Comparer :</span>
+                    <span class="selector-label"><i class="fa-solid fa-list-check"></i> Compare:</span>
                     <div class="selectors-wrapper" id="series-checkboxes">
                         <!-- Filled dynamically by JavaScript -->
                     </div>
@@ -132,7 +137,7 @@
                 <div class="chart-container-inner">
                     <div id="chart-loader" class="loader-container">
                         <div class="spinner"></div>
-                        <p>Chargement des graphiques...</p>
+                        <p>Loading charts...</p>
                     </div>
                     <div id="main-chart"></div>
                 </div>
@@ -144,13 +149,13 @@
                 <aside class="sidebar-workspace-card" id="lead-lag-card">
                     <div class="card-header">
                         <div class="header-titles">
-                            <h2>Analyse Lead-Lag</h2>
-                            <p>Corrélations vs. Acétate de Butyle (Cible)</p>
+                            <h2>Lead-Lag Analysis</h2>
+                            <p>Correlations vs. Butyl Acetate (Target)</p>
                         </div>
                     </div>
                     <div class="lead-lag-info">
                         <i class="fa-solid fa-circle-info"></i>
-                        <p>Détermine le décalage optimal (en jours) pour qu'une variation de prix de la matière première se propage à la cible.</p>
+                        <p>Determines the optimal lag (in days) for a feedstock price variation to propagate to the target.</p>
                     </div>
                     <div class="lead-lag-list" id="lead-lag-list-container">
                         <!-- Filled dynamically by JavaScript -->
@@ -166,17 +171,17 @@
         <section class="data-explorer-card">
             <div class="card-header border-bottom">
                 <div class="header-titles">
-                    <h2>Explorateur de Données Historiques</h2>
-                    <p>Parcourez et filtrez le dataset d'OilChem Chine aligné et interpolé</p>
+                    <h2>Historical Data Explorer</h2>
+                    <p>Browse and filter the aligned and interpolated OilChem China dataset</p>
                 </div>
                 
                 <div class="table-controls">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="table-search" placeholder="Rechercher une date (YYYY-MM-DD)...">
+                        <input type="text" id="table-search" placeholder="Search a date (YYYY-MM-DD)...">
                     </div>
                     <button class="btn-primary" id="btn-export-csv">
-                        <i class="fa-solid fa-download"></i> Exporter CSV
+                        <i class="fa-solid fa-download"></i> Export CSV
                     </button>
                 </div>
             </div>
@@ -195,7 +200,7 @@
             </div>
             
             <div class="table-pagination">
-                <span class="pagination-info" id="pagination-info-el">Page 1 sur --</span>
+                <span class="pagination-info" id="pagination-info-el">Page 1 of --</span>
                 <div class="pagination-buttons">
                     <button class="btn-page" id="btn-prev" disabled><i class="fa-solid fa-chevron-left"></i></button>
                     <button class="btn-page" id="btn-next"><i class="fa-solid fa-chevron-right"></i></button>
@@ -204,7 +209,7 @@
         </section>
         
         <footer class="app-footer">
-            <p>© 2026 OilChem Chine - Modèles prédictifs des prix d'Acétates (Butyle / Éthyle / Isopropyle). Intégration automatisée 100% Locale & GitHub Actions.</p>
+            <p>© 2026 OilChem China - Predictive models for Acetate prices (Butyl / Ethyl / Isopropyl). 100% Local automated integration & GitHub Actions.</p>
         </footer>
     </div>
 
@@ -213,6 +218,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=13"></script>
+    <script src="app.js?v=15"></script>
 </body>
 </html>
