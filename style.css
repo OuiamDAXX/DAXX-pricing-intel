@@ -1201,6 +1201,34 @@ body.light-theme .btn-page:hover:not(:disabled) {
     border-color: #cbd5e1;
 }
 
+body.light-theme .series-selector-container,
+body.light-theme .chart-container-inner {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.light-theme .check-tag {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.light-theme .check-tag:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+
+body.light-theme .check-tag.active {
+    background: rgba(6, 182, 212, 0.1) !important;
+    border-color: var(--color-cyan) !important;
+    color: var(--color-cyan) !important;
+}
+
+body.light-theme .check-tag.active.accent {
+    background: rgba(99, 102, 241, 0.1) !important;
+    border-color: var(--color-accent) !important;
+    color: var(--color-accent) !important;
+}
+
 /* ==========================================================================
    HEADER ACTIONS & TOGGLER
    ========================================================================== */
