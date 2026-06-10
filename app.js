@@ -7,6 +7,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const PRICES_CSV_PATH = "oilchem_aligned_prices.csv";
     const LEAD_LAG_CSV_PATH = "oilchem_lead_lag_results.csv";
 
+    // Theme Management (Dark/Light mode)
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+        }
+    }
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const isLight = document.body.classList.toggle('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            themeToggleBtn.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+        });
+    }
+
     // Region translations map
     const REGION_MAP = {
         '华东': 'East China',
@@ -652,7 +671,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (totalRows === 0) return;
 
         const latestRow = rawPricesData[totalRows - 1];
-        const previousRow = totalRows > 1 ? rawPricesData[totalRows - 2] : latestRow;
+        // Compare with 7 days ago if possible, otherwise fall back to previous day
+        const previousRow = totalRows > 7 ? rawPricesData[totalRows - 8] : (totalRows > 1 ? rawPricesData[totalRows - 2] : latestRow);
 
         Object.entries(KPI_COLUMNS).forEach(([key, colName]) => {
             const valEl = document.getElementById(`kpi-${key}-val`);
@@ -669,19 +689,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 valEl.textContent = `${Number(currentVal).toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})} ¥/t`;
                 
                 if (absChange > 0.05) {
-                    changeEl.className = 'kpi-change up';
-                    changeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> +${pctChange.toFixed(2)}%`;
+                    changeEl.className = 'kpi-change';
+                    changeEl.innerHTML = `<span class="kpi-trend-badge positive"><i class="fa-solid fa-arrow-trend-up"></i> +${pctChange.toFixed(2)}%</span>`;
                 } else if (absChange < -0.05) {
-                    changeEl.className = 'kpi-change down';
-                    changeEl.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> ${pctChange.toFixed(2)}%`;
+                    changeEl.className = 'kpi-change';
+                    changeEl.innerHTML = `<span class="kpi-trend-badge negative"><i class="fa-solid fa-arrow-trend-down"></i> ${pctChange.toFixed(2)}%</span>`;
                 } else {
-                    changeEl.className = 'kpi-change neutral';
-                    changeEl.innerHTML = `<i class="fa-solid fa-minus"></i> Stable`;
+                    changeEl.className = 'kpi-change';
+                    changeEl.innerHTML = `<span class="kpi-trend-badge neutral"><i class="fa-solid fa-minus"></i> Stable</span>`;
                 }
             } else {
                 valEl.textContent = "N/A";
-                changeEl.className = 'kpi-change neutral';
-                changeEl.textContent = "-";
+                changeEl.className = 'kpi-change';
+                changeEl.innerHTML = `<span class="kpi-trend-badge neutral">-</span>`;
             }
         });
     }
@@ -873,6 +893,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (filtered.length === 0) {
             container.innerHTML = `<div class="lead-lag-info"><p>No lead-lag results available for this target region.</p></div>`;
+            updateInsights([]);
+            updateChemicalTree();
             return;
         }
 
@@ -919,6 +941,129 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (fillBar) fillBar.style.width = `${absPercent}%`;
             }, 150);
         });
+
+        // Generate insights and update value chain diagram
+        updateInsights(data);
+        updateChemicalTree();
+    }
+
+    // ==========================================
+    // AUTOMATIC INSIGHTS GENERATION
+    // ==========================================
+    function updateInsights(data) {
+        const container = document.getElementById('insights-container');
+        if (!container) return;
+        container.innerHTML = "";
+
+        const config = TARGET_CONFIGS[currentProduct];
+        const filtered = data.filter(item => item.Target === currentTarget);
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<p class="neutral-text">No correlation insights available for the selected region.</p>`;
+            return;
+        }
+
+        // Sort by absolute correlation
+        filtered.sort((a, b) => Math.abs(b.Max_Correlation) - Math.abs(a.Max_Correlation));
+
+        // Get top 2 leading indicators
+        const topIndicators = filtered.slice(0, 2);
+        let html = '';
+
+        topIndicators.forEach((item) => {
+            const feature = item.Feature.replace('_Domestic', '').replace(/_/g, ' ');
+            const corr = parseFloat(item.Max_Correlation);
+            const lag = parseInt(item.Optimal_Lag_Days);
+            const absCorr = Math.abs(corr);
+
+            let iconClass = 'fa-circle-info';
+            let insightClass = 'neutral-insight';
+            let message = '';
+
+            if (absCorr >= 0.7) {
+                insightClass = corr >= 0 ? 'positive-insight' : 'warning-insight';
+                iconClass = corr >= 0 ? 'fa-circle-check' : 'fa-circle-exclamation';
+            }
+
+            if (corr >= 0.5) {
+                message = `<strong>${feature}</strong> has a strong positive correlation of <strong>+${corr.toFixed(2)}</strong> with a lead time of <strong>${lag} days</strong>. A price movement here historically propagates to ${config.title} in about ${lag} days.`;
+            } else if (corr <= -0.5) {
+                message = `<strong>${feature}</strong> is negatively correlated (<strong>${corr.toFixed(2)}</strong>) with a lag of <strong>${lag} days</strong>, suggesting inverse price trends.`;
+            } else {
+                message = `<strong>${feature}</strong> has a moderate correlation of <strong>${corr >= 0 ? '+' : ''}${corr.toFixed(2)}</strong> leading by <strong>${lag} days</strong>.`;
+            }
+
+            html += `
+                <div class="insight-item ${insightClass}">
+                    <i class="fa-solid ${iconClass} insight-icon"></i>
+                    <div>${message}</div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    // ==========================================
+    // CHEMICAL VALUE CHAIN TREE DIAGRAM
+    // ==========================================
+    function updateChemicalTree() {
+        const container = document.getElementById('chemical-tree-container');
+        if (!container) return;
+        container.innerHTML = "";
+
+        const config = TARGET_CONFIGS[currentProduct];
+        if (!config) return;
+
+        let html = '<div class="chemical-chain-tree">';
+
+        // 1. Upstream stage
+        if (config.precursors.methanol) {
+            const label = config.labels.methanol ? config.labels.methanol.replace(' (Upstream)', '') : 'Methanol';
+            html += `
+                <div class="chain-step">
+                    <span class="chain-role upstream">Upstream</span>
+                    <span class="chain-name">${label}</span>
+                </div>
+                <div class="chain-connector"><i class="fa-solid fa-arrow-down"></i></div>
+            `;
+        }
+
+        // 2. Feedstocks stage
+        let feedstocks = [];
+        if (config.precursors.butanol) {
+            feedstocks.push(config.labels.butanol ? config.labels.butanol.replace(' (Feedstock)', '') : 'Feedstock 1');
+        }
+        if (config.precursors.acetic) {
+            feedstocks.push(config.labels.acetic ? config.labels.acetic.replace(' (Feedstock)', '') : 'Feedstock 2');
+        }
+
+        if (feedstocks.length > 0) {
+            feedstocks.forEach((fs, idx) => {
+                html += `
+                    <div class="chain-step">
+                        <span class="chain-role feedstock">Feedstock</span>
+                        <span class="chain-name">${fs}</span>
+                    </div>
+                `;
+                if (idx < feedstocks.length - 1) {
+                    html += `<div class="chain-connector" style="margin: 2px 0;"><i class="fa-solid fa-plus"></i></div>`;
+                }
+            });
+            html += `<div class="chain-connector"><i class="fa-solid fa-arrow-down"></i></div>`;
+        }
+
+        // 3. Target stage
+        const targetLabel = config.title;
+        html += `
+            <div class="chain-step">
+                <span class="chain-role target">Target</span>
+                <span class="chain-name">${targetLabel}</span>
+            </div>
+        `;
+
+        html += '</div>';
+        container.innerHTML = html;
     }
 
     // ==========================================
