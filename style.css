@@ -1086,35 +1086,119 @@ body {
    LIGHT THEME OVERRIDES
    ========================================================================== */
 body.light-theme {
-    --bg-primary: #f8fafc;
+    --bg-primary: #f1f5f9;      /* Slate 100 - warmer light background */
     --bg-secondary: #ffffff;
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(0, 0, 0, 0.08);
-    --glass-border-hover: rgba(0, 0, 0, 0.15);
+    --glass-bg: #ffffff;        /* Crisp solid white for light mode cards */
+    --glass-border: #e2e8f0;    /* Slate 200 - clear borders */
+    --glass-border-hover: #cbd5e1; /* Slate 300 */
     
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
+    --text-primary: #0f172a;    /* Slate 900 */
+    --text-secondary: #334155;  /* Slate 700 */
+    --text-muted: #64748b;      /* Slate 500 */
     
-    --color-accent-glow: rgba(99, 102, 241, 0.06);
-    --color-cyan-glow: rgba(6, 182, 212, 0.06);
-    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    --color-accent-glow: rgba(99, 102, 241, 0.05);
+    --color-cyan-glow: rgba(6, 182, 212, 0.05);
+    --card-shadow: 0 4px 12px rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.02);
 }
 
 body.light-theme .glow-bg {
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.06) 0%, rgba(0, 0, 0, 0) 70%);
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.04) 0%, rgba(0, 0, 0, 0) 70%);
 }
 body.light-theme .glow-bg-secondary {
-    background: radial-gradient(circle, rgba(6, 182, 212, 0.04) 0%, rgba(0, 0, 0, 0) 70%);
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.03) 0%, rgba(0, 0, 0, 0) 70%);
 }
 
 body.light-theme .target-select {
-    background: #f1f5f9;
+    background: #f8fafc;
+    border-color: #cbd5e1;
     color: var(--text-primary);
 }
 body.light-theme .target-select option {
     background: #ffffff;
     color: var(--text-primary);
+}
+
+/* Light mode component specific layouts */
+body.light-theme .kpi-card,
+body.light-theme .chart-workspace-card,
+body.light-theme .sidebar-workspace-card,
+body.light-theme .data-explorer-card,
+body.light-theme .main-header {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03) !important;
+}
+
+/* Clear hover shadows for light mode */
+body.light-theme .kpi-card:hover,
+body.light-theme .chart-workspace-card:hover,
+body.light-theme .sidebar-workspace-card:hover,
+body.light-theme .data-explorer-card:hover {
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08) !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* Colorful KPI top indicators for structured grid feel */
+body.light-theme #kpi-butyl { border-top: 4px solid var(--color-cyan) !important; }
+body.light-theme #kpi-butanol { border-top: 4px solid var(--color-accent) !important; }
+body.light-theme #kpi-acetic { border-top: 4px solid var(--color-emerald) !important; }
+body.light-theme #kpi-methanol { border-top: 4px solid var(--color-warning) !important; }
+
+/* Data tables in light mode */
+body.light-theme .data-table th {
+    background: #f8fafc;
+    color: #334155;
+    border-bottom: 2px solid #e2e8f0;
+}
+body.light-theme .data-table td {
+    border-bottom: 1px solid #f1f5f9;
+}
+body.light-theme .data-table tr:hover {
+    background: #f8fafc;
+}
+
+/* List items inside sidebar */
+body.light-theme .lead-lag-item,
+body.light-theme .chain-step {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+body.light-theme .lead-lag-item:hover,
+body.light-theme .chain-step:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+
+body.light-theme .btn-range {
+    background: rgba(0, 0, 0, 0.04);
+    color: #475569;
+}
+body.light-theme .btn-range:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+body.light-theme .btn-range.active {
+    background: var(--color-accent);
+    color: #ffffff;
+}
+
+body.light-theme .search-box input {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: var(--text-primary);
+}
+body.light-theme .search-box input:focus {
+    border-color: var(--color-cyan);
+    background: #ffffff;
+}
+
+body.light-theme .btn-page {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+body.light-theme .btn-page:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
 }
 
 /* ==========================================================================
