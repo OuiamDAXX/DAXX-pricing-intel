@@ -223,20 +223,20 @@ document.addEventListener("DOMContentLoaded", () => {
             title: "Maleic Anhydride",
             precursors: {
                 butyl: 'Maleic_Anhydride',
-                butanol: 'n_Butane',
-                acetic: 'Methanol',
-                methanol: 'Methanol'
+                butanol: 'n-Butanol',
+                acetic: 'Propylene',
+                methanol: 'Propylene'
             },
             labels: {
                 butyl: "Maleic Anhydride (Target)",
-                butanol: "n-Butane (Feedstock)",
-                acetic: "Methanol (Upstream)",
-                methanol: "Methanol (Upstream)"
+                butanol: "n-Butanol (Feedstock)",
+                acetic: "Propylene (Upstream)",
+                methanol: "Propylene (Upstream)"
             },
             defaultChecked: [
                 'Maleic_Anhydride',
-                'n_Butane',
-                'Methanol'
+                'n-Butanol',
+                'Propylene'
             ]
         },
         'MMA': {
@@ -605,8 +605,8 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Methanol');
         } else if (product === 'Maleic_Anhydride') {
             return header.includes('Maleic_Anhydride') || 
-                   header.includes('n_Butane') || 
-                   header.includes('Methanol');
+                   header.includes('n-Butanol') || 
+                   header.includes('Propylene');
         } else if (product === 'MMA') {
             return header.includes('MMA') || 
                    header.includes('Acetone') || 
@@ -1138,10 +1138,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 target: 'Phthalic_Anhydride'
             },
             'Maleic_Anhydride': {
-                upstreamA: '',
-                feedstockA: 'n_Butane',
+                upstreamA: 'Propylene',
+                feedstockA: 'n-Butanol',
                 upstreamB: '',
-                feedstockB: 'Methanol',
+                feedstockB: '',
                 target: 'Maleic_Anhydride'
             },
             'MMA': {
