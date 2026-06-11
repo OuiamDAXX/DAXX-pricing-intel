@@ -131,7 +131,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Ethyl_Acetate',
                 'Ethanol',
                 'Acetic_Acid',
-                'Methanol'
+                'Methanol',
+                'Ethylene'
             ]
         },
         'n_Propyl_Acetate': {
@@ -1093,55 +1094,237 @@ document.addEventListener("DOMContentLoaded", () => {
         const config = TARGET_CONFIGS[currentProduct];
         if (!config) return;
 
-        let html = '<div class="chemical-chain-tree">';
+        const productFlows = {
+            'Butyl_Acetate': {
+                upstreamA: 'Propylene',
+                feedstockA: 'n-Butanol',
+                upstreamB: 'Methanol',
+                feedstockB: 'Acetic_Acid',
+                target: 'Butyl_Acetate'
+            },
+            'Ethyl_Acetate': {
+                upstreamA: 'Ethylene',
+                feedstockA: 'Ethanol',
+                upstreamB: 'Methanol',
+                feedstockB: 'Acetic_Acid',
+                target: 'Ethyl_Acetate'
+            },
+            'n_Propyl_Acetate': {
+                upstreamA: 'Propylene',
+                feedstockA: 'n-Propanol',
+                upstreamB: 'Methanol',
+                feedstockB: 'Acetic_Acid',
+                target: 'n_Propyl_Acetate'
+            },
+            'Isopropyl_Acetate_Proxy': {
+                upstreamA: 'Propylene',
+                feedstockA: 'Isopropanol',
+                upstreamB: 'Methanol',
+                feedstockB: 'Acetic_Acid',
+                target: 'Isopropyl_Acetate_Proxy'
+            },
+            'Acrylic_Acid': {
+                upstreamA: 'Naphtha',
+                feedstockA: 'Propylene',
+                upstreamB: '',
+                feedstockB: 'Naphtha',
+                target: 'Acrylic_Acid'
+            },
+            'Phthalic_Anhydride': {
+                upstreamA: 'Reformed_Naphtha',
+                feedstockA: 'o_Xylene',
+                upstreamB: '',
+                feedstockB: 'Reformed_Naphtha',
+                target: 'Phthalic_Anhydride'
+            },
+            'Maleic_Anhydride': {
+                upstreamA: '',
+                feedstockA: 'n_Butane',
+                upstreamB: '',
+                feedstockB: 'Methanol',
+                target: 'Maleic_Anhydride'
+            },
+            'MMA': {
+                upstreamA: 'Propylene',
+                feedstockA: 'Acetone',
+                upstreamB: 'Methanol',
+                feedstockB: 'Propylene',
+                target: 'MMA'
+            },
+            'Butyl_Acrylate': {
+                upstreamA: 'Propylene',
+                feedstockA: 'Acrylic_Acid',
+                upstreamB: 'Propylene',
+                feedstockB: 'n-Butanol',
+                target: 'Butyl_Acrylate'
+            },
+            'VAM': {
+                upstreamA: 'Ethylene',
+                feedstockA: 'Ethylene',
+                upstreamB: 'Methanol',
+                feedstockB: 'Acetic_Acid',
+                target: 'VAM'
+            },
+            '2_EHA': {
+                upstreamA: 'Propylene',
+                feedstockA: 'Acrylic_Acid',
+                upstreamB: 'Propylene',
+                feedstockB: 'Octanol',
+                target: '2_EHA'
+            },
+            'Ethyl_Acrylate': {
+                upstreamA: 'Ethylene',
+                feedstockA: 'Acrylic_Acid',
+                upstreamB: 'Ethylene',
+                feedstockB: 'Ethanol',
+                target: 'Ethyl_Acrylate'
+            },
+            'Acetone_V1': {
+                upstreamA: 'Propylene',
+                feedstockA: 'Isopropanol',
+                upstreamB: '',
+                feedstockB: 'Propylene',
+                target: 'Acetone'
+            },
+            'Acetone_V2': {
+                upstreamA: 'Naphtha',
+                feedstockA: 'Benzene',
+                upstreamB: 'Propylene',
+                feedstockB: 'Propylene',
+                target: 'Acetone'
+            }
+        };
 
-        // 1. Upstream stage
-        if (config.precursors.methanol) {
-            const label = config.labels.methanol ? config.labels.methanol.replace(' (Upstream)', '') : 'Methanol';
-            html += `
-                <div class="chain-step">
-                    <span class="chain-role upstream">Upstream</span>
-                    <span class="chain-name">${label}</span>
-                </div>
-                <div class="chain-connector"><i class="fa-solid fa-arrow-down"></i></div>
-            `;
-        }
+        const flow = productFlows[currentProduct] || {
+            upstreamA: '',
+            feedstockA: config.precursors.butanol || '',
+            upstreamB: config.precursors.methanol || '',
+            feedstockB: config.precursors.acetic || '',
+            target: config.precursors.butyl || currentProduct
+        };
 
-        // 2. Feedstocks stage
-        let feedstocks = [];
-        if (config.precursors.butanol) {
-            feedstocks.push(config.labels.butanol ? config.labels.butanol.replace(' (Feedstock)', '') : 'Feedstock 1');
-        }
-        if (config.precursors.acetic) {
-            feedstocks.push(config.labels.acetic ? config.labels.acetic.replace(' (Feedstock)', '') : 'Feedstock 2');
-        }
+        const cleanName = (key) => {
+            if (!key) return '';
+            return key.replace(/_Domestic/i, '').replace(/_Proxy/i, '').replace(/_/g, ' ').replace(/-/g, ' ');
+        };
 
-        if (feedstocks.length > 0) {
-            feedstocks.forEach((fs, idx) => {
-                html += `
-                    <div class="chain-step">
-                        <span class="chain-role feedstock">Feedstock</span>
-                        <span class="chain-name">${fs}</span>
-                    </div>
-                `;
-                if (idx < feedstocks.length - 1) {
-                    html += `<div class="chain-connector" style="margin: 2px 0;"><i class="fa-solid fa-plus"></i></div>`;
-                }
+        const isSelected = (baseProd) => {
+            if (!baseProd) return false;
+            const cleanBase = baseProd.toLowerCase().replace(/_/g, '').replace(/-/g, '');
+            return selectedSeries.some(col => {
+                const cleanCol = col.toLowerCase().replace(/_/g, '').replace(/-/g, '');
+                return cleanCol.includes(cleanBase) || cleanBase.includes(cleanCol);
             });
-            html += `<div class="chain-connector"><i class="fa-solid fa-arrow-down"></i></div>`;
-        }
+        };
 
-        // 3. Target stage
-        const targetLabel = config.title;
-        html += `
-            <div class="chain-step">
-                <span class="chain-role target">Target</span>
-                <span class="chain-name">${targetLabel}</span>
+        const uA = flow.upstreamA;
+        const fA = flow.feedstockA;
+        const uB = flow.upstreamB;
+        const fB = flow.feedstockB;
+        const tgt = flow.target;
+
+        let html = `
+        <div class="chemical-flow-diagram">
+            <!-- Upstreams Row -->
+            <div class="flow-row upstreams-row">
+                <div class="flow-node upstream-node left-node ${uA ? '' : 'invisible'} ${isSelected(uA) ? 'active-node' : ''}" data-product="${uA || ''}">
+                    <div class="node-icon"><i class="fa-solid fa-flask"></i></div>
+                    <div class="node-details">
+                        <span class="node-badge upstream">Upstream</span>
+                        <span class="node-title">${cleanName(uA)}</span>
+                    </div>
+                </div>
+                <div class="flow-node upstream-node right-node ${uB ? '' : 'invisible'} ${isSelected(uB) ? 'active-node' : ''}" data-product="${uB || ''}">
+                    <div class="node-icon"><i class="fa-solid fa-flask"></i></div>
+                    <div class="node-details">
+                        <span class="node-badge upstream">Upstream</span>
+                        <span class="node-title">${cleanName(uB)}</span>
+                    </div>
+                </div>
             </div>
+
+            <!-- Connector SVGs Row 1 -->
+            <div class="flow-connectors-row-1">
+                <div class="connector-wrapper left-connector ${uA ? '' : 'invisible'}">
+                    <svg viewBox="0 0 20 40" class="connector-line">
+                        <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uA) ? 'animated-path' : ''}" />
+                        <polygon points="10,40 7,33 13,33" fill="var(--color-emerald)" />
+                    </svg>
+                </div>
+                <div class="connector-wrapper right-connector ${uB ? '' : 'invisible'}">
+                    <svg viewBox="0 0 20 40" class="connector-line">
+                        <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uB) ? 'animated-path' : ''}" />
+                        <polygon points="10,40 7,33 13,33" fill="var(--color-emerald)" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Feedstocks Row -->
+            <div class="flow-row feedstocks-row">
+                <div class="flow-node feedstock-node left-node ${fA ? '' : 'invisible'} ${isSelected(fA) ? 'active-node' : ''}" data-product="${fA || ''}">
+                    <div class="node-icon"><i class="fa-solid fa-industry"></i></div>
+                    <div class="node-details">
+                        <span class="node-badge feedstock">Feedstock</span>
+                        <span class="node-title">${cleanName(fA)}</span>
+                    </div>
+                </div>
+                <div class="flow-node feedstock-node right-node ${fB ? '' : 'invisible'} ${isSelected(fB) ? 'active-node' : ''}" data-product="${fB || ''}">
+                    <div class="node-icon"><i class="fa-solid fa-industry"></i></div>
+                    <div class="node-details">
+                        <span class="node-badge feedstock">Feedstock</span>
+                        <span class="node-title">${cleanName(fB)}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connector SVGs Row 2 -->
+            <div class="flow-connectors-row-2">
+                <svg viewBox="0 0 100 40" class="merge-line" preserveAspectRatio="none">
+                    <!-- Left path -->
+                    <path d="M 25 0 L 25 20 L 50 20 L 50 40" fill="none" stroke="var(--color-accent)" stroke-width="2" class="${isSelected(fA) ? 'animated-path' : ''}" />
+                    <!-- Right path -->
+                    <path d="M 75 0 L 75 20 L 50 20 L 50 40" fill="none" stroke="var(--color-accent)" stroke-width="2" class="${isSelected(fB) ? 'animated-path' : ''}" />
+                    <polygon points="50,40 47,33 53,33" fill="var(--color-accent)" />
+                </svg>
+            </div>
+
+            <!-- Target Row -->
+            <div class="flow-row target-row">
+                <div class="flow-node target-node ${isSelected(tgt) ? 'active-node' : ''}" data-product="${tgt || ''}">
+                    <div class="node-icon"><i class="fa-solid fa-bullseye"></i></div>
+                    <div class="node-details">
+                        <span class="node-badge target">Target</span>
+                        <span class="node-title">${cleanName(tgt)}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
         `;
 
-        html += '</div>';
         container.innerHTML = html;
+
+        // Add programatic click listener to toggle compare series on click
+        const nodes = container.querySelectorAll('.flow-node');
+        nodes.forEach(node => {
+            const prod = node.getAttribute('data-product');
+            if (!prod) return;
+            node.addEventListener('click', () => {
+                const cleanProd = prod.toLowerCase().replace(/_/g, '').replace(/-/g, '');
+                const checkboxes = document.querySelectorAll('.series-checkbox');
+                let clicked = false;
+                checkboxes.forEach(cb => {
+                    const cbVal = cb.value.toLowerCase().replace(/_/g, '').replace(/-/g, '');
+                    if (cbVal.includes(cleanProd) || cleanProd.includes(cbVal)) {
+                        cb.click();
+                        clicked = true;
+                    }
+                });
+                if (clicked) {
+                    node.classList.add('clicked-anim');
+                    setTimeout(() => node.classList.remove('clicked-anim'), 300);
+                }
+            });
+        });
     }
 
     // ==========================================

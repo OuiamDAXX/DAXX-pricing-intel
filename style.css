@@ -1291,72 +1291,190 @@ body.light-theme .check-tag.active.accent {
 /* ==========================================================================
    CHEMICAL VALUE CHAIN TREE
    ========================================================================== */
-.chemical-chain-tree {
+.chemical-flow-diagram {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    padding: 5px 0;
+    align-items: center;
+    gap: 0;
+    padding: 10px 0;
+    width: 100%;
 }
 
-.chain-step {
+.flow-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    gap: 15px;
+}
+
+.flow-node {
+    flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
+    gap: 10px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--glass-border);
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    transition: all 0.2s ease;
+    user-select: none;
 }
 
-body.light-theme .chain-step {
-    background: rgba(0, 0, 0, 0.01);
+body.light-theme .flow-node {
+    background: rgba(0, 0, 0, 0.02);
 }
 
-.chain-step:hover {
-    border-color: var(--glass-border-hover);
-    background: rgba(255, 255, 255, 0.04);
+.flow-node:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-cyan);
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.15);
 }
 
-.chain-role {
-    font-size: 11px;
+body.light-theme .flow-node:hover {
+    background: rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+}
+
+.flow-node.active-node {
+    background: rgba(6, 182, 212, 0.06);
+    border-color: var(--color-cyan);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
+}
+
+body.light-theme .flow-node.active-node {
+    background: rgba(99, 102, 241, 0.06);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+}
+
+.flow-node.active-node.feedstock-node {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: var(--color-accent);
+}
+
+.flow-node.active-node.upstream-node {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: var(--color-emerald);
+}
+
+.flow-node.invisible {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.node-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+body.light-theme .node-icon {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.flow-node:hover .node-icon {
+    transform: scale(1.1);
+}
+
+.node-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.node-badge {
+    font-size: 9px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-right: 12px;
-    min-width: 80px;
-    text-align: center;
+    width: fit-content;
+    padding: 1px 4px;
+    border-radius: 3px;
 }
 
-.chain-role.target {
-    background: rgba(6, 182, 212, 0.15);
-    color: var(--color-cyan);
-}
-
-.chain-role.feedstock {
-    background: rgba(99, 102, 241, 0.15);
-    color: var(--color-accent);
-}
-
-.chain-role.upstream {
+.node-badge.upstream {
     background: rgba(16, 185, 129, 0.15);
     color: var(--color-emerald);
 }
 
-.chain-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
+.node-badge.feedstock {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--color-accent);
 }
 
-.chain-connector {
+.node-badge.target {
+    background: rgba(6, 182, 212, 0.15);
+    color: var(--color-cyan);
+}
+
+.node-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.flow-connectors-row-1 {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    height: 30px;
+}
+
+.connector-wrapper {
+    flex: 1;
     display: flex;
     justify-content: center;
-    margin: -5px 0;
-    color: var(--text-muted);
-    font-size: 14px;
+}
+
+.connector-wrapper.invisible {
+    visibility: hidden;
+}
+
+.connector-line {
+    width: 20px;
+    height: 30px;
+}
+
+.flow-connectors-row-2 {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.merge-line {
+    width: 80%;
+    height: 30px;
+}
+
+.animated-path {
+    stroke-dasharray: 6, 4;
+    animation: flowDash 1s infinite linear;
+}
+
+@keyframes flowDash {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+.clicked-anim {
+    transform: scale(0.95) !important;
 }
 
 /* ==========================================================================
