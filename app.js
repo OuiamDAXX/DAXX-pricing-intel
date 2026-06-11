@@ -1181,7 +1181,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 target: '2_EHA'
             },
             'Ethyl_Acrylate': {
-                upstreamA: 'Ethylene',
+                upstreamA: 'Propylene',
                 feedstockA: 'Acrylic_Acid',
                 upstreamB: 'Ethylene',
                 feedstockB: 'Ethanol',
