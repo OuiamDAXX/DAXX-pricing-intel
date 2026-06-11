@@ -890,12 +890,12 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = "";
 
         const config = TARGET_CONFIGS[currentProduct];
-        const allowedColumns = config ? config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion)) : [];
+        const allowedBaseProds = config ? config.defaultChecked : [];
 
         const filtered = data.filter(item => 
             item.Target === currentTarget && 
-            allowedColumns.includes(item.Feature) &&
-            item.Feature !== currentTarget
+            item.Feature !== currentTarget &&
+            allowedBaseProds.some(base => item.Feature.includes(base))
         );
 
         if (filtered.length === 0) {
@@ -962,11 +962,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
         container.innerHTML = "";
 
-        const allowedColumns = config ? config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion)) : [];
+        const config = TARGET_CONFIGS[currentProduct];
+        const allowedBaseProds = config ? config.defaultChecked : [];
         const filtered = data.filter(item => 
             item.Target === currentTarget && 
-            allowedColumns.includes(item.Feature) &&
-            item.Feature !== currentTarget
+            item.Feature !== currentTarget &&
+            allowedBaseProds.some(base => item.Feature.includes(base))
         );
 
         if (filtered.length === 0) {
