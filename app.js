@@ -413,6 +413,15 @@ document.addEventListener("DOMContentLoaded", () => {
     let KPI_COLUMNS = {};        // Dynamic columns mapping for KPIs
     
     // Pagination state
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let filteredData = [];       // Data currently in table after search
+
+    // ==========================================
+    // INITIALIZATION & LOADING
+    // ==========================================
+    loadData();
+
     async function loadData() {
         try {
             // 1. Fetch Prices CSV
