@@ -413,45 +413,51 @@ document.addEventListener("DOMContentLoaded", () => {
     let KPI_COLUMNS = {};        // Dynamic columns mapping for KPIs
     
     // Pagination state
-       async function loadData() {
+    async function loadData() {
         try {
             // 1. Fetch Prices CSV
             const pricesResponse = await fetch(PRICES_CSV_PATH);
             if (!pricesResponse.ok) throw new Error("Failed to load prices CSV.");
             const pricesText = await pricesResponse.text();
 
-            // 2. Fetch Lead-Lag CSV
+            // 2. Fetch and parse Lead-Lag CSV, then Prices CSV sequentially using callbacks
             const leadLagResponse = await fetch(LEAD_LAG_CSV_PATH);
-            let parsedLeadLag = [];
             if (leadLagResponse.ok) {
                 const leadLagText = await leadLagResponse.text();
-                const leadLagResult = Papa.parse(leadLagText, {
+                Papa.parse(leadLagText, {
                     header: true,
                     skipEmptyLines: true,
-                    dynamicTyping: true
+                    dynamicTyping: true,
+                    complete: function(leadLagResult) {
+                        rawLeadLagData = leadLagResult.data;
+                        
+                        // Parse Prices CSV after Lead-Lag is ready
+                        Papa.parse(pricesText, {
+                            header: true,
+                            skipEmptyLines: true,
+                            dynamicTyping: true,
+                            complete: function(pricesResult) {
+                                processPrices(pricesResult.data);
+                                if (rawLeadLagData.length > 0 && currentTarget) {
+                                    displayLeadLag(rawLeadLagData);
+                                }
+                            }
+                        });
+                    }
                 });
-                parsedLeadLag = leadLagResult.data;
             } else {
                 console.warn("Could not find lead-lag results file.");
-            }
-
-            // Set rawLeadLagData before processing prices so resolveColumnForRegion has access to it on startup
-            rawLeadLagData = parsedLeadLag;
-
-            // 3. Parse Prices CSV
-            const pricesResult = Papa.parse(pricesText, {
-                header: true,
-                skipEmptyLines: true,
-                dynamicTyping: true
-            });
-
-            processPrices(pricesResult.data);
-
-            if (rawLeadLagData.length > 0 && currentTarget) {
-                displayLeadLag(rawLeadLagData);
-            } else if (rawLeadLagData.length === 0) {
-                document.getElementById('lead-lag-list-container').innerHTML = 
-                    `<div class="lead-lag-info"><p>No lead-lag results available.</p></div>`;
+                // Fallback: parse prices anyway
+                Papa.parse(pricesText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    dynamicTyping: true,
+                    complete: function(pricesResult) {
+                        processPrices(pricesResult.data);
+                        document.getElementById('lead-lag-list-container').innerHTML = 
+                            `<div class="lead-lag-info"><p>No lead-lag results available.</p></div>`;
+                    }
+                });
             }
 
         } catch (error) {
