@@ -413,53 +413,47 @@ document.addEventListener("DOMContentLoaded", () => {
     let KPI_COLUMNS = {};        // Dynamic columns mapping for KPIs
     
     // Pagination state
-    let currentPage = 1;
-    const rowsPerPage = 10;
-    let filteredData = [];       // Data currently in table after search
-
-    // ==========================================
-    // INITIALIZATION & LOADING
-    // ==========================================
-    loadData();
-
-    async function loadData() {
+       async function loadData() {
         try {
-            // Load Prices CSV
+            // 1. Fetch Prices CSV
             const pricesResponse = await fetch(PRICES_CSV_PATH);
             if (!pricesResponse.ok) throw new Error("Failed to load prices CSV.");
             const pricesText = await pricesResponse.text();
-            
-            // Parse Prices CSV
-            Papa.parse(pricesText, {
-                header: true,
-                skipEmptyLines: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                    processPrices(results.data);
-                }
-            });
 
-            // Load Lead-Lag CSV
+            // 2. Fetch Lead-Lag CSV
             const leadLagResponse = await fetch(LEAD_LAG_CSV_PATH);
+            let parsedLeadLag = [];
             if (leadLagResponse.ok) {
                 const leadLagText = await leadLagResponse.text();
-                Papa.parse(leadLagText, {
+                const leadLagResult = Papa.parse(leadLagText, {
                     header: true,
                     skipEmptyLines: true,
-                    dynamicTyping: true,
-                    complete: function(results) {
-                        rawLeadLagData = results.data;
-                        if (currentTarget) {
-                            displayLeadLag(rawLeadLagData);
-                        }
-                    }
+                    dynamicTyping: true
                 });
+                parsedLeadLag = leadLagResult.data;
             } else {
                 console.warn("Could not find lead-lag results file.");
+            }
+
+            // Set rawLeadLagData before processing prices so resolveColumnForRegion has access to it on startup
+            rawLeadLagData = parsedLeadLag;
+
+            // 3. Parse Prices CSV
+            const pricesResult = Papa.parse(pricesText, {
+                header: true,
+                skipEmptyLines: true,
+                dynamicTyping: true
+            });
+
+            processPrices(pricesResult.data);
+
+            if (rawLeadLagData.length > 0 && currentTarget) {
+                displayLeadLag(rawLeadLagData);
+            } else if (rawLeadLagData.length === 0) {
                 document.getElementById('lead-lag-list-container').innerHTML = 
                     `<div class="lead-lag-info"><p>No lead-lag results available.</p></div>`;
             }
-            
+
         } catch (error) {
             console.error("Initialization Error:", error);
             showErrorState();
