@@ -741,6 +741,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     label.classList.remove('active');
                 }
                 updateChartData();
+                displayLeadLag(rawLeadLagData);
             });
 
             label.appendChild(checkbox);
@@ -889,13 +890,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
         container.innerHTML = "";
 
-        const config = TARGET_CONFIGS[currentProduct];
-        const allowedBaseProds = config ? config.defaultChecked : [];
-
         const filtered = data.filter(item => 
             item.Target === currentTarget && 
-            item.Feature !== currentTarget &&
-            allowedBaseProds.some(base => item.Feature.includes(base))
+            selectedSeries.includes(item.Feature) &&
+            item.Feature !== currentTarget
         );
 
         if (filtered.length === 0) {
@@ -962,12 +960,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
         container.innerHTML = "";
 
-        const config = TARGET_CONFIGS[currentProduct];
-        const allowedBaseProds = config ? config.defaultChecked : [];
         const filtered = data.filter(item => 
             item.Target === currentTarget && 
-            item.Feature !== currentTarget &&
-            allowedBaseProds.some(base => item.Feature.includes(base))
+            selectedSeries.includes(item.Feature) &&
+            item.Feature !== currentTarget
         );
 
         if (filtered.length === 0) {
