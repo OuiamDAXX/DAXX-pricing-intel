@@ -1157,7 +1157,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 target: 'Butyl_Acrylate'
             },
             'VAM': {
-                upstreamA: 'Ethylene',
+                upstreamA: 'Naphtha',
                 feedstockA: 'Ethylene',
                 upstreamB: 'Methanol',
                 feedstockB: 'Acetic_Acid',
