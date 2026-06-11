@@ -783,6 +783,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             let displayName = header
                 .replace('_Domestic', '')
+                .replace('Octanol', '2-Ethylhexanol')
                 .replace(/_/g, ' ');
             
             label.appendChild(document.createTextNode(displayName));
@@ -887,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
             else if (col.includes('Methanol') || col.includes('Propylene')) color = '#f59e0b';
             
             series.push({
-                name: col.replace('_Domestic', '').replace(/_/g, ' '),
+                name: col.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' '),
                 color: color,
                 data: slicedData.map(row => ({
                     x: new Date(row.Date).getTime(),
