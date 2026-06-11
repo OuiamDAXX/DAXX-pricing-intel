@@ -1313,30 +1313,32 @@ body.light-theme .check-tag.active.accent {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.18);
     border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 10px 12px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
     position: relative;
     user-select: none;
 }
 
 body.light-theme .flow-node {
-    background: rgba(0, 0, 0, 0.02);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
 }
 
 .flow-node:hover {
     transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--color-cyan);
-    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.15);
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--glass-border-hover);
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.1);
 }
 
 body.light-theme .flow-node:hover {
-    background: rgba(0, 0, 0, 0.04);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05);
 }
 
 .flow-node.active-node {
@@ -1356,8 +1358,18 @@ body.light-theme .flow-node.active-node {
     border-color: var(--color-accent);
 }
 
+body.light-theme .flow-node.active-node.feedstock-node {
+    background: rgba(99, 102, 241, 0.06);
+    border-color: var(--color-accent);
+}
+
 .flow-node.active-node.upstream-node {
     background: rgba(16, 185, 129, 0.08);
+    border-color: var(--color-emerald);
+}
+
+body.light-theme .flow-node.active-node.upstream-node {
+    background: rgba(16, 185, 129, 0.06);
     border-color: var(--color-emerald);
 }
 
@@ -1395,28 +1407,30 @@ body.light-theme .node-icon {
 }
 
 .node-badge {
-    font-size: 9px;
-    font-weight: 800;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
     width: fit-content;
-    padding: 1px 4px;
-    border-radius: 3px;
 }
 
 .node-badge.upstream {
-    background: rgba(16, 185, 129, 0.15);
+    background: rgba(16, 185, 129, 0.1);
     color: var(--color-emerald);
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .node-badge.feedstock {
-    background: rgba(99, 102, 241, 0.15);
+    background: rgba(99, 102, 241, 0.1);
     color: var(--color-accent);
+    border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
 .node-badge.target {
-    background: rgba(6, 182, 212, 0.15);
+    background: rgba(6, 182, 212, 0.1);
     color: var(--color-cyan);
+    border: 1px solid rgba(6, 182, 212, 0.2);
 }
 
 .node-title {
