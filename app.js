@@ -470,7 +470,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 2. Dynamic Fallback: Try to find a region for baseProd that has computed Lead-Lag data for currentTarget
         if (rawLeadLagData && rawLeadLagData.length > 0) {
-            const targetRows = rawLeadLagData.filter(item => item.Target === currentTarget && item.Feature.includes(baseProd));
+            const targetRows = rawLeadLagData.filter(item => 
+                item.Target === currentTarget && 
+                item.Feature && 
+                item.Feature.includes(baseProd)
+            );
             if (targetRows.length > 0) {
                 // Sort by absolute correlation to pick the strongest reference market
                 targetRows.sort((a, b) => Math.abs(b.Max_Correlation) - Math.abs(a.Max_Correlation));
@@ -909,7 +913,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const targetPrefix = config.defaultChecked[0];
             if (base === targetPrefix || currentTarget.includes(base)) return;
 
-            const targetRows = data.filter(item => item.Target === currentTarget && item.Feature.includes(base));
+            const targetRows = data.filter(item => 
+                item.Target === currentTarget && 
+                item.Feature && 
+                item.Feature.includes(base)
+            );
             if (targetRows.length === 0) return;
 
             const exactCheckedCol = selectedSeries.find(sel => sel.includes(base));
@@ -996,7 +1004,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const targetPrefix = config.defaultChecked[0];
             if (base === targetPrefix || currentTarget.includes(base)) return;
 
-            const targetRows = data.filter(item => item.Target === currentTarget && item.Feature.includes(base));
+            const targetRows = data.filter(item => 
+                item.Target === currentTarget && 
+                item.Feature && 
+                item.Feature.includes(base)
+            );
             if (targetRows.length === 0) return;
 
             const exactCheckedCol = selectedSeries.find(sel => sel.includes(base));
