@@ -889,7 +889,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
         container.innerHTML = "";
 
-        const filtered = data.filter(item => item.Target === currentTarget);
+        const config = TARGET_CONFIGS[currentProduct];
+        const allowedColumns = config ? config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion)) : [];
+
+        const filtered = data.filter(item => 
+            item.Target === currentTarget && 
+            allowedColumns.includes(item.Feature) &&
+            item.Feature !== currentTarget
+        );
 
         if (filtered.length === 0) {
             container.innerHTML = `<div class="lead-lag-info"><p>No lead-lag results available for this target region.</p></div>`;
@@ -955,8 +962,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
         container.innerHTML = "";
 
-        const config = TARGET_CONFIGS[currentProduct];
-        const filtered = data.filter(item => item.Target === currentTarget);
+        const allowedColumns = config ? config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion)) : [];
+        const filtered = data.filter(item => 
+            item.Target === currentTarget && 
+            allowedColumns.includes(item.Feature) &&
+            item.Feature !== currentTarget
+        );
 
         if (filtered.length === 0) {
             container.innerHTML = `<p class="neutral-text">No correlation insights available for the selected region.</p>`;
