@@ -1145,8 +1145,8 @@ document.addEventListener("DOMContentLoaded", () => {
             'MMA': {
                 upstreamA: 'Propylene',
                 feedstockA: 'Acetone',
-                upstreamB: 'Methanol',
-                feedstockB: 'Propylene',
+                upstreamB: '',
+                feedstockB: 'Methanol',
                 target: 'MMA'
             },
             'Butyl_Acrylate': {
