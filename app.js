@@ -895,11 +895,24 @@ document.addEventListener("DOMContentLoaded", () => {
             selectedSeries.some(sel => sel.includes(base))
         ) : [];
 
-        const filtered = data.filter(item => 
-            item.Target === currentTarget && 
-            item.Feature !== currentTarget &&
-            allowedBaseProds.some(base => item.Feature.includes(base))
-        );
+        const filtered = [];
+        allowedBaseProds.forEach(base => {
+            // Exclude the target product itself
+            const targetPrefix = config.defaultChecked[0];
+            if (base === targetPrefix || currentTarget.includes(base)) return;
+
+            const targetRows = data.filter(item => item.Target === currentTarget && item.Feature.includes(base));
+            if (targetRows.length === 0) return;
+
+            const exactCheckedCol = selectedSeries.find(sel => sel.includes(base));
+            const exactMatch = targetRows.find(row => row.Feature === exactCheckedCol);
+
+            if (exactMatch) {
+                filtered.push(exactMatch);
+            } else {
+                filtered.push(targetRows[0]);
+            }
+        });
 
         if (filtered.length === 0) {
             container.innerHTML = `<div class="lead-lag-info"><p>No lead-lag results available for this target region.</p></div>`;
@@ -970,11 +983,23 @@ document.addEventListener("DOMContentLoaded", () => {
             selectedSeries.some(sel => sel.includes(base))
         ) : [];
 
-        const filtered = data.filter(item => 
-            item.Target === currentTarget && 
-            item.Feature !== currentTarget &&
-            allowedBaseProds.some(base => item.Feature.includes(base))
-        );
+        const filtered = [];
+        allowedBaseProds.forEach(base => {
+            const targetPrefix = config.defaultChecked[0];
+            if (base === targetPrefix || currentTarget.includes(base)) return;
+
+            const targetRows = data.filter(item => item.Target === currentTarget && item.Feature.includes(base));
+            if (targetRows.length === 0) return;
+
+            const exactCheckedCol = selectedSeries.find(sel => sel.includes(base));
+            const exactMatch = targetRows.find(row => row.Feature === exactCheckedCol);
+
+            if (exactMatch) {
+                filtered.push(exactMatch);
+            } else {
+                filtered.push(targetRows[0]);
+            }
+        });
 
         if (filtered.length === 0) {
             container.innerHTML = `<p class="neutral-text">No correlation insights available for the selected region.</p>`;
