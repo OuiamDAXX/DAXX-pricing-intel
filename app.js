@@ -1127,14 +1127,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamA: 'Naphtha',
                 feedstockA: 'Propylene',
                 upstreamB: '',
-                feedstockB: 'Naphtha',
+                feedstockB: '',
                 target: 'Acrylic_Acid'
             },
             'Phthalic_Anhydride': {
                 upstreamA: 'Reformed_Naphtha',
                 feedstockA: 'o_Xylene',
                 upstreamB: '',
-                feedstockB: 'Reformed_Naphtha',
+                feedstockB: '',
                 target: 'Phthalic_Anhydride'
             },
             'Maleic_Anhydride': {
@@ -1183,7 +1183,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamA: 'Propylene',
                 feedstockA: 'Isopropanol',
                 upstreamB: '',
-                feedstockB: 'Propylene',
+                feedstockB: '',
                 target: 'Acetone'
             },
             'Acetone_V2': {
@@ -1223,83 +1223,146 @@ document.addEventListener("DOMContentLoaded", () => {
         const fB = flow.feedstockB;
         const tgt = flow.target;
 
-        let html = `
-        <div class="chemical-flow-diagram">
-            <!-- Upstreams Row -->
-            <div class="flow-row upstreams-row">
-                <div class="flow-node upstream-node left-node ${uA ? '' : 'invisible'} ${isSelected(uA) ? 'active-node' : ''}" data-product="${uA || ''}">
-                    <div class="node-icon"><i class="fa-solid fa-flask"></i></div>
-                    <div class="node-details">
-                        <span class="node-badge upstream">Upstream</span>
-                        <span class="node-title">${cleanName(uA)}</span>
+        let html = "";
+
+        if (!fB) {
+            // Render single vertical branch!
+            html = `
+            <div class="chemical-flow-diagram single-branch">
+                <!-- Upstream -->
+                <div class="flow-row">
+                    <div class="flow-node upstream-node ${uA ? '' : 'invisible'} ${isSelected(uA) ? 'active-node' : ''}" data-product="${uA || ''}">
+                        <div class="node-icon"><i class="fa-solid fa-flask"></i></div>
+                        <div class="node-details">
+                            <span class="node-badge upstream">Upstream</span>
+                            <span class="node-title">${cleanName(uA)}</span>
+                        </div>
                     </div>
                 </div>
-                <div class="flow-node upstream-node right-node ${uB ? '' : 'invisible'} ${isSelected(uB) ? 'active-node' : ''}" data-product="${uB || ''}">
-                    <div class="node-icon"><i class="fa-solid fa-flask"></i></div>
-                    <div class="node-details">
-                        <span class="node-badge upstream">Upstream</span>
-                        <span class="node-title">${cleanName(uB)}</span>
+
+                <!-- Connector 1 -->
+                <div class="flow-connectors-row-1 ${uA ? '' : 'invisible'}">
+                    <div class="connector-wrapper">
+                        <svg viewBox="0 0 20 40" class="connector-line">
+                            <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uA) ? 'animated-path' : ''}" />
+                            <polygon points="10,40 7,33 13,33" fill="var(--color-emerald)" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Feedstock -->
+                <div class="flow-row">
+                    <div class="flow-node feedstock-node ${fA ? '' : 'invisible'} ${isSelected(fA) ? 'active-node' : ''}" data-product="${fA || ''}">
+                        <div class="node-icon"><i class="fa-solid fa-industry"></i></div>
+                        <div class="node-details">
+                            <span class="node-badge feedstock">Feedstock</span>
+                            <span class="node-title">${cleanName(fA)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connector 2 -->
+                <div class="flow-connectors-row-1">
+                    <div class="connector-wrapper">
+                        <svg viewBox="0 0 20 40" class="connector-line">
+                            <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-accent)" stroke-width="2" class="${isSelected(fA) ? 'animated-path' : ''}" />
+                            <polygon points="10,40 7,33 13,33" fill="var(--color-accent)" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Target -->
+                <div class="flow-row">
+                    <div class="flow-node target-node ${isSelected(tgt) ? 'active-node' : ''}" data-product="${tgt || ''}">
+                        <div class="node-icon"><i class="fa-solid fa-bullseye"></i></div>
+                        <div class="node-details">
+                            <span class="node-badge target">Target</span>
+                            <span class="node-title">${cleanName(tgt)}</span>
+                        </div>
                     </div>
                 </div>
             </div>
+            `;
+        } else {
+            // Render dual symmetric branch
+            html = `
+            <div class="chemical-flow-diagram">
+                <!-- Upstreams Row -->
+                <div class="flow-row upstreams-row">
+                    <div class="flow-node upstream-node left-node ${uA ? '' : 'invisible'} ${isSelected(uA) ? 'active-node' : ''}" data-product="${uA || ''}">
+                        <div class="node-icon"><i class="fa-solid fa-flask"></i></div>
+                        <div class="node-details">
+                            <span class="node-badge upstream">Upstream</span>
+                            <span class="node-title">${cleanName(uA)}</span>
+                        </div>
+                    </div>
+                    <div class="flow-node upstream-node right-node ${uB ? '' : 'invisible'} ${isSelected(uB) ? 'active-node' : ''}" data-product="${uB || ''}">
+                        <div class="node-icon"><i class="fa-solid fa-flask"></i></div>
+                        <div class="node-details">
+                            <span class="node-badge upstream">Upstream</span>
+                            <span class="node-title">${cleanName(uB)}</span>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Connector SVGs Row 1 -->
-            <div class="flow-connectors-row-1">
-                <div class="connector-wrapper left-connector ${uA ? '' : 'invisible'}">
-                    <svg viewBox="0 0 20 40" class="connector-line">
-                        <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uA) ? 'animated-path' : ''}" />
-                        <polygon points="10,40 7,33 13,33" fill="var(--color-emerald)" />
+                <!-- Connector SVGs Row 1 -->
+                <div class="flow-connectors-row-1">
+                    <div class="connector-wrapper left-connector ${uA ? '' : 'invisible'}">
+                        <svg viewBox="0 0 20 40" class="connector-line">
+                            <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uA) ? 'animated-path' : ''}" />
+                            <polygon points="10,40 7,33 13,33" fill="var(--color-emerald)" />
+                        </svg>
+                    </div>
+                    <div class="connector-wrapper right-connector ${uB ? '' : 'invisible'}">
+                        <svg viewBox="0 0 20 40" class="connector-line">
+                            <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uB) ? 'animated-path' : ''}" />
+                            <polygon points="10,40 7,33 13,33" fill="var(--color-emerald)" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Feedstocks Row -->
+                <div class="flow-row feedstocks-row">
+                    <div class="flow-node feedstock-node left-node ${fA ? '' : 'invisible'} ${isSelected(fA) ? 'active-node' : ''}" data-product="${fA || ''}">
+                        <div class="node-icon"><i class="fa-solid fa-industry"></i></div>
+                        <div class="node-details">
+                            <span class="node-badge feedstock">Feedstock</span>
+                            <span class="node-title">${cleanName(fA)}</span>
+                        </div>
+                    </div>
+                    <div class="flow-node feedstock-node right-node ${fB ? '' : 'invisible'} ${isSelected(fB) ? 'active-node' : ''}" data-product="${fB || ''}">
+                        <div class="node-icon"><i class="fa-solid fa-industry"></i></div>
+                        <div class="node-details">
+                            <span class="node-badge feedstock">Feedstock</span>
+                            <span class="node-title">${cleanName(fB)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connector SVGs Row 2 -->
+                <div class="flow-connectors-row-2">
+                    <svg viewBox="0 0 100 40" class="merge-line" preserveAspectRatio="none">
+                        <!-- Left path -->
+                        <path d="M 25 0 L 25 20 L 50 20 L 50 40" fill="none" stroke="var(--color-accent)" stroke-width="2" class="${isSelected(fA) ? 'animated-path' : ''}" />
+                        <!-- Right path -->
+                        <path d="M 75 0 L 75 20 L 50 20 L 50 40" fill="none" stroke="var(--color-accent)" stroke-width="2" class="${isSelected(fB) ? 'animated-path' : ''}" />
+                        <polygon points="50,40 47,33 53,33" fill="var(--color-accent)" />
                     </svg>
                 </div>
-                <div class="connector-wrapper right-connector ${uB ? '' : 'invisible'}">
-                    <svg viewBox="0 0 20 40" class="connector-line">
-                        <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uB) ? 'animated-path' : ''}" />
-                        <polygon points="10,40 7,33 13,33" fill="var(--color-emerald)" />
-                    </svg>
-                </div>
-            </div>
 
-            <!-- Feedstocks Row -->
-            <div class="flow-row feedstocks-row">
-                <div class="flow-node feedstock-node left-node ${fA ? '' : 'invisible'} ${isSelected(fA) ? 'active-node' : ''}" data-product="${fA || ''}">
-                    <div class="node-icon"><i class="fa-solid fa-industry"></i></div>
-                    <div class="node-details">
-                        <span class="node-badge feedstock">Feedstock</span>
-                        <span class="node-title">${cleanName(fA)}</span>
-                    </div>
-                </div>
-                <div class="flow-node feedstock-node right-node ${fB ? '' : 'invisible'} ${isSelected(fB) ? 'active-node' : ''}" data-product="${fB || ''}">
-                    <div class="node-icon"><i class="fa-solid fa-industry"></i></div>
-                    <div class="node-details">
-                        <span class="node-badge feedstock">Feedstock</span>
-                        <span class="node-title">${cleanName(fB)}</span>
+                <!-- Target Row -->
+                <div class="flow-row target-row">
+                    <div class="flow-node target-node ${isSelected(tgt) ? 'active-node' : ''}" data-product="${tgt || ''}">
+                        <div class="node-icon"><i class="fa-solid fa-bullseye"></i></div>
+                        <div class="node-details">
+                            <span class="node-badge target">Target</span>
+                            <span class="node-title">${cleanName(tgt)}</span>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Connector SVGs Row 2 -->
-            <div class="flow-connectors-row-2">
-                <svg viewBox="0 0 100 40" class="merge-line" preserveAspectRatio="none">
-                    <!-- Left path -->
-                    <path d="M 25 0 L 25 20 L 50 20 L 50 40" fill="none" stroke="var(--color-accent)" stroke-width="2" class="${isSelected(fA) ? 'animated-path' : ''}" />
-                    <!-- Right path -->
-                    <path d="M 75 0 L 75 20 L 50 20 L 50 40" fill="none" stroke="var(--color-accent)" stroke-width="2" class="${isSelected(fB) ? 'animated-path' : ''}" />
-                    <polygon points="50,40 47,33 53,33" fill="var(--color-accent)" />
-                </svg>
-            </div>
-
-            <!-- Target Row -->
-            <div class="flow-row target-row">
-                <div class="flow-node target-node ${isSelected(tgt) ? 'active-node' : ''}" data-product="${tgt || ''}">
-                    <div class="node-icon"><i class="fa-solid fa-bullseye"></i></div>
-                    <div class="node-details">
-                        <span class="node-badge target">Target</span>
-                        <span class="node-title">${cleanName(tgt)}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
+            `;
+        }
 
         container.innerHTML = html;
 

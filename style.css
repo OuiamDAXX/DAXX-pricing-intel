@@ -1300,6 +1300,11 @@ body.light-theme .check-tag.active.accent {
     width: 100%;
 }
 
+.single-branch .flow-node {
+    max-width: 260px;
+    width: 100%;
+}
+
 .flow-row {
     display: flex;
     justify-content: space-around;
