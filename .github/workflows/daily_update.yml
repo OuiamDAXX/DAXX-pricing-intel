@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pages: write
+      id-token: write
 
     steps:
     - name: Checkout Repository
@@ -48,4 +50,15 @@ jobs:
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add "oilchem_all_data.csv" "oilchem_aligned_prices.csv" "oilchem_aligned_prices.xlsx" "oilchem_lead_lag_results.csv" data/*.csv
         git diff-index --quiet HEAD || (git commit -m "Automated daily price update and alignment" && git push)
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+
+    - name: Upload Pages Artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '.'
+
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
 
