@@ -968,7 +968,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const optLag = parseInt(item.Optimal_Lag_Days);
             const maxCorr = parseFloat(item.Max_Correlation);
 
-            const isDirect = featureName.includes('n-Butanol') || featureName.includes('Ethanol') || featureName.includes('Isopropanol') || featureName.includes('Acetic_Acid');
+            const isDirect = featureName.includes('n-Butanol') || featureName.includes('Ethanol') || featureName.includes('Isopropanol') || featureName.includes('Acetic_Acid') || featureName.includes('Octanol');
             const tagClass = isDirect ? 'direct' : 'upstream';
             const tagLabel = isDirect ? 'Direct Feedstock' : 'Upstream / Other';
 
@@ -977,7 +977,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const absPercent = Math.min(100, Math.round(Math.abs(maxCorr) * 100));
             const barColor = maxCorr >= 0 ? 'var(--color-cyan)' : 'var(--color-rose)';
-            const cleanFeature = featureName.replace('_Domestic', '').replace(/_/g, ' ');
+            const cleanFeature = featureName.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' ');
 
             itemDiv.innerHTML = `
                 <div class="lead-lag-item-header">
