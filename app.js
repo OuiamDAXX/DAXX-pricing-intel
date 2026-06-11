@@ -1203,6 +1203,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const cleanName = (key) => {
             if (!key) return '';
+            if (key === 'Octanol') return '2-Ethylhexanol';
             return key.replace(/_Domestic/i, '').replace(/_Proxy/i, '').replace(/_/g, ' ').replace(/-/g, ' ');
         };
 
