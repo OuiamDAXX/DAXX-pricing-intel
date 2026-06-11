@@ -383,7 +383,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Acetone',
                 'Benzene',
                 'Propylene',
-                'Naphtha'
+                'Naphtha',
+                'Reformed_Naphtha'
             ]
         }
     };
@@ -1195,9 +1196,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 target: 'Acetone'
             },
             'Acetone_V2': {
-                upstreamA: 'Naphtha',
+                upstreamA: 'Reformed_Naphtha',
                 feedstockA: 'Benzene',
-                upstreamB: 'Propylene',
+                upstreamB: 'Naphtha',
                 feedstockB: 'Propylene',
                 target: 'Acetone'
             }
