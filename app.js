@@ -700,11 +700,20 @@ document.addEventListener("DOMContentLoaded", () => {
         // Compare with 7 days ago if possible, otherwise fall back to previous day
         const previousRow = totalRows > 7 ? rawPricesData[totalRows - 8] : (totalRows > 1 ? rawPricesData[totalRows - 2] : latestRow);
 
+        const seenCols = new Set();
         Object.entries(KPI_COLUMNS).forEach(([key, colName]) => {
+            const cardEl = document.getElementById(`kpi-${key}`);
             const valEl = document.getElementById(`kpi-${key}-val`);
             const changeEl = document.getElementById(`kpi-${key}-change`);
             
-            if (!valEl || !changeEl) return;
+            if (!cardEl || !valEl || !changeEl) return;
+
+            if (!colName || seenCols.has(colName)) {
+                cardEl.style.display = 'none';
+                return;
+            }
+            cardEl.style.display = 'flex';
+            seenCols.add(colName);
 
             if (latestRow[colName] !== undefined && latestRow[colName] !== null) {
                 const currentVal = latestRow[colName];
