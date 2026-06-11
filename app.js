@@ -224,19 +224,18 @@ document.addEventListener("DOMContentLoaded", () => {
             precursors: {
                 butyl: 'Maleic_Anhydride',
                 butanol: 'n-Butanol',
-                acetic: 'Propylene',
-                methanol: 'Propylene'
+                acetic: 'n-Butanol',
+                methanol: 'n-Butanol'
             },
             labels: {
                 butyl: "Maleic Anhydride (Target)",
                 butanol: "n-Butanol (Feedstock)",
-                acetic: "Propylene (Upstream)",
-                methanol: "Propylene (Upstream)"
+                acetic: "n-Butanol (Feedstock)",
+                methanol: "n-Butanol (Feedstock)"
             },
             defaultChecked: [
                 'Maleic_Anhydride',
-                'n-Butanol',
-                'Propylene'
+                'n-Butanol'
             ]
         },
         'MMA': {
@@ -605,8 +604,7 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Methanol');
         } else if (product === 'Maleic_Anhydride') {
             return header.includes('Maleic_Anhydride') || 
-                   header.includes('n-Butanol') || 
-                   header.includes('Propylene');
+                   header.includes('n-Butanol');
         } else if (product === 'MMA') {
             return header.includes('MMA') || 
                    header.includes('Acetone') || 
@@ -1138,7 +1136,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 target: 'Phthalic_Anhydride'
             },
             'Maleic_Anhydride': {
-                upstreamA: 'Propylene',
+                upstreamA: '',
                 feedstockA: 'n-Butanol',
                 upstreamB: '',
                 feedstockB: '',
@@ -1229,9 +1227,10 @@ document.addEventListener("DOMContentLoaded", () => {
             // Render single vertical branch!
             html = `
             <div class="chemical-flow-diagram single-branch">
+                ${uA ? `
                 <!-- Upstream -->
                 <div class="flow-row">
-                    <div class="flow-node upstream-node ${uA ? '' : 'invisible'} ${isSelected(uA) ? 'active-node' : ''}" data-product="${uA || ''}">
+                    <div class="flow-node upstream-node ${isSelected(uA) ? 'active-node' : ''}" data-product="${uA}">
                         <div class="node-icon"><i class="fa-solid fa-flask"></i></div>
                         <div class="node-details">
                             <span class="node-badge upstream">Upstream</span>
@@ -1241,7 +1240,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <!-- Connector 1 -->
-                <div class="flow-connectors-row-1 ${uA ? '' : 'invisible'}">
+                <div class="flow-connectors-row-1">
                     <div class="connector-wrapper">
                         <svg viewBox="0 0 20 40" class="connector-line">
                             <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uA) ? 'animated-path' : ''}" />
@@ -1249,6 +1248,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </svg>
                     </div>
                 </div>
+                ` : ''}
 
                 <!-- Feedstock -->
                 <div class="flow-row">
