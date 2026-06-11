@@ -468,15 +468,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Helper to resolve the correct column name with region fallback
     function resolveColumnForRegion(baseProd, region) {
-        // Find exact match for baseProd and region
+        // 1. Find exact match for baseProd and region
         const exact = priceHeaders.find(h => h.startsWith(baseProd + '_') && h.includes(region));
         if (exact) return exact;
         const partial = priceHeaders.find(h => h.includes(baseProd) && h.includes(region));
         if (partial) return partial;
-        // Fallback: exact baseProd but any region
+
+        // 2. Dynamic Fallback: Try to find a region for baseProd that has computed Lead-Lag data for currentTarget
+        if (rawLeadLagData && rawLeadLagData.length > 0) {
+            const targetRows = rawLeadLagData.filter(item => item.Target === currentTarget && item.Feature.includes(baseProd));
+            if (targetRows.length > 0) {
+                // Sort by absolute correlation to pick the strongest reference market
+                targetRows.sort((a, b) => Math.abs(b.Max_Correlation) - Math.abs(a.Max_Correlation));
+                const bestFeature = targetRows[0].Feature;
+                // Verify it exists in priceHeaders
+                if (priceHeaders.includes(bestFeature)) return bestFeature;
+            }
+        }
+
+        // 3. Fallback: exact baseProd but any region
         const fallbackExact = priceHeaders.find(h => h.startsWith(baseProd + '_'));
         if (fallbackExact) return fallbackExact;
-        // Fallback: any partial match
+        
+        // 4. Fallback: any partial match
         const fallbackPartial = priceHeaders.find(h => h.includes(baseProd));
         return fallbackPartial || baseProd;
     }
