@@ -266,7 +266,7 @@ def main():
     if not load_cookies() or not test_session():
         if not run_login_flow() or not load_cookies() or not test_session():
             print("[ERROR] Authentication failed. Cookies are invalid. Exiting.")
-            return
+            sys.exit(1)
     
     print("[OK] Authentication validated successfully. Headless API download active.")
     
@@ -282,7 +282,17 @@ def main():
             print(f"[WARNING] No markets found for {eng_name}.")
             continue
         
-        print(f"Found {len(markets)} markets.")
+        # Deduplicate markets by businessTypeTabId to avoid redundant requests and rate-limiting
+        seen_ids = set()
+        unique_markets = []
+        for market in markets:
+            bid = market.get("businessTypeTabId")
+            if bid and bid not in seen_ids:
+                seen_ids.add(bid)
+                unique_markets.append(market)
+        markets = unique_markets
+        
+        print(f"Found {len(markets)} unique markets.")
         
         for market in markets:
             business_id = market.get("businessTypeTabId")
