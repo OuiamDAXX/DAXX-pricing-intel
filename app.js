@@ -386,6 +386,48 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Naphtha',
                 'Reformed_Naphtha'
             ]
+        },
+        'Dibasic_Ester': {
+            title: "Dibasic Ester (DBE)",
+            precursors: {
+                butyl: 'Dibasic_Ester',
+                butanol: 'Dicarboxylic_Acid',
+                acetic: 'Methanol',
+                methanol: 'Cyclohexane'
+            },
+            labels: {
+                butyl: "Dibasic Ester (Target)",
+                butanol: "Dicarboxylic Acid (Feedstock)",
+                acetic: "Methanol (Feedstock)",
+                methanol: "Cyclohexane (Upstream)"
+            },
+            defaultChecked: [
+                'Dibasic_Ester',
+                'Dicarboxylic_Acid',
+                'Methanol',
+                'Cyclohexane',
+                'Nitric_Acid'
+            ]
+        },
+        'Dicarboxylic_Acid': {
+            title: "Dicarboxylic Acid",
+            precursors: {
+                butyl: 'Dicarboxylic_Acid',
+                butanol: 'Cyclohexane',
+                acetic: 'Nitric_Acid',
+                methanol: 'Nitric_Acid'
+            },
+            labels: {
+                butyl: "Dicarboxylic Acid (Target)",
+                butanol: "Cyclohexane (Feedstock)",
+                acetic: "Nitric Acid (Feedstock)",
+                methanol: "Nitric Acid (Feedstock)"
+            },
+            defaultChecked: [
+                'Dicarboxylic_Acid',
+                'Cyclohexane',
+                'Nitric_Acid'
+            ]
         }
     };
 

@@ -93,6 +93,36 @@ df_pivot = df_pivot.ffill()
 df_pivot = df_pivot.dropna(axis=1, how='all')
 print(f"   Aligned dataset shape: {df_pivot.shape} rows x {df_pivot.shape[1]} columns")
 
+# 8.5 Synthetically compute Dicarboxylic Acid and Dibasic Ester prices
+print("\n8.5 Calculating synthetic price series for Dicarboxylic Acid and Dibasic Ester (DBE)...")
+cyc_col = 'Cyclohexane_Domestic_山东'
+if cyc_col in df_pivot.columns:
+    for r_suffix in ['华东', '山东', '华南', '华北']:
+        # Dicarboxylic Acid
+        nit_col = f'Nitric_Acid_Domestic_{r_suffix}'
+        if nit_col not in df_pivot.columns:
+            nit_col = 'Nitric_Acid_Domestic_甘宁'
+        
+        if nit_col in df_pivot.columns:
+            acid_col = f'Dicarboxylic_Acid_Domestic_{r_suffix}'
+            df_pivot[acid_col] = 0.352 * df_pivot[cyc_col] + 0.374 * df_pivot[nit_col] + 6500
+            print(f"   Generated synthetic series: {acid_col}")
+            
+            # Dibasic Ester (DBE)
+            meth_col = f'Methanol_Domestic_{r_suffix}'
+            if meth_col not in df_pivot.columns:
+                meth_col = 'Methanol_Domestic_山东中部'
+                if meth_col not in df_pivot.columns:
+                    meth_cols = [c for c in df_pivot.columns if 'Methanol_Domestic' in c]
+                    meth_col = meth_cols[0] if meth_cols else None
+            
+            if meth_col:
+                dbe_col = f'Dibasic_Ester_Domestic_{r_suffix}'
+                df_pivot[dbe_col] = 0.668 * df_pivot[acid_col] + 0.332 * df_pivot[meth_col] + 2500
+                print(f"   Generated synthetic series: {dbe_col} using methanol: {meth_col}")
+else:
+    print("[WARNING] Cyclohexane series not found. Cannot calculate synthetic DBE or Dicarboxylic Acid.")
+
 # 9. Compute a quick Correlation Analysis for Butyl Acetate (Target)
 print("\n9. Calculating correlation matrix...")
 corr_matrix = df_pivot.corr()

@@ -118,6 +118,20 @@ if not acetone_targets:
 if acetone_targets:
     targets_to_process.append(acetone_targets[0])
 
+# Target 14: Dibasic Ester
+dbe_targets = [col for col in df.columns if 'Dibasic_Ester_Domestic_华东' in col]
+if not dbe_targets:
+    dbe_targets = [col for col in df.columns if 'Dibasic_Ester_Domestic' in col]
+if dbe_targets:
+    targets_to_process.append(dbe_targets[0])
+
+# Target 15: Dicarboxylic Acid
+acid_targets = [col for col in df.columns if 'Dicarboxylic_Acid_Domestic_华东' in col]
+if not acid_targets:
+    acid_targets = [col for col in df.columns if 'Dicarboxylic_Acid_Domestic' in col]
+if acid_targets:
+    targets_to_process.append(acid_targets[0])
+
 print(f"   Targets to process: {targets_to_process}")
 
 # 2. Process each target
@@ -207,6 +221,18 @@ for target in targets_to_process:
             'Propylene': ['Propylene_Domestic'],
             'Reformed_Naphtha': ['Reformed_Naphtha_Domestic'],
             'Naphtha': ['Naphtha_Domestic']
+        }
+    elif 'Dibasic_Ester' in target:
+        keywords = {
+            'Dicarboxylic_Acid': ['Dicarboxylic_Acid_Domestic'],
+            'Methanol': ['Methanol_Domestic'],
+            'Cyclohexane': ['Cyclohexane_Domestic'],
+            'Nitric_Acid': ['Nitric_Acid_Domestic']
+        }
+    elif 'Dicarboxylic_Acid' in target:
+        keywords = {
+            'Cyclohexane': ['Cyclohexane_Domestic'],
+            'Nitric_Acid': ['Nitric_Acid_Domestic']
         }
     else:
         continue

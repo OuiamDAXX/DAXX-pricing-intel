@@ -74,7 +74,9 @@ PRODUCTS = [
     ("2_EHA_Domestic", "丙烯酸异辛酯", 3),
     ("Octanol_Domestic", "辛醇", 3),
     ("Ethyl_Acrylate_Domestic", "丙烯酸乙酯", 3),
-    ("Benzene_Domestic", "纯苯", 3)
+    ("Benzene_Domestic", "纯苯", 3),
+    ("Cyclohexane_Domestic", "环己烷", 3),
+    ("Nitric_Acid_Domestic", "硝酸", 3)
 ]
 
 # Create session
