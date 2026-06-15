@@ -408,26 +408,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Cyclohexane',
                 'Nitric_Acid'
             ]
-        },
-        'Dicarboxylic_Acid': {
-            title: "Dicarboxylic Acid",
-            precursors: {
-                butyl: 'Dicarboxylic_Acid',
-                butanol: 'Cyclohexane',
-                acetic: 'Nitric_Acid',
-                methanol: 'Nitric_Acid'
-            },
-            labels: {
-                butyl: "Dicarboxylic Acid (Target)",
-                butanol: "Cyclohexane (Feedstock)",
-                acetic: "Nitric Acid (Feedstock)",
-                methanol: "Nitric Acid (Feedstock)"
-            },
-            defaultChecked: [
-                'Dicarboxylic_Acid',
-                'Cyclohexane',
-                'Nitric_Acid'
-            ]
         }
     };
 
@@ -688,6 +668,12 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Propylene') || 
                    header.includes('Reformed_Naphtha') || 
                    header.includes('Naphtha');
+        } else if (product === 'Dibasic_Ester') {
+            return header.includes('Dibasic_Ester') || 
+                   header.includes('Dicarboxylic_Acid') || 
+                   header.includes('Methanol') || 
+                   header.includes('Cyclohexane') || 
+                   header.includes('Nitric_Acid');
         }
         return false;
     }
@@ -925,10 +911,10 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedSeries.forEach((col, idx) => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
             
-            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate')) color = '#06b6d4';
-            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene')) color = '#6366f1';
-            else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha')) color = '#10b981';
-            else if (col.includes('Methanol') || col.includes('Propylene')) color = '#f59e0b';
+            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate') || col.includes('Dibasic_Ester')) color = '#06b6d4';
+            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene') || col.includes('Dicarboxylic_Acid')) color = '#6366f1';
+            else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha') || col.includes('Cyclohexane')) color = '#10b981';
+            else if (col.includes('Methanol') || col.includes('Propylene') || col.includes('Nitric_Acid')) color = '#f59e0b';
             
             series.push({
                 name: col.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' '),
