@@ -449,6 +449,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Propylene_Oxide',
                 'Methanol'
             ]
+        },
+        'PM': {
+            title: "Methoxy propanol (PM)",
+            precursors: {
+                butyl: 'PM',
+                butanol: 'Propylene_Oxide',
+                acetic: 'Methanol',
+                methanol: 'Propylene'
+            },
+            labels: {
+                butyl: "PM (Target)",
+                butanol: "Propylene Oxide (Feedstock)",
+                acetic: "Methanol (Feedstock)",
+                methanol: "Propylene (Upstream)"
+            },
+            defaultChecked: [
+                'PM',
+                'Propylene_Oxide',
+                'Methanol',
+                'Propylene'
+            ]
         }
     };
 
@@ -724,6 +745,11 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Propylene_Oxide') || 
                    header.includes('Acetic_Acid') || 
                    header.includes('Methanol');
+        } else if (product === 'PM') {
+            return header.includes('PM') || 
+                   header.includes('Propylene_Oxide') || 
+                   header.includes('Methanol') || 
+                   header.includes('Propylene');
         }
         return false;
     }
@@ -1300,6 +1326,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamB: 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'PMA'
+            },
+            'PM': {
+                upstreamA: 'Propylene',
+                feedstockA: 'Propylene_Oxide',
+                upstreamB: '',
+                feedstockB: 'Methanol',
+                target: 'PM'
             }
         };
 
