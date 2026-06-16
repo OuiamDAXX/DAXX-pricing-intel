@@ -407,6 +407,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Methanol',
                 'Cyclohexane'
             ]
+        },
+        'Isopropanol': {
+            title: "Isopropyl Alcohol (IPA)",
+            precursors: {
+                butyl: 'Isopropanol',
+                butanol: 'Propylene',
+                acetic: 'Naphtha',
+                methanol: 'Naphtha'
+            },
+            labels: {
+                butyl: "IPA (Target)",
+                butanol: "Propylene (Feedstock)",
+                acetic: "Naphtha (Upstream)",
+                methanol: "Naphtha (Upstream)"
+            },
+            defaultChecked: [
+                'Isopropanol',
+                'Propylene',
+                'Naphtha'
+            ]
         }
     };
 
@@ -672,6 +692,10 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Dicarboxylic_Acid') || 
                    header.includes('Methanol') || 
                    header.includes('Cyclohexane');
+        } else if (product === 'Isopropanol') {
+            return header.includes('Isopropanol') || 
+                   header.includes('Propylene') || 
+                   header.includes('Naphtha');
         }
         return false;
     }
