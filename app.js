@@ -84,6 +84,8 @@ document.addEventListener("DOMContentLoaded", () => {
         '连云港': 'Lianyungang',
         '鲁西南': 'Southwest Shandong',
         '黄海西岸': 'West Yellow Sea Coast',
+        '燕山石化': 'Yanshan Petrochemical',
+        '弘润石化': 'Hongrun Petrochemical',
         'Yahoo': 'Yahoo Finance',
         'NWE': 'Northwest Europe',
         'Gulf': 'US Gulf Coast'
@@ -470,6 +472,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Methanol',
                 'Propylene'
             ]
+        },
+        'Isophthalic_Acid': {
+            title: "Isophthalic Acid (PIA)",
+            precursors: {
+                butyl: 'Isophthalic_Acid',
+                butanol: 'm_Xylene',
+                acetic: 'Reformed_Naphtha',
+                methanol: 'm_Xylene'
+            },
+            labels: {
+                butyl: "Isophthalic Acid (Target)",
+                butanol: "m-Xylene (Feedstock)",
+                acetic: "Reformed Naphtha (Feedstock)",
+                methanol: "m-Xylene (Feedstock)"
+            },
+            defaultChecked: [
+                'Isophthalic_Acid',
+                'm_Xylene',
+                'Reformed_Naphtha'
+            ]
         }
     };
 
@@ -750,6 +772,10 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Propylene_Oxide') || 
                    header.includes('Methanol') || 
                    header.includes('Propylene');
+        } else if (product === 'Isophthalic_Acid') {
+            return header.includes('Isophthalic_Acid') || 
+                   header.includes('m_Xylene') || 
+                   header.includes('Reformed_Naphtha');
         }
         return false;
     }
@@ -987,8 +1013,8 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedSeries.forEach((col, idx) => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
             
-            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate') || col.includes('Dibasic_Ester') || col.includes('PMA')) color = '#06b6d4';
-            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene') || col.includes('Dicarboxylic_Acid') || col.includes('PM')) color = '#6366f1';
+            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate') || col.includes('Dibasic_Ester') || col.includes('PMA') || col.includes('Isophthalic_Acid')) color = '#06b6d4';
+            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene') || col.includes('Dicarboxylic_Acid') || col.includes('PM') || col.includes('m_Xylene')) color = '#6366f1';
             else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha') || col.includes('Cyclohexane') || col.includes('Propylene_Oxide')) color = '#10b981';
             else if (col.includes('Methanol') || col.includes('Propylene') || col.includes('Nitric_Acid')) color = '#f59e0b';
             
@@ -1333,6 +1359,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamB: '',
                 feedstockB: 'Methanol',
                 target: 'PM'
+            },
+            'Isophthalic_Acid': {
+                upstreamA: 'Reformed_Naphtha',
+                feedstockA: 'm_Xylene',
+                upstreamB: '',
+                feedstockB: '',
+                target: 'Isophthalic_Acid'
             }
         };
 

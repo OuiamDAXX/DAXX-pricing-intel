@@ -154,8 +154,12 @@ if not pm_targets:
 if pm_targets:
     targets_to_process.append(pm_targets[0])
 
-
-
+# Target 19: Isophthalic Acid (PIA)
+pia_targets = [col for col in df.columns if 'Isophthalic_Acid_Domestic_华东' in col]
+if not pia_targets:
+    pia_targets = [col for col in df.columns if 'Isophthalic_Acid_Domestic' in col]
+if pia_targets:
+    targets_to_process.append(pia_targets[0])
 
 print(f"   Targets to process: {targets_to_process}")
 
@@ -275,6 +279,11 @@ for target in targets_to_process:
             'Propylene_Oxide': ['Propylene_Oxide_Domestic'],
             'Methanol': ['Methanol_Domestic'],
             'Propylene': ['Propylene_Domestic']
+        }
+    elif 'Isophthalic_Acid' in target:
+        keywords = {
+            'm_Xylene': ['m_Xylene_Domestic'],
+            'Reformed_Naphtha': ['Reformed_Naphtha_Domestic']
         }
     else:
         continue

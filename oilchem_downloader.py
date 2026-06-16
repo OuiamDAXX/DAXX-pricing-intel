@@ -79,7 +79,9 @@ PRODUCTS = [
     ("Nitric_Acid_Domestic", "硝酸", 3),
     ("Propylene_Oxide_Domestic", "环氧丙烷", 3),
     ("PM_Domestic", "PM", 3),
-    ("PMA_Domestic", "PMA", 3)
+    ("PMA_Domestic", "PMA", 3),
+    ("Isophthalic_Acid_Domestic", "间苯二甲酸", 3),
+    ("m_Xylene_Domestic", "间二甲苯", 2)
 ]
 
 # Create session
