@@ -226,8 +226,7 @@ for target in targets_to_process:
         keywords = {
             'Dicarboxylic_Acid': ['Dicarboxylic_Acid_Domestic'],
             'Methanol': ['Methanol_Domestic'],
-            'Cyclohexane': ['Cyclohexane_Domestic'],
-            'Nitric_Acid': ['Nitric_Acid_Domestic']
+            'Cyclohexane': ['Cyclohexane_Domestic']
         }
     elif 'Dicarboxylic_Acid' in target:
         keywords = {

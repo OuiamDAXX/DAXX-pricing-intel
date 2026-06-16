@@ -405,8 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Dibasic_Ester',
                 'Dicarboxylic_Acid',
                 'Methanol',
-                'Cyclohexane',
-                'Nitric_Acid'
+                'Cyclohexane'
             ]
         }
     };
@@ -672,8 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return header.includes('Dibasic_Ester') || 
                    header.includes('Dicarboxylic_Acid') || 
                    header.includes('Methanol') || 
-                   header.includes('Cyclohexane') || 
-                   header.includes('Nitric_Acid');
+                   header.includes('Cyclohexane');
         }
         return false;
     }
