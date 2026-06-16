@@ -140,6 +140,14 @@ if not ipa_targets:
 if ipa_targets:
     targets_to_process.append(ipa_targets[0])
 
+# Target 17: Methoxy propyl acetate (MPA)
+mpa_targets = [col for col in df.columns if 'PMA_Domestic_华东' in col]
+if not mpa_targets:
+    mpa_targets = [col for col in df.columns if 'PMA_Domestic' in col]
+if mpa_targets:
+    targets_to_process.append(mpa_targets[0])
+
+
 
 print(f"   Targets to process: {targets_to_process}")
 
@@ -246,6 +254,13 @@ for target in targets_to_process:
         keywords = {
             'Propylene': ['Propylene_Domestic'],
             'Naphtha': ['Naphtha_Domestic']
+        }
+    elif 'PMA' in target:
+        keywords = {
+            'PM': ['PM_Domestic'],
+            'Propylene_Oxide': ['Propylene_Oxide_Domestic'],
+            'Acetic_Acid': ['Acetic_Acid_Domestic'],
+            'Methanol': ['Methanol_Domestic']
         }
     else:
         continue

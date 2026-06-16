@@ -427,6 +427,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Propylene',
                 'Naphtha'
             ]
+        },
+        'PMA': {
+            title: "Methoxy propyl acetate (MPA)",
+            precursors: {
+                butyl: 'PMA',
+                butanol: 'PM',
+                acetic: 'Acetic_Acid',
+                methanol: 'Methanol'
+            },
+            labels: {
+                butyl: "MPA (Target)",
+                butanol: "Methoxypropanol (Feedstock)",
+                acetic: "Acetic Acid (Feedstock)",
+                methanol: "Methanol (Upstream)"
+            },
+            defaultChecked: [
+                'PMA',
+                'PM',
+                'Acetic_Acid',
+                'Propylene_Oxide',
+                'Methanol'
+            ]
         }
     };
 
@@ -696,6 +718,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return header.includes('Isopropanol') || 
                    header.includes('Propylene') || 
                    header.includes('Naphtha');
+        } else if (product === 'PMA') {
+            return header.includes('PMA') || 
+                   header.includes('PM') || 
+                   header.includes('Propylene_Oxide') || 
+                   header.includes('Acetic_Acid') || 
+                   header.includes('Methanol');
         }
         return false;
     }
@@ -933,9 +961,9 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedSeries.forEach((col, idx) => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
             
-            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate') || col.includes('Dibasic_Ester')) color = '#06b6d4';
-            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene') || col.includes('Dicarboxylic_Acid')) color = '#6366f1';
-            else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha') || col.includes('Cyclohexane')) color = '#10b981';
+            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate') || col.includes('Dibasic_Ester') || col.includes('PMA')) color = '#06b6d4';
+            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene') || col.includes('Dicarboxylic_Acid') || col.includes('PM')) color = '#6366f1';
+            else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha') || col.includes('Cyclohexane') || col.includes('Propylene_Oxide')) color = '#10b981';
             else if (col.includes('Methanol') || col.includes('Propylene') || col.includes('Nitric_Acid')) color = '#f59e0b';
             
             series.push({
@@ -1265,6 +1293,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamB: '',
                 feedstockB: 'Methanol',
                 target: 'Dibasic_Ester'
+            },
+            'PMA': {
+                upstreamA: 'Propylene_Oxide',
+                feedstockA: 'PM',
+                upstreamB: 'Methanol',
+                feedstockB: 'Acetic_Acid',
+                target: 'PMA'
             }
         };
 
