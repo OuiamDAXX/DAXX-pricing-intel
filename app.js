@@ -1251,6 +1251,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamB: 'Naphtha',
                 feedstockB: 'Propylene',
                 target: 'Acetone'
+            },
+            'Isopropanol': {
+                upstreamA: 'Naphtha',
+                feedstockA: 'Propylene',
+                upstreamB: '',
+                feedstockB: '',
+                target: 'Isopropanol'
+            },
+            'Dibasic_Ester': {
+                upstreamA: 'Cyclohexane',
+                feedstockA: 'Dicarboxylic_Acid',
+                upstreamB: '',
+                feedstockB: 'Methanol',
+                target: 'Dibasic_Ester'
             }
         };
 
