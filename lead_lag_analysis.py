@@ -175,6 +175,13 @@ if not butanol_targets:
 if butanol_targets:
     targets_to_process.append(butanol_targets[0])
 
+# Target 22: Isobutanol
+isobutanol_targets = [col for col in df.columns if 'Isobutanol_Domestic_华东' in col]
+if not isobutanol_targets:
+    isobutanol_targets = [col for col in df.columns if 'Isobutanol_Domestic' in col]
+if isobutanol_targets:
+    targets_to_process.append(isobutanol_targets[0])
+
 print(f"   Targets to process: {targets_to_process}")
 
 # 2. Process each target
@@ -305,6 +312,11 @@ for target in targets_to_process:
             'Reformed_Naphtha': ['Reformed_Naphtha_Domestic']
         }
     elif 'n-Butanol' in target:
+        keywords = {
+            'Propylene': ['Propylene_Domestic'],
+            'Naphtha': ['Naphtha_Domestic']
+        }
+    elif 'Isobutanol' in target:
         keywords = {
             'Propylene': ['Propylene_Domestic'],
             'Naphtha': ['Naphtha_Domestic']
