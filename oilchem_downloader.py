@@ -81,7 +81,9 @@ PRODUCTS = [
     ("PM_Domestic", "PM", 3),
     ("PMA_Domestic", "PMA", 3),
     ("Isophthalic_Acid_Domestic", "间苯二甲酸", 3),
-    ("m_Xylene_Domestic", "间二甲苯", 2)
+    ("m_Xylene_Domestic", "间二甲苯", 2),
+    ("PTA_Domestic", "PTA", 3),
+    ("PX_Domestic", "PX", 2)
 ]
 
 # Create session
@@ -202,11 +204,21 @@ def run_login_flow():
 def search_variety_markets(keyword, business_type):
     """Searches for variety and returns list of available markets matching the business type."""
     url = "https://search.oilchem.net/pricecenter/getMarketPrice"
+    breed_list = []
+    if keyword == "PX":
+        breed_list = [{"id": "222"}]
+        query_val = ""
+    elif keyword == "PTA":
+        breed_list = [{"id": "460"}]
+        query_val = "PTA"
+    else:
+        query_val = keyword
+        
     payload = {
         "pageNo": 1,
         "pageSize": 100,
-        "query": keyword,
-        "breedList": [],
+        "query": query_val,
+        "breedList": breed_list,
         "priceTypeList": [],
         "areaList": [],
         "marketList": [],

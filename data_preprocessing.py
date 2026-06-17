@@ -47,9 +47,9 @@ print("1. Loading raw OilChem dataset...")
 df = pd.read_csv(INPUT_CSV, low_memory=False)
 print(f"   Loaded {len(df)} rows.")
 
-# Filter for China domestic data only (business_type == 3)
-df = df[df['business_type'] == 3]
-print(f"   Filtered for China domestic data (business_type == 3): {len(df)} rows.")
+# Filter for China domestic and refinery data (business_type in [2, 3])
+df = df[df['business_type'].isin([2, 3])]
+print(f"   Filtered for China domestic and refinery data (business_type in [2, 3]): {len(df)} rows.")
 
 # 2. Clean dates and prices
 print("2. Cleaning dates and parsing prices...")

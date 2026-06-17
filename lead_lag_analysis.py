@@ -161,6 +161,13 @@ if not pia_targets:
 if pia_targets:
     targets_to_process.append(pia_targets[0])
 
+# Target 20: Purified Terephthalic Acid (PTA)
+pta_targets = [col for col in df.columns if 'PTA_Domestic_华东' in col]
+if not pta_targets:
+    pta_targets = [col for col in df.columns if 'PTA_Domestic' in col]
+if pta_targets:
+    targets_to_process.append(pta_targets[0])
+
 print(f"   Targets to process: {targets_to_process}")
 
 # 2. Process each target
@@ -283,6 +290,11 @@ for target in targets_to_process:
     elif 'Isophthalic_Acid' in target:
         keywords = {
             'm_Xylene': ['m_Xylene_Domestic'],
+            'Reformed_Naphtha': ['Reformed_Naphtha_Domestic']
+        }
+    elif 'PTA' in target:
+        keywords = {
+            'p_Xylene': ['PX_Domestic'],
             'Reformed_Naphtha': ['Reformed_Naphtha_Domestic']
         }
     else:
