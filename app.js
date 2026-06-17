@@ -512,6 +512,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 'PX',
                 'Reformed_Naphtha'
             ]
+        },
+        'n_Butanol': {
+            title: "n-Butanol",
+            precursors: {
+                butyl: 'n-Butanol',
+                butanol: 'Propylene',
+                acetic: 'Naphtha',
+                methanol: 'Naphtha'
+            },
+            labels: {
+                butyl: "n-Butanol (Target)",
+                butanol: "Propylene (Feedstock)",
+                acetic: "Naphtha (Upstream)",
+                methanol: "Naphtha (Upstream)"
+            },
+            defaultChecked: [
+                'n-Butanol',
+                'Propylene',
+                'Naphtha'
+            ]
         }
     };
 
@@ -800,6 +820,10 @@ document.addEventListener("DOMContentLoaded", () => {
             return header.includes('PTA') || 
                    header.includes('PX') || 
                    header.includes('Reformed_Naphtha');
+        } else if (product === 'n_Butanol') {
+            return header.includes('n-Butanol') || 
+                   header.includes('Propylene') || 
+                   header.includes('Naphtha');
         }
         return false;
     }
@@ -1037,8 +1061,8 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedSeries.forEach((col, idx) => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
             
-            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate') || col.includes('Dibasic_Ester') || col.includes('PMA') || col.includes('Isophthalic_Acid') || col.includes('PTA')) color = '#06b6d4';
-            else if (col.includes('n-Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene') || col.includes('Dicarboxylic_Acid') || col.includes('PM') || col.includes('m_Xylene') || col.includes('PX')) color = '#6366f1';
+            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate') || col.includes('Dibasic_Ester') || col.includes('PMA') || col.includes('Isophthalic_Acid') || col.includes('PTA') || (col.includes('n-Butanol') && currentProduct === 'n_Butanol')) color = '#06b6d4';
+            else if ((col.includes('n-Butanol') && currentProduct !== 'n_Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene') || col.includes('Dicarboxylic_Acid') || col.includes('PM') || col.includes('m_Xylene') || col.includes('PX')) color = '#6366f1';
             else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha') || col.includes('Cyclohexane') || col.includes('Propylene_Oxide')) color = '#10b981';
             else if (col.includes('Methanol') || col.includes('Propylene') || col.includes('Nitric_Acid')) color = '#f59e0b';
             
@@ -1397,6 +1421,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamB: '',
                 feedstockB: '',
                 target: 'PTA'
+            },
+            'n_Butanol': {
+                upstreamA: 'Naphtha',
+                feedstockA: 'Propylene',
+                upstreamB: '',
+                feedstockB: '',
+                target: 'n-Butanol'
             }
         };
 
