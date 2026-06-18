@@ -559,13 +559,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'MEK',
                 butanol: '2_Butene',
                 acetic: 'Naphtha',
-                methanol: ''
+                methanol: 'Naphtha'
             },
             labels: {
                 butyl: "MEK (Target)",
                 butanol: "2-Butene (Feedstock)",
-                acetic: "Naphtha/Butane (Upstream)",
-                methanol: ""
+                acetic: "Naphtha / Butane (Upstream)",
+                methanol: "Naphtha / Butane (Upstream)"
             },
             defaultChecked: [
                 'MEK',
@@ -1486,7 +1486,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 target: 'Isobutanol'
             },
             'MEK': {
-                upstreamA: 'Naphtha',
+                upstreamA: 'Naphtha_Butane',
                 feedstockA: '2_Butene',
                 upstreamB: '',
                 feedstockB: '',
@@ -1505,7 +1505,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const cleanName = (key) => {
             if (!key) return '';
             if (key === 'Octanol') return '2-Ethylhexanol';
-            if (key === 'Naphtha' && currentProduct === 'MEK') return 'Naphtha/Butane';
+            if (key === 'Naphtha_Butane') return 'Naphtha / Butane';
             return key.replace(/_Domestic/i, '').replace(/_Proxy/i, '').replace(/_/g, ' ').replace(/-/g, ' ');
         };
 
