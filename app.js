@@ -579,13 +579,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'MEK',
                 butanol: '2_Butanol',
                 acetic: '1_Butene_2_Butene',
-                methanol: 'H2O'
+                methanol: '1_Butene_2_Butene'
             },
             labels: {
                 butyl: "MEK (Target)",
                 butanol: "2-Butanol (Feedstock)",
                 acetic: "1-But. / 2-Buteno (Upstream)",
-                methanol: "H2O (Upstream)"
+                methanol: "1-But. / 2-Buteno (Upstream)"
             },
             defaultChecked: [
                 'MEK',
@@ -896,8 +896,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (product === 'MEK_V2') {
             return header.includes('MEK') || 
                    header.includes('2_Butanol') || 
-                   header.includes('1_Butene_2_Butene') || 
-                   header.includes('H2O');
+                   header.includes('1_Butene_2_Butene');
         }
         return false;
     }
@@ -1520,8 +1519,8 @@ document.addEventListener("DOMContentLoaded", () => {
             'MEK_V2': {
                 upstreamA: '1_Butene_2_Butene',
                 feedstockA: '2_Butanol',
-                upstreamB: 'H2O',
-                feedstockB: '2_Butanol',
+                upstreamB: '',
+                feedstockB: '',
                 target: 'MEK'
             }
         };
