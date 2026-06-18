@@ -182,6 +182,13 @@ if not isobutanol_targets:
 if isobutanol_targets:
     targets_to_process.append(isobutanol_targets[0])
 
+# Target 23: MEK
+mek_targets = [col for col in df.columns if 'MEK_Domestic_华东' in col]
+if not mek_targets:
+    mek_targets = [col for col in df.columns if 'MEK_Domestic' in col]
+if mek_targets:
+    targets_to_process.append(mek_targets[0])
+
 print(f"   Targets to process: {targets_to_process}")
 
 # 2. Process each target
@@ -320,6 +327,12 @@ for target in targets_to_process:
         keywords = {
             'Propylene': ['Propylene_Domestic'],
             'Naphtha': ['Naphtha_Domestic']
+        }
+    elif 'MEK' in target:
+        keywords = {
+            '2_Butene': ['2_Butene_Domestic'],
+            'Naphtha': ['Naphtha_Domestic'],
+            'n_Butane': ['n_Butane_Domestic']
         }
     else:
         continue

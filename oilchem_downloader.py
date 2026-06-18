@@ -84,7 +84,9 @@ PRODUCTS = [
     ("m_Xylene_Domestic", "间二甲苯", 2),
     ("PTA_Domestic", "PTA", 3),
     ("PX_Domestic", "PX", 2),
-    ("Isobutanol_Domestic", "异丁醇", 3)
+    ("Isobutanol_Domestic", "异丁醇", 3),
+    ("MEK_Domestic", "丁酮", 3),
+    ("2_Butene_Domestic", "醚后C4", 2)
 ]
 
 # Create session
@@ -215,6 +217,12 @@ def search_variety_markets(keyword, business_type):
     elif keyword == "异丁醇":
         breed_list = [{"id": "144"}]
         query_val = "异丁醇"
+    elif keyword == "丁酮":
+        breed_list = [{"id": "119"}]
+        query_val = "丁酮"
+    elif keyword == "醚后C4":
+        breed_list = [{"id": "217"}]
+        query_val = "醚后C4"
     else:
         query_val = keyword
         
