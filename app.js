@@ -554,7 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         'MEK': {
-            title: "Methyl Ethyl Ketone (MEK)",
+            title: "Methyl Ethyl Ketone (MEK) Route 1",
             precursors: {
                 butyl: 'MEK',
                 butanol: '2_Butene',
@@ -571,6 +571,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 'MEK',
                 '2_Butene',
                 'Naphtha'
+            ]
+        },
+        'MEK_V2': {
+            title: "Methyl Ethyl Ketone (MEK) Route 2",
+            precursors: {
+                butyl: 'MEK',
+                butanol: '2_Butanol',
+                acetic: '1_Butene_2_Butene',
+                methanol: 'H2O'
+            },
+            labels: {
+                butyl: "MEK (Target)",
+                butanol: "2-Butanol (Feedstock)",
+                acetic: "1-But. / 2-Buteno (Upstream)",
+                methanol: "H2O (Upstream)"
+            },
+            defaultChecked: [
+                'MEK',
+                '2_Butanol',
+                '1_Butene_2_Butene'
             ]
         }
     };
@@ -873,6 +893,11 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('2_Butene') || 
                    header.includes('Naphtha') || 
                    header.includes('n_Butane');
+        } else if (product === 'MEK_V2') {
+            return header.includes('MEK') || 
+                   header.includes('2_Butanol') || 
+                   header.includes('1_Butene_2_Butene') || 
+                   header.includes('H2O');
         }
         return false;
     }
@@ -1110,9 +1135,9 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedSeries.forEach((col, idx) => {
             let color = CHART_COLORS[idx % CHART_COLORS.length];
             
-            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate') || col.includes('Dibasic_Ester') || col.includes('PMA') || col.includes('Isophthalic_Acid') || col.includes('PTA') || (col.includes('n-Butanol') && currentProduct === 'n_Butanol') || (col.includes('Isobutanol') && currentProduct === 'Isobutanol') || (col.includes('MEK') && currentProduct === 'MEK')) color = '#06b6d4';
-            else if ((col.includes('n-Butanol') && currentProduct !== 'n_Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene') || col.includes('Dicarboxylic_Acid') || col.includes('PM') || col.includes('m_Xylene') || col.includes('PX') || col.includes('Isobutanol') || col.includes('2_Butene')) color = '#6366f1';
-            else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha') || col.includes('Cyclohexane') || col.includes('Propylene_Oxide')) color = '#10b981';
+            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate') || col.includes('Dibasic_Ester') || col.includes('PMA') || col.includes('Isophthalic_Acid') || col.includes('PTA') || (col.includes('n-Butanol') && currentProduct === 'n_Butanol') || (col.includes('Isobutanol') && currentProduct === 'Isobutanol') || (col.includes('MEK') && (currentProduct === 'MEK' || currentProduct === 'MEK_V2'))) color = '#06b6d4';
+            else if ((col.includes('n-Butanol') && currentProduct !== 'n_Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene') || col.includes('Dicarboxylic_Acid') || col.includes('PM') || col.includes('m_Xylene') || col.includes('PX') || col.includes('Isobutanol') || col.includes('2_Butene') || col.includes('2_Butanol')) color = '#6366f1';
+            else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha') || col.includes('Cyclohexane') || col.includes('Propylene_Oxide') || col.includes('1_Butene_2_Butene') || col.includes('H2O')) color = '#10b981';
             else if (col.includes('Methanol') || col.includes('Propylene') || col.includes('Nitric_Acid')) color = '#f59e0b';
             
             series.push({
@@ -1491,6 +1516,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamB: '',
                 feedstockB: '',
                 target: 'MEK'
+            },
+            'MEK_V2': {
+                upstreamA: '1_Butene_2_Butene',
+                feedstockA: '2_Butanol',
+                upstreamB: 'H2O',
+                feedstockB: '2_Butanol',
+                target: 'MEK'
             }
         };
 
@@ -1506,6 +1538,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!key) return '';
             if (key === 'Octanol') return '2-Ethylhexanol';
             if (key === 'Naphtha_Butane') return 'Naphtha / Butane';
+            if (key === '1_Butene_2_Butene') return '1-But. / 2-Buteno';
             return key.replace(/_Domestic/i, '').replace(/_Proxy/i, '').replace(/_/g, ' ').replace(/-/g, ' ');
         };
 

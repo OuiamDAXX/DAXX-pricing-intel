@@ -332,7 +332,10 @@ for target in targets_to_process:
         keywords = {
             '2_Butene': ['2_Butene_Domestic'],
             'Naphtha': ['Naphtha_Domestic'],
-            'n_Butane': ['n_Butane_Domestic']
+            'n_Butane': ['n_Butane_Domestic'],
+            '2_Butanol': ['2_Butanol_Domestic'],
+            '1_Butene_2_Butene': ['1_Butene_2_Butene_Domestic'],
+            'H2O': ['H2O_Domestic']
         }
     else:
         continue
