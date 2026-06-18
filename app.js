@@ -618,6 +618,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let timeRangeDays = "all";   // "all", 365, 180, 90
     let rawLeadLagData = [];     // Raw array of lead-lag results
     let KPI_COLUMNS = {};        // Dynamic columns mapping for KPIs
+    let currentChartView = 'trend'; // 'trend' or 'seasonal'
     
     // Pagination state
     let currentPage = 1;
@@ -1047,6 +1048,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // CHART DRAWING (APEXCHARTS)
     // ==========================================
     function initializeChart() {
+        const isSeasonal = (currentChartView === 'seasonal');
         const options = {
             chart: {
                 type: 'line',
@@ -1075,7 +1077,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 strokeDashArray: 4
             },
             series: getChartSeries(),
-            xaxis: {
+            xaxis: isSeasonal ? {
+                type: 'datetime',
+                labels: {
+                    format: 'MMM',
+                    style: {
+                        fontFamily: 'Plus Jakarta Sans, sans-serif'
+                    }
+                }
+            } : {
                 type: 'datetime',
                 categories: alignedDates,
                 labels: {
@@ -1107,7 +1117,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 shared: true,
                 intersect: false,
                 x: {
-                    format: 'dd MMM yyyy'
+                    format: isSeasonal ? 'dd MMM' : 'dd MMM yyyy'
                 }
             },
             legend: {
@@ -1125,6 +1135,52 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getChartSeries() {
+        if (currentChartView === 'seasonal') {
+            const config = TARGET_CONFIGS[currentProduct];
+            if (!config) return [];
+            
+            const targetCol = resolveColumnForRegion(config.precursors.butyl, currentRegion);
+            
+            // Group by year
+            const yearsData = {};
+            rawPricesData.forEach(row => {
+                const date = new Date(row.Date);
+                if (isNaN(date.getTime())) return;
+                
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const day = date.getDate();
+                
+                // Standardize layout timeline on leap year 2024 to support overlay mapping
+                const dummyDate = new Date(2024, month, day);
+                
+                if (!yearsData[year]) {
+                    yearsData[year] = [];
+                }
+                
+                const val = row[targetCol];
+                if (val !== undefined && val !== null) {
+                    yearsData[year].push({
+                        x: dummyDate.getTime(),
+                        y: val
+                    });
+                }
+            });
+            
+            // Format series
+            const series = [];
+            const sortedYears = Object.keys(yearsData).sort();
+            sortedYears.forEach((year) => {
+                // sort chronologically within the year
+                yearsData[year].sort((a, b) => a.x - b.x);
+                series.push({
+                    name: `Year ${year}`,
+                    data: yearsData[year]
+                });
+            });
+            return series;
+        }
+
         let slicedData = rawPricesData;
         if (timeRangeDays !== "all") {
             slicedData = rawPricesData.slice(-parseInt(timeRangeDays));
@@ -1155,6 +1211,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateChartData() {
         if (!chartInstance) return;
         
+        if (currentChartView === 'seasonal') {
+            initializeChart();
+            return;
+        }
+        
         let slicedData = rawPricesData;
         if (timeRangeDays !== "all") {
             slicedData = rawPricesData.slice(-parseInt(timeRangeDays));
@@ -1164,7 +1225,16 @@ document.addEventListener("DOMContentLoaded", () => {
         
         chartInstance.updateOptions({
             xaxis: {
-                categories: newDates
+                type: 'datetime',
+                categories: newDates,
+                labels: {
+                    format: undefined
+                }
+            },
+            tooltip: {
+                x: {
+                    format: 'dd MMM yyyy'
+                }
             }
         });
         chartInstance.updateSeries(getChartSeries());
@@ -1793,6 +1863,30 @@ document.addEventListener("DOMContentLoaded", () => {
             
             timeRangeDays = e.target.getAttribute('data-days');
             updateChartData();
+        });
+    });
+
+    // View toggle buttons (Trend / Seasonal)
+    document.querySelectorAll('.btn-view-toggle').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            document.querySelectorAll('.btn-view-toggle').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            currentChartView = btn.getAttribute('data-view');
+            
+            const timeRangeEl = document.getElementById('time-range-controls');
+            const selectorContainerEl = document.querySelector('.series-selector-container');
+            
+            if (currentChartView === 'seasonal') {
+                if (timeRangeEl) timeRangeEl.style.display = 'none';
+                if (selectorContainerEl) selectorContainerEl.style.display = 'none';
+            } else {
+                if (timeRangeEl) timeRangeEl.style.display = 'flex';
+                if (selectorContainerEl) selectorContainerEl.style.display = 'block';
+            }
+            
+            initializeChart();
         });
     });
 

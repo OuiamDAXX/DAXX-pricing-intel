@@ -134,11 +134,22 @@
                         </div>
                     </div>
                     
-                    <div class="chart-controls">
-                        <button class="btn-range active" data-days="all">All</button>
-                        <button class="btn-range" data-days="365">1 Year</button>
-                        <button class="btn-range" data-days="180">6 Months</button>
-                        <button class="btn-range" data-days="90">3 Months</button>
+                    <div class="chart-controls-wrapper" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div class="view-toggle-group">
+                            <button class="btn-view-toggle active" id="btn-view-trend" data-view="trend" title="Multi-year trend analysis">
+                                <i class="fa-solid fa-chart-line"></i> Trend
+                            </button>
+                            <button class="btn-view-toggle" id="btn-view-seasonal" data-view="seasonal" title="Yearly seasonal overlay">
+                                <i class="fa-solid fa-calendar-days"></i> Seasonal
+                            </button>
+                        </div>
+
+                        <div class="chart-controls" id="time-range-controls">
+                            <button class="btn-range active" data-days="all">All</button>
+                            <button class="btn-range" data-days="365">1 Year</button>
+                            <button class="btn-range" data-days="180">6 Months</button>
+                            <button class="btn-range" data-days="90">3 Months</button>
+                        </div>
                     </div>
                 </div>
                 
