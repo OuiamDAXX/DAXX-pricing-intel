@@ -619,6 +619,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let rawLeadLagData = [];     // Raw array of lead-lag results
     let KPI_COLUMNS = {};        // Dynamic columns mapping for KPIs
     let currentChartView = 'trend'; // 'trend' or 'seasonal'
+    let seasonalMetricMode = 'price'; // 'price' or 'margin'
     
     // Pagination state
     let currentPage = 1;
@@ -1096,7 +1097,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             yaxis: {
                 title: {
-                    text: 'Market Price (¥/Ton)',
+                    text: (isSeasonal && seasonalMetricMode === 'margin') ? 'Theoretical Margin (¥/Ton)' : 'Market Price (¥/Ton)',
                     style: {
                         color: '#94a3b8',
                         fontSize: '12px',
@@ -1158,7 +1159,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     yearsData[year] = [];
                 }
                 
-                const val = row[targetCol];
+                const val = (seasonalMetricMode === 'margin')
+                    ? calculateMargin(row, currentProduct, currentRegion)
+                    : row[targetCol];
+                    
                 if (val !== undefined && val !== null) {
                     yearsData[year].push({
                         x: dummyDate.getTime(),
@@ -1877,15 +1881,30 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const timeRangeEl = document.getElementById('time-range-controls');
             const selectorContainerEl = document.querySelector('.series-selector-container');
+            const metricToggleEl = document.getElementById('seasonal-metric-toggle');
             
             if (currentChartView === 'seasonal') {
                 if (timeRangeEl) timeRangeEl.style.display = 'none';
                 if (selectorContainerEl) selectorContainerEl.style.display = 'none';
+                if (metricToggleEl) metricToggleEl.style.display = 'flex';
             } else {
                 if (timeRangeEl) timeRangeEl.style.display = 'flex';
                 if (selectorContainerEl) selectorContainerEl.style.display = 'block';
+                if (metricToggleEl) metricToggleEl.style.display = 'none';
             }
             
+            initializeChart();
+        });
+    });
+
+    // Metric toggle buttons (Price / Margin)
+    document.querySelectorAll('.btn-metric-toggle').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            document.querySelectorAll('.btn-metric-toggle').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            seasonalMetricMode = btn.getAttribute('data-metric');
             initializeChart();
         });
     });

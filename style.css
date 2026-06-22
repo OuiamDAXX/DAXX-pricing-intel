@@ -397,6 +397,40 @@ body {
     background: rgba(255, 255, 255, 0.05);
 }
 
+/* Metric toggle buttons (Price / Margin) */
+.metric-toggle-group {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+}
+
+.btn-metric-toggle {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-metric-toggle.active {
+    background: var(--color-warning);
+    color: var(--text-primary);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-metric-toggle:hover:not(.active) {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
 /* Checkboxes container */
 .series-selector-container {
     background: rgba(0, 0, 0, 0.15);
@@ -1224,6 +1258,18 @@ body.light-theme .btn-view-toggle:hover {
 }
 body.light-theme .btn-view-toggle.active {
     background: var(--color-cyan);
+    color: #ffffff;
+}
+
+body.light-theme .btn-metric-toggle {
+    background: rgba(0, 0, 0, 0.04);
+    color: #475569;
+}
+body.light-theme .btn-metric-toggle:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+body.light-theme .btn-metric-toggle.active {
+    background: var(--color-warning);
     color: #ffffff;
 }
 
