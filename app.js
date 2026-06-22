@@ -1045,9 +1045,109 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ==========================================
-    // CHART DRAWING (APEXCHARTS)
-    // ==========================================
+    function calculateMargin(row, product, region) {
+        const config = TARGET_CONFIGS[product];
+        if (!config) return null;
+
+        const targetCol = resolveColumnForRegion(config.precursors.butyl, region);
+        const targetVal = row[targetCol];
+        if (targetVal === undefined || targetVal === null) return null;
+
+        // Approximate precursor consumption coefficients per ton of product
+        const coefficients = {
+            'Butyl_Acetate': {
+                'butanol': 0.65, // n-butanol
+                'acetic': 0.53   // acetic acid
+            },
+            'Ethyl_Acetate': {
+                'butanol': 0.53, // ethanol
+                'acetic': 0.69   // acetic acid
+            },
+            'n_Propyl_Acetate': {
+                'butanol': 0.60, // n-propanol
+                'acetic': 0.59   // acetic acid
+            },
+            'Isopropyl_Acetate_Proxy': {
+                'butanol': 0.60, // isopropanol
+                'acetic': 0.59   // acetic acid
+            },
+            'Acrylic_Acid': {
+                'butanol': 0.65  // propylene
+            },
+            'Phthalic_Anhydride': {
+                'butanol': 0.75  // o-xylene
+            },
+            'Maleic_Anhydride': {
+                'butanol': 0.85  // n-butanol
+            },
+            'MMA': {
+                'butanol': 0.60, // acetone
+                'acetic': 0.45,  // propylene
+                'methanol': 0.35 // methanol
+            },
+            'Butyl_Acrylate': {
+                'butanol': 0.57, // acrylic acid
+                'acetic': 0.59   // n-butanol
+            },
+            'VAM': {
+                'butanol': 0.34, // ethylene
+                'acetic': 0.71   // acetic acid
+            },
+            '2_EHA': {
+                'butanol': 0.40, // acrylic acid
+                'acetic': 0.72   // octanol
+            },
+            'Ethyl_Acrylate': {
+                'butanol': 0.73, // acrylic acid
+                'acetic': 0.47   // ethanol
+            },
+            'Acetone_V1': {
+                'butanol': 1.05  // isopropanol
+            },
+            'Acetone_V2': {
+                'butanol': 1.40, // benzene
+                'acetic': 0.75   // propylene
+            },
+            'Dibasic_Ester': {
+                'butanol': 0.70, // dicarboxylic acid
+                'acetic': 0.35   // methanol
+            },
+            'Isopropanol': {
+                'butanol': 0.72  // propylene
+            },
+            'PMA': {
+                'butanol': 0.69, // PM
+                'acetic': 0.46   // acetic acid
+            }
+        };
+
+        const formula = coefficients[product];
+        if (!formula) return null;
+
+        let precursorsCost = 0;
+        let valid = true;
+
+        for (const [precursorKey, coef] of Object.entries(formula)) {
+            const rawColName = config.precursors[precursorKey];
+            if (!rawColName) {
+                valid = false;
+                break;
+            }
+            const colName = resolveColumnForRegion(rawColName, region);
+            const val = row[colName];
+            if (val === undefined || val === null) {
+                valid = false;
+                break;
+            }
+            precursorsCost += val * coef;
+        }
+
+        if (!valid) return null;
+
+        // Theoretical Margin = Target Price - Feedstock Costs
+        return targetVal - precursorsCost;
+    }
+
     function initializeChart() {
         const isSeasonal = (currentChartView === 'seasonal');
         const options = {
