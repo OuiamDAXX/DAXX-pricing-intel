@@ -625,6 +625,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentPage = 1;
     const rowsPerPage = 10;
     let filteredData = [];       // Data currently in table after search
+    let financialForecastsData = null;
+    const FORECAST_JSON_PATH = "oilchem_financial_forecasts.json";
 
     // ==========================================
     // INITIALIZATION & LOADING
@@ -633,6 +635,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadData() {
         try {
+            // Fetch forecasts first
+            try {
+                const fResponse = await fetch(FORECAST_JSON_PATH);
+                if (fResponse.ok) {
+                    financialForecastsData = await fResponse.json();
+                }
+            } catch (err) {
+                console.warn("Could not load financial forecasts json:", err);
+            }
+
             // 1. Fetch Prices CSV
             const pricesResponse = await fetch(PRICES_CSV_PATH);
             if (!pricesResponse.ok) throw new Error("Failed to load prices CSV.");
@@ -940,6 +952,8 @@ document.addEventListener("DOMContentLoaded", () => {
             displayLeadLag(rawLeadLagData);
         }
         
+        updateFinancialSignals();
+        
         document.getElementById('chart-loader').style.display = 'none';
     }
 
@@ -1150,6 +1164,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function initializeChart() {
         const isSeasonal = (currentChartView === 'seasonal');
+        const seriesData = getChartSeries();
+        const dashArrayOpt = seriesData.map(s => s.name.includes('Forecast') ? 5 : 0);
+
         const options = {
             chart: {
                 type: 'line',
@@ -1171,13 +1188,14 @@ document.addEventListener("DOMContentLoaded", () => {
             colors: CHART_COLORS,
             stroke: {
                 curve: 'smooth',
-                width: 3.5
+                width: 3.5,
+                dashArray: dashArrayOpt
             },
             grid: {
                 borderColor: 'rgba(255, 255, 255, 0.05)',
                 strokeDashArray: 4
             },
-            series: getChartSeries(),
+            series: seriesData,
             xaxis: isSeasonal ? {
                 type: 'datetime',
                 labels: {
@@ -1309,6 +1327,43 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
+        // 5. Add forecast line if available
+        if (financialForecastsData && financialForecastsData.products && financialForecastsData.products[currentProduct]) {
+            const productData = financialForecastsData.products[currentProduct];
+            const forecasts = productData[currentRegion] || Object.values(productData)[0];
+            if (forecasts && forecasts.predictions && forecasts.prediction_dates) {
+                const targetCol = resolveTargetColumn(currentProduct, currentRegion);
+                let lastRealVal = null;
+                let lastRealDate = null;
+                
+                if (slicedData.length > 0 && targetCol && slicedData[slicedData.length - 1][targetCol] !== undefined) {
+                    lastRealVal = slicedData[slicedData.length - 1][targetCol];
+                    lastRealDate = slicedData[slicedData.length - 1].Date;
+                }
+                
+                const forecastDataPoints = [];
+                if (lastRealVal !== null && lastRealDate !== null) {
+                    forecastDataPoints.push({
+                        x: new Date(lastRealDate).getTime(),
+                        y: lastRealVal
+                    });
+                }
+                
+                forecasts.predictions.forEach((val, idx) => {
+                    forecastDataPoints.push({
+                        x: new Date(forecasts.prediction_dates[idx]).getTime(),
+                        y: val
+                    });
+                });
+                
+                series.push({
+                    name: `${TARGET_CONFIGS[currentProduct].title} Forecast (14d)`,
+                    color: '#00cec9',
+                    data: forecastDataPoints
+                });
+            }
+        }
+
         return series;
     }
 
@@ -1326,6 +1381,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         const newDates = slicedData.map(row => row.Date);
+        const seriesData = getChartSeries();
+        const dashArrayOpt = seriesData.map(s => s.name.includes('Forecast') ? 5 : 0);
         
         chartInstance.updateOptions({
             xaxis: {
@@ -1339,9 +1396,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 x: {
                     format: 'dd MMM yyyy'
                 }
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3.5,
+                dashArray: dashArrayOpt
             }
         });
-        chartInstance.updateSeries(getChartSeries());
+        chartInstance.updateSeries(seriesData);
     }
 
     // ==========================================
@@ -2099,6 +2161,98 @@ document.addEventListener("DOMContentLoaded", () => {
         updateChartData();
         renderTable();
         displayLeadLag(rawLeadLagData);
+        updateFinancialSignals();
+    }
+
+    function updateFinancialSignals() {
+        const signalVal = document.getElementById('financial-signal-val');
+        const signalReason = document.getElementById('financial-signal-reason');
+        const metricSpread = document.getElementById('fin-metric-spread');
+        const metricRsi = document.getElementById('fin-metric-rsi');
+        const metricDirection = document.getElementById('fin-metric-direction');
+        const pointerDot = document.getElementById('bb-pointer-dot');
+        const limitLower = document.getElementById('bb-limit-lower');
+        const limitUpper = document.getElementById('bb-limit-upper');
+
+        if (!financialForecastsData || !financialForecastsData.products) {
+            if (signalVal) signalVal.textContent = "Indisponible";
+            return;
+        }
+
+        const productData = financialForecastsData.products[currentProduct];
+        if (!productData) {
+            if (signalVal) signalVal.textContent = "N/A";
+            return;
+        }
+
+        const forecasts = productData[currentRegion] || Object.values(productData)[0];
+        if (!forecasts) {
+            if (signalVal) signalVal.textContent = "N/A";
+            return;
+        }
+
+        // Update badge
+        if (signalVal) {
+            signalVal.textContent = forecasts.signal;
+            signalVal.className = 'signal-badge'; // Reset classes
+            
+            const lowerSignal = forecasts.signal.toLowerCase();
+            if (lowerSignal.includes('buy')) {
+                signalVal.classList.add('badge-acheter');
+            } else if (lowerSignal.includes('delay') || lowerSignal.includes('wait')) {
+                signalVal.classList.add('badge-reporter');
+            } else {
+                signalVal.classList.add('badge-neutral');
+            }
+        }
+
+        // Update description
+        if (signalReason) {
+            signalReason.textContent = forecasts.signal_reason || "";
+        }
+
+        // Update metrics
+        if (metricSpread) {
+            metricSpread.textContent = `${forecasts.spread.toLocaleString()} ¥/t`;
+        }
+        if (metricRsi) {
+            metricRsi.textContent = forecasts.rsi;
+            if (forecasts.rsi < 35) metricRsi.style.color = '#10b981';
+            else if (forecasts.rsi > 65) metricRsi.style.color = '#ef4444';
+            else metricRsi.style.color = 'var(--text-primary)';
+        }
+        if (metricDirection) {
+            metricDirection.textContent = `${forecasts.forecast_direction} (${forecasts.forecast_pct_change > 0 ? '+' : ''}${forecasts.forecast_pct_change}%)`;
+            if (forecasts.forecast_direction === 'Bullish') {
+                metricDirection.style.color = '#10b981';
+            } else if (forecasts.forecast_direction === 'Bearish') {
+                metricDirection.style.color = '#ef4444';
+            } else {
+                metricDirection.style.color = 'var(--text-primary)';
+            }
+        }
+
+        // Update Bollinger Band pointer
+        if (limitLower) limitLower.textContent = forecasts.bollinger.lower.toLocaleString();
+        if (limitUpper) limitUpper.textContent = forecasts.bollinger.upper.toLocaleString();
+        
+        if (pointerDot) {
+            const spreadVal = forecasts.spread;
+            const lowerVal = forecasts.bollinger.lower;
+            const upperVal = forecasts.bollinger.upper;
+            let percent = 50;
+            if (upperVal > lowerVal) {
+                percent = ((spreadVal - lowerVal) / (upperVal - lowerVal)) * 100;
+            }
+            percent = Math.max(0, Math.min(100, percent));
+            pointerDot.style.left = `${percent}%`;
+            
+            let color = '#6366f1';
+            if (percent < 15) color = '#10b981';
+            else if (percent > 85) color = '#ef4444';
+            pointerDot.style.background = color;
+            pointerDot.style.boxShadow = `0 0 8px ${color}`;
+        }
     }
 
     // Error UI view if load fails

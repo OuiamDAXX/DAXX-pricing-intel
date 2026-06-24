@@ -1639,4 +1639,32 @@ body.light-theme .node-icon {
     padding: 10px 0;
 }
 
+/* Financial Decision Support & Trading Badges */
+.signal-badge {
+    text-transform: uppercase;
+    box-shadow: 0 0 10px rgba(255,255,255,0.05);
+    transition: all 0.3s ease;
+}
+
+.signal-badge.badge-acheter {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.15) !important;
+}
+
+.signal-badge.badge-reporter {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.15) !important;
+}
+
+.signal-badge.badge-neutral {
+    background: rgba(99, 102, 241, 0.2) !important;
+    color: #6366f1 !important;
+    border: 1px solid rgba(99, 102, 241, 0.4) !important;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.15) !important;
+}
+
 

@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=32">
+    <link rel="stylesheet" href="style.css?v=33">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -180,6 +180,49 @@
 
             <!-- Sidebar Container -->
             <div class="sidebar-container">
+                <!-- Decision Support & Financial Signals Card -->
+                <aside class="sidebar-workspace-card" id="financial-signals-card">
+                    <div class="card-header">
+                        <div class="header-titles">
+                            <h2>Decision Support</h2>
+                            <p>Margin & Purchase Signals (14d Forecast)</p>
+                        </div>
+                    </div>
+                    <div class="financial-signals-content" id="financial-signals-container">
+                        <div class="signal-badge-container" style="text-align: center; margin-bottom: 12px;">
+                            <span class="signal-badge badge-neutral" id="financial-signal-val" style="font-size: 1.1rem; padding: 6px 16px; border-radius: 20px; font-weight: 700; display: inline-block;">Loading...</span>
+                        </div>
+                        <div class="signal-explanation" id="financial-signal-reason" style="font-size: 0.85rem; line-height: 1.4; margin-bottom: 15px; color: var(--text-secondary);">
+                            Analyzing market conditions and predicting margin trend...
+                        </div>
+                        <div class="financial-metrics-row" style="display: flex; justify-content: space-between; gap: 8px; margin-bottom: 15px;">
+                            <div class="fin-metric" style="background: var(--bg-card-secondary, rgba(255,255,255,0.05)); border-radius: 8px; padding: 8px; flex: 1; text-align: center; border: 1px solid var(--border-color);">
+                                <span class="fin-metric-label" style="display: block; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">Spread</span>
+                                <span class="fin-metric-val" id="fin-metric-spread" style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);">-</span>
+                            </div>
+                            <div class="fin-metric" style="background: var(--bg-card-secondary, rgba(255,255,255,0.05)); border-radius: 8px; padding: 8px; flex: 1; text-align: center; border: 1px solid var(--border-color);">
+                                <span class="fin-metric-label" style="display: block; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">RSI (14)</span>
+                                <span class="fin-metric-val" id="fin-metric-rsi" style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);">-</span>
+                            </div>
+                            <div class="fin-metric" style="background: var(--bg-card-secondary, rgba(255,255,255,0.05)); border-radius: 8px; padding: 8px; flex: 1; text-align: center; border: 1px solid var(--border-color);">
+                                <span class="fin-metric-label" style="display: block; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">14d Trend</span>
+                                <span class="fin-metric-val" id="fin-metric-direction" style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);">-</span>
+                            </div>
+                        </div>
+                        <div class="bollinger-progress-container" style="font-size: 0.8rem; margin-top: 10px;">
+                            <span class="bb-label" style="display: block; color: var(--text-muted); margin-bottom: 6px;">Bollinger Margin Position</span>
+                            <div class="bb-track" style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; margin-bottom: 4px;">
+                                <div class="bb-band" id="bb-band-bar" style="position: absolute; height: 100%; left: 15%; width: 70%; background: rgba(9, 132, 227, 0.2); border-radius: 3px;"></div>
+                                <div class="bb-pointer" id="bb-pointer-dot" style="position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #0984e3; top: -2px; margin-left: -5px; box-shadow: 0 0 8px #0984e3; transition: left 0.3s ease;"></div>
+                            </div>
+                            <div class="bb-limits" style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+                                <span id="bb-limit-lower">-</span>
+                                <span id="bb-limit-upper">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
                 <!-- Lead Lag Analysis Sidebar Card -->
                 <aside class="sidebar-workspace-card" id="lead-lag-card">
                     <div class="card-header">
@@ -280,6 +323,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=32"></script>
+    <script src="app.js?v=35"></script>
 </body>
 </html>
