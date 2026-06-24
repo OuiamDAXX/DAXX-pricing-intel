@@ -295,6 +295,20 @@ for prod_key, conf in TARGET_CONFIGS.items():
         elif pct_change < -1.5:
             direction = "Bearish"
             
+        # 3.5 Calculate Risk Metrics
+        returns = np.log(df[target_col] / df[target_col].shift(1)).dropna().iloc[-60:]
+        ann_vol = float(returns.std() * np.sqrt(252) * 100) if len(returns) > 5 else 0.0
+        
+        price_diff_10d = (df[target_col] - df[target_col].shift(10)).dropna()
+        var_95 = float(np.percentile(price_diff_10d, 95)) if len(price_diff_10d) > 10 else 0.0
+        var_95 = max(0.0, var_95)
+        
+        risk_level = "Low"
+        if ann_vol >= 20.0:
+            risk_level = "High"
+        elif ann_vol >= 10.0:
+            risk_level = "Medium"
+
         # Generate forecast dates
         for day in range(1, 15):
             f_date = last_date + datetime.timedelta(days=day)
@@ -312,6 +326,9 @@ for prod_key, conf in TARGET_CONFIGS.items():
             },
             'signal': signal,
             'signal_reason': reason,
+            'volatility_annualized': round(ann_vol, 1),
+            'var_10d_95': round(var_95, 1),
+            'risk_level': risk_level,
             'forecast_14d_price': round(price_14d, 1),
             'forecast_direction': direction,
             'forecast_pct_change': round(pct_change, 2),

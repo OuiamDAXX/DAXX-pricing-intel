@@ -2253,6 +2253,36 @@ document.addEventListener("DOMContentLoaded", () => {
             pointerDot.style.background = color;
             pointerDot.style.boxShadow = `0 0 8px ${color}`;
         }
+
+        // Update Risk Profile elements
+        const riskLevelBadge = document.getElementById('risk-level-badge');
+        const riskMetricVolatility = document.getElementById('risk-metric-volatility');
+        const riskMetricVar = document.getElementById('risk-metric-var');
+
+        if (forecasts.risk_level && riskLevelBadge) {
+            riskLevelBadge.textContent = forecasts.risk_level;
+            if (forecasts.risk_level === 'High') {
+                riskLevelBadge.style.color = '#ef4444';
+                riskLevelBadge.style.background = 'rgba(239, 68, 68, 0.15)';
+                riskLevelBadge.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+            } else if (forecasts.risk_level === 'Medium') {
+                riskLevelBadge.style.color = '#f59e0b';
+                riskLevelBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+                riskLevelBadge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+            } else {
+                riskLevelBadge.style.color = '#10b981';
+                riskLevelBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+                riskLevelBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+            }
+        }
+
+        if (forecasts.volatility_annualized !== undefined && riskMetricVolatility) {
+            riskMetricVolatility.textContent = `${forecasts.volatility_annualized}%`;
+        }
+
+        if (forecasts.var_10d_95 !== undefined && riskMetricVar) {
+            riskMetricVar.textContent = `+${forecasts.var_10d_95.toLocaleString()} ¥/t`;
+        }
     }
 
     // Error UI view if load fails

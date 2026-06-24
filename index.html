@@ -215,9 +215,25 @@
                                 <div class="bb-band" id="bb-band-bar" style="position: absolute; height: 100%; left: 15%; width: 70%; background: rgba(9, 132, 227, 0.2); border-radius: 3px;"></div>
                                 <div class="bb-pointer" id="bb-pointer-dot" style="position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #0984e3; top: -2px; margin-left: -5px; box-shadow: 0 0 8px #0984e3; transition: left 0.3s ease;"></div>
                             </div>
-                            <div class="bb-limits" style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+                            <div class="bb-limits" style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 15px;">
                                 <span id="bb-limit-lower">-</span>
                                 <span id="bb-limit-upper">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="risk-analysis-container" style="border-top: 1px solid var(--glass-border, rgba(255,255,255,0.08)); margin-top: 15px; padding-top: 15px;">
+                            <span class="risk-label" style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 10px;"><i class="fa-solid fa-shield-halved"></i> Financial Risk Profile</span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <span style="font-size: 0.8rem; color: var(--text-secondary);">Risk Level:</span>
+                                <span id="risk-level-badge" style="font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 12px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.15);">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.8rem;">
+                                <span style="color: var(--text-secondary);">Annualized Volatility (60d):</span>
+                                <strong id="risk-metric-volatility" style="color: var(--text-primary);">-</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                                <span style="color: var(--text-secondary);">Value-at-Risk (95% 10d):</span>
+                                <strong id="risk-metric-var" style="color: var(--text-primary);">-</strong>
                             </div>
                         </div>
                     </div>
@@ -323,6 +339,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=35"></script>
+    <script src="app.js?v=36"></script>
 </body>
 </html>
