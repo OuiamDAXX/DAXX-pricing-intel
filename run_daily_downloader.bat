@@ -13,6 +13,7 @@ python "oilchem_downloader.py"
 python "data_preprocessing.py"
 python "lead_lag_analysis.py"
 python "financial_prediction.py"
+python "model_backtester.py"
 
 echo ==================================================
 echo EXECUTION COMPLETE

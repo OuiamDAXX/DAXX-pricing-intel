@@ -626,7 +626,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const rowsPerPage = 10;
     let filteredData = [];       // Data currently in table after search
     let financialForecastsData = null;
+    let backtestResultsData = null;
     const FORECAST_JSON_PATH = "oilchem_financial_forecasts.json";
+    const BACKTEST_JSON_PATH = "oilchem_backtest_results.json";
 
     // ==========================================
     // INITIALIZATION & LOADING
@@ -643,6 +645,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } catch (err) {
                 console.warn("Could not load financial forecasts json:", err);
+            }
+
+            // Fetch backtest results
+            try {
+                const bResponse = await fetch(BACKTEST_JSON_PATH);
+                if (bResponse.ok) {
+                    backtestResultsData = await bResponse.json();
+                }
+            } catch (err) {
+                console.warn("Could not load backtest results json:", err);
             }
 
             // 1. Fetch Prices CSV
@@ -2282,6 +2294,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (forecasts.var_10d_95 !== undefined && riskMetricVar) {
             riskMetricVar.textContent = `+${forecasts.var_10d_95.toLocaleString()} ¥/t`;
+        }
+
+        // Update Backtest elements
+        const backtestMetricPrecision = document.getElementById('backtest-metric-precision');
+        const backtestMetricMae = document.getElementById('backtest-metric-mae');
+        const backtestMetricSavings = document.getElementById('backtest-metric-savings');
+
+        if (backtestResultsData && backtestResultsData[currentProduct]) {
+            const productBacktest = backtestResultsData[currentProduct];
+            const backtest = productBacktest[currentRegion] || Object.values(productBacktest)[0];
+            if (backtest) {
+                if (backtestMetricPrecision) {
+                    backtestMetricPrecision.textContent = `${backtest.precision_pct}%`;
+                    if (backtest.precision_pct > 95) backtestMetricPrecision.style.color = '#10b981';
+                    else if (backtest.precision_pct < 90) backtestMetricPrecision.style.color = '#ef4444';
+                    else backtestMetricPrecision.style.color = 'var(--text-primary)';
+                }
+                if (backtestMetricMae) {
+                    backtestMetricMae.textContent = `${backtest.mae_14d.toLocaleString()} ¥/t`;
+                }
+                if (backtestMetricSavings) {
+                    backtestMetricSavings.textContent = `${backtest.savings_pct > 0 ? '+' : ''}${backtest.savings_pct}% (${backtest.savings_per_ton.toLocaleString()} ¥/t)`;
+                    if (backtest.savings_pct > 0) backtestMetricSavings.style.color = '#10b981';
+                    else backtestMetricSavings.style.color = 'var(--text-primary)';
+                }
+            }
         }
     }
 

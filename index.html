@@ -236,6 +236,22 @@
                                 <strong id="risk-metric-var" style="color: var(--text-primary);">-</strong>
                             </div>
                         </div>
+
+                        <div class="backtest-analysis-container" style="border-top: 1px solid var(--glass-border, rgba(255,255,255,0.08)); margin-top: 15px; padding-top: 15px;">
+                            <span class="backtest-label" style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 10px;"><i class="fa-solid fa-chart-line"></i> Model Accuracy & Value</span>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.8rem;">
+                                <span style="color: var(--text-secondary);">14d Forecast Accuracy:</span>
+                                <strong id="backtest-metric-precision" style="color: #10b981;">-%</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.8rem;">
+                                <span style="color: var(--text-secondary);">Avg. Prediction Error:</span>
+                                <strong id="backtest-metric-mae" style="color: var(--text-primary);">-</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                                <span style="color: var(--text-secondary);">Purchase Cost Savings:</span>
+                                <strong id="backtest-metric-savings" style="color: #10b981;">-%</strong>
+                            </div>
+                        </div>
                     </div>
                 </aside>
 
@@ -339,6 +355,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=36"></script>
+    <script src="app.js?v=37"></script>
 </body>
 </html>
