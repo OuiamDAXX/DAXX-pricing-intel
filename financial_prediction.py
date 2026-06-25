@@ -263,6 +263,11 @@ for prod_key, conf in TARGET_CONFIGS.items():
         
         # Align target for future horizons
         horizon_preds = []
+        coeff_lists = {prec_key: [] for prec_key in feedstocks.keys()}
+        latest_feedstock_prices = {}
+        for prec_key, f_col in feedstocks.items():
+            latest_feedstock_prices[prec_key] = float(df[f_col].iloc[-1])
+
         for h in range(1, 15):
             y_train = df[target_col].shift(-h).loc[features_df.index].dropna()
             X_train = features_df.loc[y_train.index]
@@ -271,6 +276,8 @@ for prod_key, conf in TARGET_CONFIGS.items():
                 last_price = float(df[target_col].iloc[-1])
                 pred_val = last_price
                 horizon_preds.append(pred_val)
+                for prec_key in feedstocks.keys():
+                    coeff_lists[prec_key].append(0.0)
                 continue
                 
             model = SimpleRidge(alpha=1.0)
@@ -283,6 +290,16 @@ for prod_key, conf in TARGET_CONFIGS.items():
             pred_val = max(last_price * 0.5, min(last_price * 1.5, pred_val))
             
             horizon_preds.append(pred_val)
+            
+            # Save coefficients for this horizon
+            for prec_key in feedstocks.keys():
+                col_name = f'feedstock_{prec_key}'
+                if col_name in X_train.columns:
+                    col_idx = list(X_train.columns).index(col_name)
+                    coeff_val = float(model.coef_[col_idx])
+                else:
+                    coeff_val = 0.0
+                coeff_lists[prec_key].append(coeff_val)
             
         # Direction of forecast
         price_now = float(df[target_col].iloc[-1])
@@ -333,7 +350,9 @@ for prod_key, conf in TARGET_CONFIGS.items():
             'forecast_direction': direction,
             'forecast_pct_change': round(pct_change, 2),
             'predictions': [round(p, 1) for p in horizon_preds],
-            'prediction_dates': forecast_dates
+            'prediction_dates': forecast_dates,
+            'feedstock_coefficients': coeff_lists,
+            'feedstock_prices': latest_feedstock_prices
         }
 
 # Write output to json

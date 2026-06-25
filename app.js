@@ -627,6 +627,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let filteredData = [];       // Data currently in table after search
     let financialForecastsData = null;
     let backtestResultsData = null;
+    let whatIfState = {};
+    let simulatedForecastPoints = null;
     const FORECAST_JSON_PATH = "oilchem_financial_forecasts.json";
     const BACKTEST_JSON_PATH = "oilchem_backtest_results.json";
 
@@ -1177,7 +1179,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function initializeChart() {
         const isSeasonal = (currentChartView === 'seasonal');
         const seriesData = getChartSeries();
-        const dashArrayOpt = seriesData.map(s => s.name.includes('Forecast') ? 5 : 0);
+        const dashArrayOpt = seriesData.map(s => s.name.includes('Forecast') ? 5 : (s.name.includes('Simulated') ? 4 : 0));
+        const widthOpt = seriesData.map(s => s.name.includes('Simulated') ? 2.5 : 3.5);
 
         const options = {
             chart: {
@@ -1200,7 +1203,7 @@ document.addEventListener("DOMContentLoaded", () => {
             colors: CHART_COLORS,
             stroke: {
                 curve: 'smooth',
-                width: 3.5,
+                width: widthOpt,
                 dashArray: dashArrayOpt
             },
             grid: {
@@ -1373,6 +1376,28 @@ document.addEventListener("DOMContentLoaded", () => {
                     color: '#00cec9',
                     data: forecastDataPoints
                 });
+
+                // Add Simulated Scenario curve
+                if (simulatedForecastPoints && simulatedForecastPoints.length > 0) {
+                    const simDataPoints = [];
+                    if (lastRealVal !== null && lastRealDate !== null) {
+                        simDataPoints.push({
+                            x: new Date(lastRealDate).getTime(),
+                            y: lastRealVal
+                        });
+                    }
+                    simulatedForecastPoints.forEach((val, idx) => {
+                        simDataPoints.push({
+                            x: new Date(forecasts.prediction_dates[idx]).getTime(),
+                            y: val
+                        });
+                    });
+                    series.push({
+                        name: 'Simulated Scenario',
+                        color: '#f39c12', // Warm amber/orange
+                        data: simDataPoints
+                    });
+                }
             }
         }
 
@@ -1394,7 +1419,8 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const newDates = slicedData.map(row => row.Date);
         const seriesData = getChartSeries();
-        const dashArrayOpt = seriesData.map(s => s.name.includes('Forecast') ? 5 : 0);
+        const dashArrayOpt = seriesData.map(s => s.name.includes('Forecast') ? 5 : (s.name.includes('Simulated') ? 4 : 0));
+        const widthOpt = seriesData.map(s => s.name.includes('Simulated') ? 2.5 : 3.5);
         
         chartInstance.updateOptions({
             xaxis: {
@@ -1411,7 +1437,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             stroke: {
                 curve: 'smooth',
-                width: 3.5,
+                width: widthOpt,
                 dashArray: dashArrayOpt
             }
         });
@@ -2321,6 +2347,178 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         }
+
+        // Initialize / Update What-If Simulator with current forecasts
+        initWhatIfSimulator(forecasts);
+    }
+
+    function initWhatIfSimulator(forecasts) {
+        const card = document.getElementById('whatif-simulator-card');
+        const container = document.getElementById('whatif-sliders-container');
+        if (!card || !container) return;
+
+        if (!forecasts || !forecasts.feedstock_coefficients || !forecasts.feedstock_prices) {
+            card.style.display = 'none';
+            return;
+        }
+
+        card.style.display = 'block';
+        container.innerHTML = '';
+        whatIfState = {};
+
+        const precursors = Object.keys(forecasts.feedstock_prices);
+        const config = TARGET_CONFIGS[currentProduct];
+
+        precursors.forEach(prec => {
+            whatIfState[prec] = 0; // default 0%
+
+            const label = (config && config.labels && config.labels[prec]) 
+                ? config.labels[prec].replace(/\s*\(Feedstock\)|\s*\(Upstream\)/g, '') 
+                : prec.toUpperCase();
+            const currentPrice = forecasts.feedstock_prices[prec];
+
+            const group = document.createElement('div');
+            group.className = 'whatif-slider-group';
+            group.innerHTML = `
+                <div class="whatif-slider-header">
+                    <span class="whatif-slider-name">${label}</span>
+                    <span class="whatif-slider-value" id="whatif-val-${prec}">0%</span>
+                </div>
+                <input type="range" class="whatif-slider" id="whatif-slider-${prec}" min="-30" max="30" value="0" step="1">
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
+                    <span>-30%</span>
+                    <span id="whatif-price-${prec}" style="font-variant-numeric: tabular-nums;">¥${Math.round(currentPrice).toLocaleString()}</span>
+                    <span>+30%</span>
+                </div>
+            `;
+            container.appendChild(group);
+
+            const slider = group.querySelector(`#whatif-slider-${prec}`);
+            const valLabel = group.querySelector(`#whatif-val-${prec}`);
+            const priceLabel = group.querySelector(`#whatif-price-${prec}`);
+
+            slider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                whatIfState[prec] = val;
+
+                // Update percentage label class and text
+                valLabel.textContent = (val > 0 ? '+' : '') + val + '%';
+                valLabel.className = 'whatif-slider-value';
+                if (val > 0) valLabel.classList.add('positive');
+                else if (val < 0) valLabel.classList.add('negative');
+
+                // Update feedstock price text
+                const simulatedFeedstockPrice = currentPrice * (1 + val / 100);
+                priceLabel.textContent = `¥${Math.round(simulatedFeedstockPrice).toLocaleString()}`;
+
+                // Recalculate simulation path & redraw
+                recalculateWhatIf(forecasts);
+            });
+        });
+
+        // Reset button
+        const resetBtn = document.getElementById('whatif-reset-btn');
+        if (resetBtn) {
+            resetBtn.onclick = () => {
+                precursors.forEach(prec => {
+                    const slider = document.getElementById(`whatif-slider-${prec}`);
+                    if (slider) {
+                        slider.value = 0;
+                        slider.dispatchEvent(new Event('input'));
+                    }
+                });
+            };
+        }
+
+        recalculateWhatIf(forecasts);
+    }
+
+    function recalculateWhatIf(forecasts) {
+        if (!forecasts || !forecasts.predictions || !forecasts.feedstock_coefficients) return;
+
+        const baseline = forecasts.predictions;
+        const coefs = forecasts.feedstock_coefficients;
+        const prices = forecasts.feedstock_prices;
+
+        const simulated = [];
+        for (let h = 0; h < 14; h++) {
+            let shift = 0;
+            Object.keys(whatIfState).forEach(prec => {
+                const sliderPct = whatIfState[prec] / 100;
+                const beta = (coefs[prec] && coefs[prec][h] !== undefined) ? coefs[prec][h] : 0;
+                const xt = prices[prec] || 0;
+                shift += beta * xt * sliderPct;
+            });
+            simulated.push(baseline[h] + shift);
+        }
+
+        simulatedForecastPoints = simulated;
+
+        // Update result labels in UI for J+14
+        const baselineJ14 = baseline[13];
+        const simulatedJ14 = simulated[13];
+        const simulatedPriceEl = document.getElementById('whatif-simulated-price');
+        const priceChangePctEl = document.getElementById('whatif-price-change-pct');
+        const marginImpactEl = document.getElementById('whatif-margin-impact');
+
+        if (simulatedPriceEl) {
+            simulatedPriceEl.textContent = `¥${Math.round(simulatedJ14).toLocaleString()}/t`;
+        }
+
+        // Percentage change vs baseline J+14
+        const pctDiff = ((simulatedJ14 - baselineJ14) / baselineJ14) * 100;
+        if (priceChangePctEl) {
+            priceChangePctEl.textContent = (pctDiff > 0 ? '+' : '') + pctDiff.toFixed(2) + '%';
+            priceChangePctEl.style.color = pctDiff > 0 ? 'var(--color-emerald)' : (pctDiff < 0 ? 'var(--color-rose)' : 'var(--text-primary)');
+        }
+
+        // Calculate margin impact
+        const consumptionCoeffs = {
+            'Butyl_Acetate': { 'butanol': 0.65, 'acetic': 0.53 },
+            'Ethyl_Acetate': { 'butanol': 0.53, 'acetic': 0.69 },
+            'n_Propyl_Acetate': { 'butanol': 0.60, 'acetic': 0.59 },
+            'Isopropyl_Acetate_Proxy': { 'butanol': 0.60, 'acetic': 0.59 },
+            'Acrylic_Acid': { 'butanol': 0.65 },
+            'Phthalic_Anhydride': { 'butanol': 0.75 },
+            'Maleic_Anhydride': { 'butanol': 0.85 },
+            'MMA': { 'butanol': 0.60, 'acetic': 0.45, 'methanol': 0.35 },
+            'Butyl_Acrylate': { 'butanol': 0.57, 'acetic': 0.59 },
+            'VAM': { 'butanol': 0.34, 'acetic': 0.71 },
+            '2_EHA': { 'butanol': 0.40, 'acetic': 0.72 },
+            'Ethyl_Acrylate': { 'butanol': 0.73, 'acetic': 0.47 },
+            'Acetone_V1': { 'butanol': 1.05 },
+            'Acetone_V2': { 'butanol': 1.40, 'acetic': 0.75 },
+            'Dibasic_Ester': { 'butanol': 0.70, 'acetic': 0.35 },
+            'Isopropanol': { 'butanol': 0.72 },
+            'PMA': { 'butanol': 0.69, 'acetic': 0.46 }
+        };
+
+        const formula = consumptionCoeffs[currentProduct] || {};
+        let costChange = 0;
+        Object.keys(whatIfState).forEach(prec => {
+            const sliderPct = whatIfState[prec] / 100;
+            const xt = prices[prec] || 0;
+            const consumptionCoeff = formula[prec] || 0;
+            costChange += xt * sliderPct * consumptionCoeff;
+        });
+
+        const targetPriceChange = simulatedJ14 - baselineJ14;
+        const netMarginImpact = targetPriceChange - costChange;
+
+        if (marginImpactEl) {
+            const sign = netMarginImpact > 0 ? '+' : '';
+            marginImpactEl.textContent = `${sign}${Math.round(netMarginImpact).toLocaleString()} ¥/t`;
+            if (netMarginImpact > 0) {
+                marginImpactEl.style.color = 'var(--color-emerald)';
+            } else if (netMarginImpact < 0) {
+                marginImpactEl.style.color = 'var(--color-rose)';
+            } else {
+                marginImpactEl.style.color = 'var(--text-primary)';
+            }
+        }
+
+        // Redraw/update chart series to include the simulated line
+        updateChartData();
     }
 
     // Error UI view if load fails

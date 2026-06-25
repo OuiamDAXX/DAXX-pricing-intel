@@ -1667,4 +1667,99 @@ body.light-theme .node-icon {
     box-shadow: 0 0 15px rgba(99, 102, 241, 0.15) !important;
 }
 
+/* ==========================================================================
+   WHAT-IF SIMULATION SANDBOX STYLE
+   ========================================================================== */
+.whatif-slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease-in-out;
+}
+
+.whatif-slider-group:hover {
+    border-color: rgba(6, 182, 212, 0.3);
+    background: rgba(6, 182, 212, 0.02);
+}
+
+.whatif-slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.whatif-slider-name {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.whatif-slider-value {
+    font-weight: 600;
+    color: var(--color-cyan);
+    font-variant-numeric: tabular-nums;
+}
+
+.whatif-slider-value.negative {
+    color: var(--color-rose);
+}
+
+.whatif-slider-value.positive {
+    color: var(--color-emerald);
+}
+
+/* Styled HTML5 Range Input */
+.whatif-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.15);
+    outline: none;
+    transition: background 0.3s;
+}
+
+.whatif-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-cyan);
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--color-cyan);
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.whatif-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: var(--text-primary);
+}
+
+.whatif-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-cyan);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 8px var(--color-cyan);
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.whatif-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    background: var(--text-primary);
+}
+
+.btn-reset:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+
 

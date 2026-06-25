@@ -255,6 +255,39 @@
                     </div>
                 </aside>
 
+                <!-- What-If Sensitivity Simulator -->
+                <aside class="sidebar-workspace-card" id="whatif-simulator-card" style="display: none;">
+                    <div class="card-header">
+                        <div class="header-titles">
+                            <h2>What-If Simulator</h2>
+                            <p>Simulate feedstock price shocks (-30% to +30%)</p>
+                        </div>
+                    </div>
+                    <div class="whatif-content" style="padding: 15px;">
+                        <div id="whatif-sliders-container" style="display: flex; flex-direction: column; gap: 12px;">
+                            <!-- Populated dynamically by JS based on precursors -->
+                        </div>
+                        <div class="whatif-results-container" style="border-top: 1px solid var(--glass-border, rgba(255,255,255,0.08)); margin-top: 15px; padding-top: 15px;">
+                            <span class="whatif-label" style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 10px;"><i class="fa-solid fa-calculator"></i> Simulated Impact (J+14)</span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem;">
+                                <span style="color: var(--text-secondary);">Simulated Price:</span>
+                                <strong id="whatif-simulated-price" style="color: var(--text-primary); font-size: 0.95rem;">- ¥/t</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem;">
+                                <span style="color: var(--text-secondary);">Price Change:</span>
+                                <strong id="whatif-price-change-pct" style="color: var(--text-primary); font-size: 0.95rem;">-</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.85rem;">
+                                <span style="color: var(--text-secondary);">Margin Impact:</span>
+                                <strong id="whatif-margin-impact" style="color: var(--text-primary); font-size: 0.95rem;">-</strong>
+                            </div>
+                            <button id="whatif-reset-btn" class="btn-reset" style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.2s;">
+                                <i class="fa-solid fa-rotate-left"></i> Reset Simulation
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
                 <!-- Lead Lag Analysis Sidebar Card -->
                 <aside class="sidebar-workspace-card" id="lead-lag-card">
                     <div class="card-header">
