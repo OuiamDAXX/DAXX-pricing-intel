@@ -288,6 +288,29 @@
                     </div>
                 </aside>
 
+                <!-- Seasonal Purchase Planner -->
+                <aside class="sidebar-workspace-card" id="seasonal-planner-card" style="display: none;">
+                    <div class="card-header">
+                        <div class="header-titles">
+                            <h2>Seasonal Purchase Planner</h2>
+                            <p>12-month procurement recommendations calendar</p>
+                        </div>
+                    </div>
+                    <div class="planner-content" style="padding: 15px;">
+                        <div class="planner-explanation" id="planner-recommendation-summary" style="font-size: 0.85rem; line-height: 1.4; margin-bottom: 15px; color: var(--text-secondary);">
+                            Analyzing historical seasonal margin spread peaks and troughs...
+                        </div>
+                        <div class="seasonal-calendar-grid" id="seasonal-calendar-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px;">
+                            <!-- Dynamically populated by JS (12 months) -->
+                        </div>
+                        <div class="planner-legend" style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--glass-border, rgba(255,255,255,0.08)); padding-top: 10px;">
+                            <span><span class="legend-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; margin-right: 4px;"></span>Optimal Buy</span>
+                            <span><span class="legend-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #6366f1; margin-right: 4px;"></span>Neutral</span>
+                            <span><span class="legend-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f43f5e; margin-right: 4px;"></span>Avoid</span>
+                        </div>
+                    </div>
+                </aside>
+
                 <!-- Lead Lag Analysis Sidebar Card -->
                 <aside class="sidebar-workspace-card" id="lead-lag-card">
                     <div class="card-header">

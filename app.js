@@ -2350,6 +2350,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Initialize / Update What-If Simulator with current forecasts
         initWhatIfSimulator(forecasts);
+        initSeasonalPlanner(forecasts);
     }
 
     function initWhatIfSimulator(forecasts) {
@@ -2519,6 +2520,105 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Redraw/update chart series to include the simulated line
         updateChartData();
+    }
+
+    function initSeasonalPlanner(forecasts) {
+        const card = document.getElementById('seasonal-planner-card');
+        const container = document.getElementById('seasonal-calendar-container');
+        const summaryEl = document.getElementById('planner-recommendation-summary');
+        if (!card || !container) return;
+
+        if (!forecasts || !forecasts.seasonality_monthly || !forecasts.seasonality_monthly.target) {
+            card.style.display = 'none';
+            return;
+        }
+
+        card.style.display = 'block';
+        container.innerHTML = '';
+
+        const targetMonthly = forecasts.seasonality_monthly.target;
+        const feedstocksMonthly = forecasts.seasonality_monthly.feedstocks || {};
+        
+        const consumptionCoeffs = {
+            'Butyl_Acetate': { 'butanol': 0.65, 'acetic': 0.53 },
+            'Ethyl_Acetate': { 'butanol': 0.53, 'acetic': 0.69 },
+            'n_Propyl_Acetate': { 'butanol': 0.60, 'acetic': 0.59 },
+            'Isopropyl_Acetate_Proxy': { 'butanol': 0.60, 'acetic': 0.59 },
+            'Acrylic_Acid': { 'butanol': 0.65 },
+            'Phthalic_Anhydride': { 'butanol': 0.75 },
+            'Maleic_Anhydride': { 'butanol': 0.85 },
+            'MMA': { 'butanol': 0.60, 'acetic': 0.45, 'methanol': 0.35 },
+            'Butyl_Acrylate': { 'butanol': 0.57, 'acetic': 0.59 },
+            'VAM': { 'butanol': 0.34, 'acetic': 0.71 },
+            '2_EHA': { 'butanol': 0.40, 'acetic': 0.72 },
+            'Ethyl_Acrylate': { 'butanol': 0.73, 'acetic': 0.47 },
+            'Acetone_V1': { 'butanol': 1.05 },
+            'Acetone_V2': { 'butanol': 1.40, 'acetic': 0.75 },
+            'Dibasic_Ester': { 'butanol': 0.70, 'acetic': 0.35 },
+            'Isopropanol': { 'butanol': 0.72 },
+            'PMA': { 'butanol': 0.69, 'acetic': 0.46 }
+        };
+
+        const formula = consumptionCoeffs[currentProduct] || {};
+
+        // Calculate theoretical margin for each month
+        const monthlyMargins = [];
+        for (let m = 0; m < 12; m++) {
+            const targetP = targetMonthly[m] || 0;
+            let feedstockCost = 0;
+            Object.keys(feedstocksMonthly).forEach(prec => {
+                const coef = formula[prec] || 0;
+                const precP = feedstocksMonthly[prec][m] || 0;
+                feedstockCost += precP * coef;
+            });
+            monthlyMargins.push(targetP - feedstockCost);
+        }
+
+        // Calculate mean and std of margins
+        const meanMargin = monthlyMargins.reduce((sum, v) => sum + v, 0) / 12;
+        const variance = monthlyMargins.reduce((sum, v) => sum + Math.pow(v - meanMargin, 2), 0) / 12;
+        const stdMargin = Math.sqrt(variance) || 1;
+
+        const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const currentMonthIdx = new Date().getMonth(); // 0 to 11
+
+        let optimalMonths = [];
+        let avoidMonths = [];
+
+        for (let m = 0; m < 12; m++) {
+            const z = (monthlyMargins[m] - meanMargin) / stdMargin;
+            let statusClass = 'planner-neutral';
+            
+            if (z > 0.45) {
+                statusClass = 'planner-buy';
+                optimalMonths.push(monthsShort[m]);
+            } else if (z < -0.45) {
+                statusClass = 'planner-avoid';
+                avoidMonths.push(monthsShort[m]);
+            }
+
+            const isCurrent = (m === currentMonthIdx);
+            
+            const monthCard = document.createElement('div');
+            monthCard.className = `planner-month-card ${statusClass} ${isCurrent ? 'current' : ''}`;
+            monthCard.innerHTML = `
+                <span class="planner-month-name">${monthsShort[m]}</span>
+                <span class="planner-month-status-dot"></span>
+            `;
+            container.appendChild(monthCard);
+        }
+
+        // Generate synthetic recommendation text
+        const bestMonthsText = optimalMonths.length > 0 ? optimalMonths.join(', ') : 'None';
+        const avoidMonthsText = avoidMonths.length > 0 ? avoidMonths.join(', ') : 'None';
+
+        if (summaryEl) {
+            summaryEl.innerHTML = `
+                Historically, the best margins for <strong>${TARGET_CONFIGS[currentProduct].title}</strong> are observed in <strong>${bestMonthsText}</strong>. 
+                It is recommended to schedule major raw material purchases during these optimal periods to maximize returns. 
+                Avoid or delay buying in <strong>${avoidMonthsText}</strong> when margins are seasonally compressed.
+            `;
+        }
     }
 
     // Error UI view if load fails

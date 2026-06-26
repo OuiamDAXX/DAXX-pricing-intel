@@ -331,6 +331,12 @@ for prod_key, conf in TARGET_CONFIGS.items():
             f_date = last_date + datetime.timedelta(days=day)
             forecast_dates.append(f_date.strftime('%Y-%m-%d'))
             
+        # Calculate monthly seasonal price averages
+        target_monthly = df[target_col].groupby(df.index.month).mean().fillna(0.0).round(1).tolist()
+        feedstocks_monthly = {}
+        for prec_key, f_col in feedstocks.items():
+            feedstocks_monthly[prec_key] = df[f_col].groupby(df.index.month).mean().fillna(0.0).round(1).tolist()
+            
         output_data['products'][prod_key][region] = {
             'target_column': target_col,
             'current_price': price_now,
@@ -352,7 +358,11 @@ for prod_key, conf in TARGET_CONFIGS.items():
             'predictions': [round(p, 1) for p in horizon_preds],
             'prediction_dates': forecast_dates,
             'feedstock_coefficients': coeff_lists,
-            'feedstock_prices': latest_feedstock_prices
+            'feedstock_prices': latest_feedstock_prices,
+            'seasonality_monthly': {
+                'target': target_monthly,
+                'feedstocks': feedstocks_monthly
+            }
         }
 
 # Write output to json

@@ -1761,5 +1761,97 @@ body.light-theme .node-icon {
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
+/* ==========================================================================
+   SEASONAL PURCHASE PLANNER STYLE
+   ========================================================================== */
+.planner-month-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    cursor: default;
+}
+
+.planner-month-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.planner-month-card.current {
+    box-shadow: 0 0 10px var(--color-cyan-glow);
+    border: 1px solid var(--color-cyan) !important;
+}
+
+.planner-month-card.current::after {
+    content: 'NOW';
+    position: absolute;
+    top: -6px;
+    right: -2px;
+    background: var(--color-cyan);
+    color: #000;
+    font-size: 0.55rem;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 5px var(--color-cyan);
+}
+
+.planner-month-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.planner-month-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-top: 2px;
+}
+
+.planner-buy {
+    background: rgba(16, 185, 129, 0.06);
+    border-color: rgba(16, 185, 129, 0.15);
+}
+.planner-buy .planner-month-status-dot {
+    background: var(--color-emerald);
+    box-shadow: 0 0 6px var(--color-emerald);
+}
+.planner-buy .planner-month-name {
+    color: var(--color-emerald);
+}
+
+.planner-neutral {
+    background: rgba(99, 102, 241, 0.04);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+.planner-neutral .planner-month-status-dot {
+    background: var(--color-accent);
+    box-shadow: 0 0 6px var(--color-accent);
+}
+
+.planner-avoid {
+    background: rgba(244, 63, 94, 0.06);
+    border-color: rgba(244, 63, 94, 0.15);
+}
+.planner-avoid .planner-month-status-dot {
+    background: var(--color-rose);
+    box-shadow: 0 0 6px var(--color-rose);
+}
+.planner-avoid .planner-month-name {
+    color: var(--color-rose);
+}
+
+
 
 
