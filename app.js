@@ -791,7 +791,18 @@ document.addEventListener("DOMContentLoaded", () => {
             regionSelect.appendChild(opt);
         });
 
-        regionSelect.selectedIndex = 0;
+        // Select preferred regional benchmark as default (East China first, then Shandong, then South China)
+        const preferredRegionsOrder = ['华东', '山东', '华南', '华北', '江苏'];
+        let defaultRegion = regions[0];
+        for (const pref of preferredRegionsOrder) {
+            if (regions.includes(pref)) {
+                defaultRegion = pref;
+                break;
+            }
+        }
+
+        const defaultIndex = regions.indexOf(defaultRegion);
+        regionSelect.selectedIndex = defaultIndex >= 0 ? defaultIndex : 0;
         currentRegion = regionSelect.value;
     }
 
