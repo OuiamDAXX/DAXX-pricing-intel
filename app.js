@@ -2351,6 +2351,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Initialize / Update What-If Simulator with current forecasts
         initWhatIfSimulator(forecasts);
         initSeasonalPlanner(forecasts);
+        initBudgetCalculator(forecasts);
     }
 
     function initWhatIfSimulator(forecasts) {
@@ -2619,6 +2620,56 @@ document.addEventListener("DOMContentLoaded", () => {
                 Avoid or delay buying in <strong>${avoidMonthsText}</strong> when margins are seasonally compressed.
             `;
         }
+    }
+
+    function initBudgetCalculator(forecasts) {
+        const card = document.getElementById('budget-calculator-card');
+        const volumeInput = document.getElementById('budget-volume-input');
+        const estimatedValEl = document.getElementById('budget-estimated-val');
+        const varValEl = document.getElementById('budget-var-val');
+        const savingsValEl = document.getElementById('budget-savings-val');
+
+        if (!card || !volumeInput || !estimatedValEl || !varValEl || !savingsValEl) return;
+
+        if (!forecasts || !forecasts.current_price) {
+            card.style.display = 'none';
+            return;
+        }
+
+        card.style.display = 'block';
+
+        // Recalculation logic
+        function updateBudgetCalculations() {
+            const volume = parseFloat(volumeInput.value) || 0;
+            const currentPrice = forecasts.current_price;
+            const varPerTon = forecasts.var_10d_95 || 0;
+
+            const estBudget = volume * currentPrice;
+            const riskExposure = volume * varPerTon;
+
+            // Fetch savings percentage from backtest results if available, else fallback to 5.4%
+            let savingsPct = 5.4;
+            if (backtestResultsData && backtestResultsData[currentProduct]) {
+                const productBacktest = backtestResultsData[currentProduct];
+                const backtest = productBacktest[currentRegion] || Object.values(productBacktest)[0];
+                if (backtest && backtest.savings_pct) {
+                    savingsPct = backtest.savings_pct;
+                }
+            }
+
+            const estSavings = estBudget * (savingsPct / 100);
+
+            estimatedValEl.textContent = `¥${Math.round(estBudget).toLocaleString()}`;
+            varValEl.textContent = `¥${Math.round(riskExposure).toLocaleString()}`;
+            savingsValEl.textContent = `¥${Math.round(estSavings).toLocaleString()} (${savingsPct}%)`;
+        }
+
+        // Add event listener (input event for real-time recalculation)
+        volumeInput.removeEventListener('input', updateBudgetCalculations);
+        volumeInput.addEventListener('input', updateBudgetCalculations);
+
+        // Run initial calculations
+        updateBudgetCalculations();
     }
 
     // Error UI view if load fails

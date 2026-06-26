@@ -1852,6 +1852,21 @@ body.light-theme .node-icon {
     color: var(--color-rose);
 }
 
+/* ==========================================================================
+   PROCUREMENT BUDGET CALCULATOR STYLE
+   ========================================================================== */
+#budget-volume-input:focus {
+    border-color: var(--color-cyan) !important;
+    box-shadow: 0 0 8px var(--color-cyan-glow) !important;
+}
+
+#budget-volume-input::-webkit-outer-spin-button,
+#budget-volume-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
 
 
 

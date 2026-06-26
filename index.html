@@ -311,6 +311,51 @@
                     </div>
                 </aside>
 
+                <!-- Procurement Budget Calculator -->
+                <aside class="sidebar-workspace-card" id="budget-calculator-card" style="display: none;">
+                    <div class="card-header">
+                        <div class="header-titles">
+                            <h2>Procurement Budget & Risk</h2>
+                            <p>Estimate monthly expenses & budget risk exposure</p>
+                        </div>
+                    </div>
+                    <div class="budget-calculator-content" style="padding: 15px;">
+                        <div style="margin-bottom: 15px;">
+                            <label for="budget-volume-input" style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; font-weight: 600;">Monthly Volume Needed (Tons):</label>
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <input type="number" id="budget-volume-input" value="1000" min="1" step="50" style="width: 100%; padding: 10px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); outline: none; font-size: 0.95rem; font-weight: 500; font-family: var(--font-body);">
+                                <span style="position: absolute; right: 12px; font-size: 0.85rem; color: var(--text-muted); pointer-events: none;">t</span>
+                            </div>
+                        </div>
+
+                        <div class="budget-metrics-container" style="display: flex; flex-direction: column; gap: 10px;">
+                            <div class="budget-metric-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+                                <div>
+                                    <span style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Estimated Monthly Budget</span>
+                                    <span id="budget-estimated-val" style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums;">-</span>
+                                </div>
+                                <i class="fa-solid fa-file-invoice-dollar" style="font-size: 1.5rem; color: var(--color-cyan); opacity: 0.8;"></i>
+                            </div>
+
+                            <div class="budget-metric-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(244, 63, 94, 0.03); border: 1px solid rgba(244, 63, 94, 0.15); border-radius: 8px; padding: 10px;">
+                                <div>
+                                    <span style="display: block; font-size: 0.75rem; color: #f43f5e; text-transform: uppercase;">10d Budget Risk (95% VaR)</span>
+                                    <span id="budget-var-val" style="font-size: 1.1rem; font-weight: 700; color: #f43f5e; font-variant-numeric: tabular-nums;">-</span>
+                                </div>
+                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.5rem; color: #f43f5e; opacity: 0.8;"></i>
+                            </div>
+
+                            <div class="budget-metric-row" style="display: flex; justify-content: space-between; align-items: center; background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 8px; padding: 10px;">
+                                <div>
+                                    <span style="display: block; font-size: 0.75rem; color: #10b981; text-transform: uppercase;">Target Purchase Savings</span>
+                                    <span id="budget-savings-val" style="font-size: 1.1rem; font-weight: 700; color: #10b981; font-variant-numeric: tabular-nums;">-</span>
+                                </div>
+                                <i class="fa-solid fa-piggy-bank" style="font-size: 1.5rem; color: #10b981; opacity: 0.8;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
                 <!-- Lead Lag Analysis Sidebar Card -->
                 <aside class="sidebar-workspace-card" id="lead-lag-card">
                     <div class="card-header">
