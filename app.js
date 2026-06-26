@@ -777,6 +777,30 @@ document.addEventListener("DOMContentLoaded", () => {
         return regions.length > 0 ? regions : ['华东'];
     }
 
+    function getDefaultRegionForProduct(product) {
+        const defaultMap = {
+            'Butyl_Acetate': '华东',
+            'Ethyl_Acetate': '华东',
+            'n_Propyl_Acetate': '华东',
+            'Isopropyl_Acetate_Proxy': '华东',
+            'Acrylic_Acid': '华东',
+            'Phthalic_Anhydride': '华东',
+            'Maleic_Anhydride': '山东',
+            'MMA': '华东',
+            'Butyl_Acrylate': '华东',
+            'VAM': '华东',
+            '2_EHA': '华东',
+            'Ethyl_Acrylate': '华东',
+            'Acetone_V1': '华东',
+            'Acetone_V2': '华东',
+            'Dibasic_Ester': '华东',
+            'Isopropanol': '江苏',
+            'PMA': '华东',
+            'PM': '华东'
+        };
+        return defaultMap[product] || '华东';
+    }
+
     // Populate region select dynamically
     function populateRegionSelector(product) {
         const regionSelect = document.getElementById('market-region-select');
@@ -791,13 +815,18 @@ document.addEventListener("DOMContentLoaded", () => {
             regionSelect.appendChild(opt);
         });
 
-        // Select preferred regional benchmark as default (East China first, then Shandong, then South China)
-        const preferredRegionsOrder = ['华东', '山东', '华南', '华北', '江苏'];
+        // Resolve product-specific benchmark default, with general fallbacks
+        const preferredDefault = getDefaultRegionForProduct(product);
         let defaultRegion = regions[0];
-        for (const pref of preferredRegionsOrder) {
-            if (regions.includes(pref)) {
-                defaultRegion = pref;
-                break;
+        if (regions.includes(preferredDefault)) {
+            defaultRegion = preferredDefault;
+        } else {
+            const preferredRegionsOrder = ['华东', '山东', '华南', '华北', '江苏'];
+            for (const pref of preferredRegionsOrder) {
+                if (regions.includes(pref)) {
+                    defaultRegion = pref;
+                    break;
+                }
             }
         }
 
