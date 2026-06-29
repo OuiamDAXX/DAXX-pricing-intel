@@ -610,7 +610,9 @@ document.addEventListener("DOMContentLoaded", () => {
             defaultChecked: [
                 'Styrene',
                 'Ethylbenzene',
-                'Propylene'
+                'Reformed_Naphtha',
+                'Propylene',
+                'Naphtha'
             ]
         }
     };
