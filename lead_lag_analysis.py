@@ -189,6 +189,13 @@ if not mek_targets:
 if mek_targets:
     targets_to_process.append(mek_targets[0])
 
+# Target 24: Styrene
+styrene_targets = [col for col in df.columns if 'Styrene_Domestic_华东' in col]
+if not styrene_targets:
+    styrene_targets = [col for col in df.columns if 'Styrene_Domestic' in col]
+if styrene_targets:
+    targets_to_process.append(styrene_targets[0])
+
 print(f"   Targets to process: {targets_to_process}")
 
 # 2. Process each target
@@ -336,6 +343,13 @@ for target in targets_to_process:
             '2_Butanol': ['2_Butanol_Domestic'],
             '1_Butene_2_Butene': ['1_Butene_2_Butene_Domestic'],
             'H2O': ['H2O_Domestic']
+        }
+    elif 'Styrene' in target:
+        keywords = {
+            'Ethylbenzene': ['Ethylbenzene_Domestic'],
+            'Propylene': ['Propylene_Domestic'],
+            'Reformed_Naphtha': ['Reformed_Naphtha_Domestic'],
+            'Naphtha': ['Naphtha_Domestic']
         }
     else:
         continue
