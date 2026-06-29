@@ -88,7 +88,7 @@ Dibasic_Ester_Domestic_华东,Methanol_Domestic_山东中部,0,0.615151110262498
 Dibasic_Ester_Domestic_华东,Cyclohexane_Domestic_山东,0,0.9635869252858124,0.9635869252858124
 Dicarboxylic_Acid_Domestic_华东,Cyclohexane_Domestic_山东,0,0.9744471684595511,0.9744471684595511
 Dicarboxylic_Acid_Domestic_华东,Nitric_Acid_Domestic_华南,0,0.4942451804685427,0.4942451804685427
-Dicarboxylic_Acid_Domestic_华东,Nitric_Acid_Domestic_山东,0,0.47148183201499905,0.47148183201499905
+Dicarboxylic_Acid_Domestic_华东,Nitric_Acid_Domestic_山东,0,0.47148183201499916,0.47148183201499916
 Dicarboxylic_Acid_Domestic_华东,Nitric_Acid_Domestic_江苏,0,0.4600333044556851,0.4600333044556851
 Isopropanol_Domestic_华南,Propylene_Domestic_华东,0,0.5334651833949182,0.5334651833949182
 Isopropanol_Domestic_华南,Propylene_Domestic_华南,0,0.5374181774406906,0.5374181774406906
@@ -124,3 +124,9 @@ n-Butanol_Domestic_华东,Propylene_Domestic_山东,0,0.4168248748232832,0.41682
 Isobutanol_Domestic_华东,Propylene_Domestic_华东,0,0.30525963841270487,0.30525963841270487
 Isobutanol_Domestic_华东,Propylene_Domestic_华南,0,0.3051685179302029,0.3051685179302029
 Isobutanol_Domestic_华东,Propylene_Domestic_山东,0,0.3314916769202614,0.3314916769202614
+Styrene_Domestic_中沙天津,Ethylbenzene_Domestic_吉林石化,0,0.14964873410948917,0.14964873410948917
+Styrene_Domestic_中沙天津,Ethylbenzene_Domestic_广州石化,0,0.794031302241929,0.794031302241929
+Styrene_Domestic_中沙天津,Ethylbenzene_Domestic_茂名石化,0,0.794031302241929,0.794031302241929
+Styrene_Domestic_中沙天津,Propylene_Domestic_华东,0,0.6745116112060717,0.6745116112060717
+Styrene_Domestic_中沙天津,Propylene_Domestic_华南,0,0.668796822554852,0.668796822554852
+Styrene_Domestic_中沙天津,Propylene_Domestic_山东,0,0.6613281117839702,0.6613281117839702
