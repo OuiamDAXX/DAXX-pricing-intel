@@ -642,6 +642,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let KPI_COLUMNS = {};        // Dynamic columns mapping for KPIs
     let currentChartView = 'trend'; // 'trend' or 'seasonal'
     let seasonalMetricMode = 'price'; // 'price' or 'margin'
+    let activeSidebarTab = 'signals'; // 'signals', 'procurement', 'feedstocks'
     
     // Pagination state
     let currentPage = 1;
@@ -1392,13 +1393,34 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const series = [];
-        selectedSeries.forEach((col, idx) => {
-            let color = CHART_COLORS[idx % CHART_COLORS.length];
+        const targetColor = '#06b6d4'; // Target product color (Cyan)
+        const compColors = [
+            '#6366f1', // Indigo
+            '#10b981', // Emerald
+            '#f59e0b', // Amber
+            '#f43f5e', // Rose
+            '#a855f7', // Purple
+            '#84cc16', // Lime
+            '#fd79a8', // Pastel Pink
+            '#e17055', // Terracotta
+            '#00b894'  // Mint Green
+        ];
+        
+        let compColorIdx = 0;
+
+        selectedSeries.forEach((col) => {
+            let color = '';
             
-            if (col.includes('Butyl_Acetate') || col.includes('Ethyl_Acetate') || col.includes('n_Propyl_Acetate') || col.includes('Acrylic_Acid') || col.includes('Phthalic_Anhydride') || col.includes('Maleic_Anhydride') || col.includes('MMA') || col.includes('Butyl_Acrylate') || col.includes('VAM') || col.includes('2_EHA') || col.includes('Ethyl_Acrylate') || col.includes('Dibasic_Ester') || col.includes('PMA') || col.includes('Isophthalic_Acid') || col.includes('PTA') || (col.includes('n-Butanol') && currentProduct === 'n_Butanol') || (col.includes('Isobutanol') && currentProduct === 'Isobutanol') || (col.includes('MEK') && (currentProduct === 'MEK' || currentProduct === 'MEK_V2')) || (col.includes('Styrene') && currentProduct === 'Styrene')) color = '#06b6d4';
-            else if ((col.includes('n-Butanol') && currentProduct !== 'n_Butanol') || col.includes('Ethanol') || col.includes('Isopropanol') || col.includes('n-Propanol') || col.includes('o_Xylene') || col.includes('n_Butane') || col.includes('Acetone') || col.includes('Octanol') || col.includes('Benzene') || col.includes('Dicarboxylic_Acid') || col.includes('PM') || col.includes('m_Xylene') || col.includes('PX') || col.includes('Isobutanol') || col.includes('2_Butene') || col.includes('2_Butanol') || col.includes('Ethylbenzene')) color = '#6366f1';
-            else if (col.includes('Acetic_Acid') || col.includes('Naphtha') || col.includes('Reformed_Naphtha') || col.includes('Cyclohexane') || col.includes('Propylene_Oxide') || col.includes('1_Butene_2_Butene') || col.includes('H2O')) color = '#10b981';
-            else if (col.includes('Methanol') || col.includes('Propylene') || col.includes('Nitric_Acid')) color = '#f59e0b';
+            // Check if this matches the active target product column
+            const isMainTarget = (col === currentTarget);
+            
+            if (isMainTarget) {
+                color = targetColor;
+            } else {
+                // Assign a unique color sequentially to avoid duplicates
+                color = compColors[compColorIdx % compColors.length];
+                compColorIdx++;
+            }
             
             series.push({
                 name: col.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' '),
@@ -1441,7 +1463,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 series.push({
                     name: `${TARGET_CONFIGS[currentProduct].title} Forecast (14d)`,
-                    color: '#00cec9',
+                    color: '#e84393', // Vibrant Neon Pink/Magenta to make it stand out
                     data: forecastDataPoints
                 });
 
@@ -2226,6 +2248,14 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.removeChild(link);
     });
 
+    // Sidebar Tab click handler
+    document.querySelectorAll('.sidebar-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            activeSidebarTab = e.currentTarget.getAttribute('data-tab');
+            updateSidebarTabs();
+        });
+    });
+
     // Target Select Change Event Listener
     const targetSelect = document.getElementById('target-product-select');
     if (targetSelect) {
@@ -2428,6 +2458,79 @@ document.addEventListener("DOMContentLoaded", () => {
         initWhatIfSimulator(forecasts);
         initSeasonalPlanner(forecasts);
         initBudgetCalculator(forecasts);
+
+        // Apply sidebar tab filter
+        updateSidebarTabs();
+    }
+
+    function updateSidebarTabs() {
+        const tabButtons = document.querySelectorAll('.sidebar-tab-btn');
+        const emptyMsgEl = document.getElementById('sidebar-tab-empty-msg');
+        if (!tabButtons || tabButtons.length === 0) return;
+
+        // Define which cards belong to which tab
+        const tabGroups = {
+            'signals': ['financial-signals-card', 'ai-insights-card'],
+            'procurement': ['budget-calculator-card', 'seasonal-planner-card'],
+            'feedstocks': ['whatif-simulator-card', 'lead-lag-card']
+        };
+
+        // Deactivate all tab buttons first, activate the active one
+        tabButtons.forEach(btn => {
+            if (btn.getAttribute('data-tab') === activeSidebarTab) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Hide all cards initially
+        Object.values(tabGroups).flat().forEach(cardId => {
+            const cardEl = document.getElementById(cardId);
+            if (cardEl) {
+                cardEl.style.display = 'none';
+            }
+        });
+
+        // Show active tab cards
+        const activeCards = tabGroups[activeSidebarTab] || [];
+        let visibleCount = 0;
+
+        activeCards.forEach(cardId => {
+            const cardEl = document.getElementById(cardId);
+            if (!cardEl) return;
+
+            // Check if card has conditional visibility
+            let shouldShow = true;
+            
+            let forecasts = null;
+            if (financialForecastsData && financialForecastsData.products && financialForecastsData.products[currentProduct]) {
+                const productData = financialForecastsData.products[currentProduct];
+                forecasts = productData[currentRegion] || Object.values(productData)[0];
+            }
+
+            if (cardId === 'whatif-simulator-card') {
+                shouldShow = (forecasts && forecasts.feedstock_coefficients && forecasts.feedstock_prices);
+            } else if (cardId === 'seasonal-planner-card') {
+                shouldShow = (forecasts && forecasts.seasonality_monthly);
+            } else if (cardId === 'budget-calculator-card') {
+                shouldShow = (forecasts && forecasts.current_price);
+            }
+
+            if (shouldShow) {
+                cardEl.style.display = 'block';
+                visibleCount++;
+            }
+        });
+
+        // Toggle empty message
+        if (emptyMsgEl) {
+            if (visibleCount === 0) {
+                emptyMsgEl.style.display = 'flex';
+            } else {
+                emptyMsgEl.style.display = 'none';
+            }
+        }
     }
 
     function initWhatIfSimulator(forecasts) {

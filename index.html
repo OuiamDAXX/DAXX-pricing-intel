@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=33">
+    <link rel="stylesheet" href="style.css?v=35">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -93,8 +93,9 @@
 
         <!-- Main Workspace: Chart & Sidebar -->
         <main class="main-workspace">
-            <!-- Chart Container Card -->
-            <section class="chart-workspace-card">
+            <div class="chart-column">
+                <!-- Chart Container Card -->
+                <section class="chart-workspace-card">
                 <div class="card-header">
                     <div class="header-titles">
                         <h2>Price Series Trend</h2>
@@ -179,8 +180,40 @@
                 </div>
             </section>
 
+            <!-- Chemical Chain Visualization Card (placed under chart) -->
+            <aside class="sidebar-workspace-card" id="chemical-chain-card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <div class="header-titles">
+                        <h2>Chemical Value Chain</h2>
+                        <p>Interactive feedstock pathways</p>
+                    </div>
+                </div>
+                <div class="chemical-chain-tree" id="chemical-tree-container">
+                    <!-- Populated dynamically by JavaScript -->
+                </div>
+            </aside>
+            </div>
+
             <!-- Sidebar Container -->
             <div class="sidebar-container">
+                <!-- Sidebar Tabs Navigation -->
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab-btn active" data-tab="signals" title="Market Signals & Insights">
+                        <i class="fa-solid fa-chart-line"></i> Signals
+                    </button>
+                    <button class="sidebar-tab-btn" data-tab="procurement" title="Procurement Planner & Budget">
+                        <i class="fa-solid fa-wallet"></i> Procurement
+                    </button>
+                    <button class="sidebar-tab-btn" data-tab="feedstocks" title="Feedstock Analysis & What-If">
+                        <i class="fa-solid fa-flask"></i> Feedstocks
+                    </button>
+                </div>
+
+                <div class="sidebar-tab-empty" id="sidebar-tab-empty-msg">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <p>No additional analysis available for the selected product under this tab.</p>
+                </div>
+
                 <!-- Decision Support & Financial Signals Card -->
                 <aside class="sidebar-workspace-card" id="financial-signals-card">
                     <div class="card-header">
@@ -377,18 +410,6 @@
                     </div>
                 </aside>
 
-                <!-- Chemical Chain Visualization Card -->
-                <aside class="sidebar-workspace-card" id="chemical-chain-card">
-                    <div class="card-header">
-                        <div class="header-titles">
-                            <h2>Chemical Value Chain</h2>
-                            <p>Interactive feedstock pathways</p>
-                        </div>
-                    </div>
-                    <div class="chemical-chain-tree" id="chemical-tree-container">
-                        <!-- Populated dynamically by JavaScript -->
-                    </div>
-                </aside>
 
                 <!-- Automatic Insights Sidebar Card -->
                 <aside class="sidebar-workspace-card" id="ai-insights-card">
@@ -457,6 +478,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=39"></script>
+    <script src="app.js?v=42"></script>
 </body>
 </html>
