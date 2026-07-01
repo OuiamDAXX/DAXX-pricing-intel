@@ -1434,6 +1434,32 @@ body.light-theme .check-tag.active.accent {
     transform: rotate(45deg) scale(1.1);
 }
 
+.currency-select-dropdown {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.currency-select-dropdown:hover {
+    border-color: var(--color-cyan);
+    color: var(--color-cyan);
+}
+
+.currency-select-dropdown option {
+    background: var(--bg-card, #1e293b);
+    color: var(--text-primary, #f8fafc);
+}
+
 /* ==========================================================================
    KPI TREND BADGES
    ========================================================================== */

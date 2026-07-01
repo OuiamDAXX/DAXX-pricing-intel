@@ -7,6 +7,75 @@ document.addEventListener("DOMContentLoaded", () => {
     const PRICES_CSV_PATH = "oilchem_aligned_prices.csv";
     const LEAD_LAG_CSV_PATH = "oilchem_lead_lag_results.csv";
 
+    // Currency conversion variables and state
+    let exchangeRates = { USD: 1, CNY: 7.25 };
+    let currentCurrency = localStorage.getItem('currency') || 'CNY';
+
+    // Set currency dropdown initial value
+    const currencySelect = document.getElementById('currency-select');
+    if (currencySelect) {
+        currencySelect.value = currentCurrency;
+        currencySelect.addEventListener('change', (e) => {
+            currentCurrency = e.target.value;
+            localStorage.setItem('currency', currentCurrency);
+            // Re-render components that display currency/prices
+            updateKPIs();
+            if (typeof initializeChart === 'function') {
+                initializeChart();
+            }
+            if (typeof updateChemicalTree === 'function') {
+                updateChemicalTree();
+            }
+            if (typeof updateFinancialSignals === 'function') {
+                updateFinancialSignals();
+            }
+            if (typeof updateSidebarTabs === 'function') {
+                updateSidebarTabs();
+            }
+        });
+    }
+
+    async function fetchExchangeRates() {
+        try {
+            const response = await fetch('https://open.er-api.com/v6/latest/USD');
+            const data = await response.json();
+            if (data.result === 'success' && data.rates) {
+                exchangeRates.USD = data.rates.USD || 1;
+                exchangeRates.CNY = data.rates.CNY || 7.25;
+                console.log('Fetched live exchange rates:', exchangeRates);
+            }
+        } catch (e) {
+            console.error('Failed to fetch live exchange rates, using defaults:', e);
+        }
+    }
+
+    function convertValue(valInCNY) {
+        if (typeof valInCNY !== 'number') {
+            valInCNY = parseFloat(valInCNY);
+        }
+        if (isNaN(valInCNY)) return 0;
+        if (currentCurrency === 'CNY') {
+            return valInCNY;
+        } else if (currentCurrency === 'USD') {
+            return valInCNY / exchangeRates.CNY;
+        }
+        return valInCNY;
+    }
+
+    function getCurrencySymbol() {
+        if (currentCurrency === 'CNY') return '¥';
+        if (currentCurrency === 'USD') return '$';
+        return '¥';
+    }
+
+    function formatVal(valInCNY, decimals = 1) {
+        const converted = convertValue(valInCNY);
+        return `${Number(converted).toLocaleString('en-US', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        })} ${getCurrencySymbol()}/t`;
+    }
+
     // Theme Management (Dark/Light mode)
     const themeToggleBtn = document.getElementById('theme-toggle');
     const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -662,6 +731,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadData() {
         try {
+            // Fetch exchange rates first
+            await fetchExchangeRates();
+
             // Fetch forecasts first
             try {
                 const fResponse = await fetch(FORECAST_JSON_PATH);
@@ -1072,7 +1144,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const absChange = currentVal - prevVal;
                 const pctChange = prevVal !== 0 ? (absChange / prevVal) * 100 : 0;
                 
-                valEl.textContent = `${Number(currentVal).toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})} ¥/t`;
+                valEl.textContent = formatVal(currentVal, 1);
                 
                 if (absChange > 0.05) {
                     changeEl.className = 'kpi-change';
@@ -1299,7 +1371,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             yaxis: {
                 title: {
-                    text: (isSeasonal && seasonalMetricMode === 'margin') ? 'Theoretical Margin (¥/Ton)' : 'Market Price (¥/Ton)',
+                    text: (isSeasonal && seasonalMetricMode === 'margin') ? `Theoretical Margin (${getCurrencySymbol()}/Ton)` : `Market Price (${getCurrencySymbol()}/Ton)`,
                     style: {
                         color: '#94a3b8',
                         fontSize: '12px',
@@ -1368,7 +1440,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (val !== undefined && val !== null) {
                     yearsData[year].push({
                         x: dummyDate.getTime(),
-                        y: val
+                        y: convertValue(val)
                     });
                 }
             });
@@ -1427,7 +1499,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 color: color,
                 data: slicedData.map(row => ({
                     x: new Date(row.Date).getTime(),
-                    y: row[col]
+                    y: convertValue(row[col])
                 }))
             });
         });
@@ -1450,14 +1522,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (lastRealVal !== null && lastRealDate !== null) {
                     forecastDataPoints.push({
                         x: new Date(lastRealDate).getTime(),
-                        y: lastRealVal
+                        y: convertValue(lastRealVal)
                     });
                 }
                 
                 forecasts.predictions.forEach((val, idx) => {
                     forecastDataPoints.push({
                         x: new Date(forecasts.prediction_dates[idx]).getTime(),
-                        y: val
+                        y: convertValue(val)
                     });
                 });
                 
@@ -1473,13 +1545,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (lastRealVal !== null && lastRealDate !== null) {
                         simDataPoints.push({
                             x: new Date(lastRealDate).getTime(),
-                            y: lastRealVal
+                            y: convertValue(lastRealVal)
                         });
                     }
                     simulatedForecastPoints.forEach((val, idx) => {
                         simDataPoints.push({
                             x: new Date(forecasts.prediction_dates[idx]).getTime(),
-                            y: val
+                            y: convertValue(val)
                         });
                     });
                     series.push({
@@ -2357,7 +2429,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Update metrics
         if (metricSpread) {
-            metricSpread.textContent = `${forecasts.spread.toLocaleString()} ¥/t`;
+            metricSpread.textContent = formatVal(forecasts.spread, 1);
         }
         if (metricRsi) {
             metricRsi.textContent = forecasts.rsi;
@@ -2377,8 +2449,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Update Bollinger Band pointer
-        if (limitLower) limitLower.textContent = forecasts.bollinger.lower.toLocaleString();
-        if (limitUpper) limitUpper.textContent = forecasts.bollinger.upper.toLocaleString();
+        if (limitLower) limitLower.textContent = Math.round(convertValue(forecasts.bollinger.lower)).toLocaleString();
+        if (limitUpper) limitUpper.textContent = Math.round(convertValue(forecasts.bollinger.upper)).toLocaleString();
         
         if (pointerDot) {
             const spreadVal = forecasts.spread;
@@ -2425,7 +2497,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (forecasts.var_10d_95 !== undefined && riskMetricVar) {
-            riskMetricVar.textContent = `+${forecasts.var_10d_95.toLocaleString()} ¥/t`;
+            riskMetricVar.textContent = `+${formatVal(forecasts.var_10d_95, 0)}`;
         }
 
         // Update Backtest elements
@@ -2444,10 +2516,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     else backtestMetricPrecision.style.color = 'var(--text-primary)';
                 }
                 if (backtestMetricMae) {
-                    backtestMetricMae.textContent = `${backtest.mae_14d.toLocaleString()} ¥/t`;
+                    backtestMetricMae.textContent = formatVal(backtest.mae_14d, 0);
                 }
                 if (backtestMetricSavings) {
-                    backtestMetricSavings.textContent = `${backtest.savings_pct > 0 ? '+' : ''}${backtest.savings_pct}% (${backtest.savings_per_ton.toLocaleString()} ¥/t)`;
+                    backtestMetricSavings.textContent = `${backtest.savings_pct > 0 ? '+' : ''}${backtest.savings_pct}% (${formatVal(backtest.savings_per_ton, 0)})`;
                     if (backtest.savings_pct > 0) backtestMetricSavings.style.color = '#10b981';
                     else backtestMetricSavings.style.color = 'var(--text-primary)';
                 }
@@ -2568,7 +2640,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <input type="range" class="whatif-slider" id="whatif-slider-${prec}" min="-30" max="30" value="0" step="1">
                 <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
                     <span>-30%</span>
-                    <span id="whatif-price-${prec}" style="font-variant-numeric: tabular-nums;">¥${Math.round(currentPrice).toLocaleString()}</span>
+                    <span id="whatif-price-${prec}" style="font-variant-numeric: tabular-nums;">${getCurrencySymbol()}${Math.round(convertValue(currentPrice)).toLocaleString()}</span>
                     <span>+30%</span>
                 </div>
             `;
@@ -2590,7 +2662,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Update feedstock price text
                 const simulatedFeedstockPrice = currentPrice * (1 + val / 100);
-                priceLabel.textContent = `¥${Math.round(simulatedFeedstockPrice).toLocaleString()}`;
+                priceLabel.textContent = `${getCurrencySymbol()}${Math.round(convertValue(simulatedFeedstockPrice)).toLocaleString()}`;
 
                 // Recalculate simulation path & redraw
                 recalculateWhatIf(forecasts);
@@ -2643,7 +2715,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const marginImpactEl = document.getElementById('whatif-margin-impact');
 
         if (simulatedPriceEl) {
-            simulatedPriceEl.textContent = `¥${Math.round(simulatedJ14).toLocaleString()}/t`;
+            simulatedPriceEl.textContent = formatVal(simulatedJ14, 0);
         }
 
         // Percentage change vs baseline J+14
@@ -2688,7 +2760,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (marginImpactEl) {
             const sign = netMarginImpact > 0 ? '+' : '';
-            marginImpactEl.textContent = `${sign}${Math.round(netMarginImpact).toLocaleString()} ¥/t`;
+            marginImpactEl.textContent = `${sign}${formatVal(netMarginImpact, 0)}`;
             if (netMarginImpact > 0) {
                 marginImpactEl.style.color = 'var(--color-emerald)';
             } else if (netMarginImpact < 0) {
@@ -2838,9 +2910,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const estSavings = estBudget * (savingsPct / 100);
 
-            estimatedValEl.textContent = `¥${Math.round(estBudget).toLocaleString()}`;
-            varValEl.textContent = `¥${Math.round(riskExposure).toLocaleString()}`;
-            savingsValEl.textContent = `¥${Math.round(estSavings).toLocaleString()} (${savingsPct}%)`;
+            estimatedValEl.textContent = `${getCurrencySymbol()}${Math.round(convertValue(estBudget)).toLocaleString()}`;
+            varValEl.textContent = `${getCurrencySymbol()}${Math.round(convertValue(riskExposure)).toLocaleString()}`;
+            savingsValEl.textContent = `${getCurrencySymbol()}${Math.round(convertValue(estSavings)).toLocaleString()} (${savingsPct}%)`;
         }
 
         // Add event listener (input event for real-time recalculation)
