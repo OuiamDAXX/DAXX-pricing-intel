@@ -73,10 +73,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function formatVal(valInCNY, decimals = 1) {
         const converted = convertValue(valInCNY);
+        const unit = (currentProduct === 'Brent') ? 'bbl' : 't';
         return `${Number(converted).toLocaleString('en-US', {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals
-        })} ${getCurrencySymbol()}/t`;
+        })} ${getCurrencySymbol()}/${unit}`;
     }
 
     // Theme Management (Dark/Light mode)
@@ -2554,7 +2555,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const th = document.createElement('th');
             let headerText = col.replace('_Domestic', '').replace(/_/g, ' ');
             if (col !== 'Date') {
-                headerText += ` (${getCurrencySymbol()}/t)`;
+                const unit = (col.includes('Brent')) ? 'bbl' : 't';
+                headerText += ` (${getCurrencySymbol()}/${unit})`;
             }
             th.textContent = headerText;
             tableHeaders.appendChild(th);
@@ -2758,6 +2760,52 @@ document.addEventListener("DOMContentLoaded", () => {
         updateFinancialSignals();
     }
 
+    function clearFinancialSignals() {
+        const signalVal = document.getElementById('financial-signal-val');
+        const signalReason = document.getElementById('financial-signal-reason');
+        const metricSpread = document.getElementById('fin-metric-spread');
+        const metricRsi = document.getElementById('fin-metric-rsi');
+        const metricDirection = document.getElementById('fin-metric-direction');
+        const pointerDot = document.getElementById('bb-pointer-dot');
+        const limitLower = document.getElementById('bb-limit-lower');
+        const limitUpper = document.getElementById('bb-limit-upper');
+        const riskLevelBadge = document.getElementById('risk-level-badge');
+        const riskMetricVolatility = document.getElementById('risk-metric-volatility');
+        const riskMetricVar = document.getElementById('risk-metric-var');
+        const backtestMetricPrecision = document.getElementById('backtest-metric-precision');
+        const backtestMetricMae = document.getElementById('backtest-metric-mae');
+        const backtestMetricSavings = document.getElementById('backtest-metric-savings');
+        const modeBadge = document.getElementById('analysis-mode-badge');
+
+        if (signalVal) signalVal.textContent = "N/A";
+        if (signalReason) signalReason.textContent = "No forecast data available for this target benchmark.";
+        if (metricSpread) metricSpread.textContent = "-";
+        if (metricRsi) metricRsi.textContent = "-";
+        if (metricDirection) metricDirection.textContent = "-";
+        if (pointerDot) pointerDot.style.display = 'none';
+        if (limitLower) limitLower.textContent = "-";
+        if (limitUpper) limitUpper.textContent = "-";
+        if (modeBadge) modeBadge.style.display = 'none';
+
+        if (riskLevelBadge) {
+            riskLevelBadge.textContent = "N/A";
+            riskLevelBadge.style.color = 'var(--text-secondary)';
+            riskLevelBadge.style.background = 'rgba(255, 255, 255, 0.05)';
+            riskLevelBadge.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        }
+        if (riskMetricVolatility) riskMetricVolatility.textContent = "-";
+        if (riskMetricVar) riskMetricVar.textContent = "-";
+
+        if (backtestMetricPrecision) backtestMetricPrecision.textContent = "-";
+        if (backtestMetricMae) backtestMetricMae.textContent = "-";
+        if (backtestMetricSavings) backtestMetricSavings.textContent = "-";
+
+        const whatifCard = document.getElementById('whatif-simulator-card');
+        if (whatifCard) {
+            whatifCard.style.display = 'none';
+        }
+    }
+
     function updateFinancialSignals() {
         const signalVal = document.getElementById('financial-signal-val');
         const signalReason = document.getElementById('financial-signal-reason');
@@ -2769,21 +2817,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const limitUpper = document.getElementById('bb-limit-upper');
 
         if (!financialForecastsData || !financialForecastsData.products) {
+            clearFinancialSignals();
             if (signalVal) signalVal.textContent = "Indisponible";
             return;
         }
 
         const productData = financialForecastsData.products[currentProduct];
         if (!productData) {
-            if (signalVal) signalVal.textContent = "N/A";
+            clearFinancialSignals();
             return;
         }
 
         const forecasts = productData[currentRegion] || Object.values(productData)[0];
         if (!forecasts) {
-            if (signalVal) signalVal.textContent = "N/A";
+            clearFinancialSignals();
             return;
         }
+
+        if (pointerDot) pointerDot.style.display = 'block';
 
         // Update analysis mode and labels dynamically
         const modeBadge = document.getElementById('analysis-mode-badge');

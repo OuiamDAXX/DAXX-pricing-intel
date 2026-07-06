@@ -157,12 +157,11 @@ if os.path.exists(brent_excel_path):
         df_brent = df_brent.dropna(subset=['Date', 'Close'])
         df_brent = df_brent.set_index('Date')
         
-        # Convert Brent price from USD/bbl to CNY/ton
-        # Conversion: 1 barrel ≈ 0.1364 metric tons (approx 7.33 barrels per ton)
+        # Convert Brent price from USD/bbl to CNY/bbl
         # 1 USD = 7.25 CNY (default exchange rate matching app.js)
+        # We store it in CNY/bbl. The app will divide by 7.25 in USD mode to restore the original USD/bbl price.
         exchange_rate = 7.25
-        barrels_per_ton = 7.33
-        df_brent['Brent_Domestic_Global'] = df_brent['Close'] * barrels_per_ton * exchange_rate
+        df_brent['Brent_Domestic_Global'] = df_brent['Close'] * exchange_rate
         
         # Align with df_pivot dates
         df_brent_aligned = df_brent[['Brent_Domestic_Global']].reindex(df_pivot.index)
