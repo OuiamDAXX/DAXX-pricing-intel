@@ -2452,100 +2452,41 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Custom Searchable Dropdown Logic
+    // Custom Searchable Dropdown Logic (Native Select Filter)
     function initializeCustomSearchableSelect() {
-        const container = document.getElementById('custom-target-select-container');
-        const input = document.getElementById('target-product-search-input');
-        const list = document.getElementById('target-product-options-list');
+        const searchInput = document.getElementById('target-product-search');
         const select = document.getElementById('target-product-select');
         
-        if (!container || !input || !list || !select) return;
+        if (!searchInput || !select) return;
 
-        // Read options
-        const options = Array.from(select.options).map(opt => ({
+        const originalOptions = Array.from(select.options).map(opt => ({
             value: opt.value,
             text: opt.textContent
         }));
 
-        // Set initial value
-        const selectedOpt = select.options[select.selectedIndex];
-        if (selectedOpt) {
-            input.value = selectedOpt.textContent;
-        }
-
-        // Toggle open/closed
-        input.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isOpen = container.classList.contains('open');
-            document.querySelectorAll('.custom-searchable-select').forEach(el => el.classList.remove('open'));
-            if (!isOpen) {
-                container.classList.add('open');
-                input.readOnly = false;
-                input.value = "";
-                renderOptions("");
-            }
-        });
-
-        // Search input
-        input.addEventListener('input', (e) => {
-            renderOptions(e.target.value);
-        });
-
-        // Close when clicking outside
-        document.addEventListener('click', () => {
-            closeDropdown();
-        });
-
-        function closeDropdown() {
-            container.classList.remove('open');
-            input.readOnly = true;
-            const currentSelectedOpt = select.options[select.selectedIndex];
-            if (currentSelectedOpt) {
-                input.value = currentSelectedOpt.textContent;
-            }
-        }
-
-        // Render options list
-        function renderOptions(query) {
-            list.innerHTML = "";
-            const filtered = options.filter(opt => 
-                opt.text.toLowerCase().includes(query.toLowerCase())
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const currentValue = select.value;
+            
+            select.innerHTML = "";
+            
+            const filtered = originalOptions.filter(opt => 
+                opt.text.toLowerCase().includes(query)
             );
-
-            if (filtered.length === 0) {
-                const li = document.createElement('li');
-                li.className = 'no-results';
-                li.textContent = "No products found";
-                list.appendChild(li);
-                return;
-            }
-
+            
             filtered.forEach(opt => {
-                const li = document.createElement('li');
-                li.textContent = opt.text;
-                li.setAttribute('data-value', opt.value);
-                
-                if (select.value === opt.value) {
-                    li.className = 'selected';
+                const option = document.createElement('option');
+                option.value = opt.value;
+                option.textContent = opt.text;
+                if (opt.value === currentValue) {
+                    option.selected = true;
                 }
-
-                li.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    select.value = opt.value;
-                    input.value = opt.text;
-                    select.dispatchEvent(new Event('change'));
-                    closeDropdown();
-                });
-
-                list.appendChild(li);
+                select.appendChild(option);
             });
-        }
-
-        // Synchronize when the native select changes from other code (e.g. tree clicks)
-        select.addEventListener('change', () => {
-            const externalSelectedOpt = select.options[select.selectedIndex];
-            if (externalSelectedOpt) {
-                input.value = externalSelectedOpt.textContent;
+            
+            if (filtered.length > 0 && !filtered.some(opt => opt.value === currentValue)) {
+                select.value = filtered[0].value;
+                select.dispatchEvent(new Event('change'));
             }
         });
     }
