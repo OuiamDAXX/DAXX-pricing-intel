@@ -130,6 +130,10 @@ TARGET_CONFIGS = {
     'Styrene': {
         'precursors': {'benzene': 'Benzene', 'ethylene': 'Ethylene'},
         'coefficients': {'benzene': 0.80, 'ethylene': 0.30}
+    },
+    'Toluene': {
+        'precursors': {'benzene': 'Benzene', 'methanol': 'Methanol'},
+        'coefficients': {'benzene': 0.795, 'methanol': 0.327}
     }
 }
 
@@ -176,7 +180,8 @@ FEEDSTOCK_BENCHMARKS = {
     'm_Xylene': 'm_Xylene_Domestic_燕山石化',
     'PX': 'PX_Domestic_扬子石化',
     'Ethylbenzene': 'Ethylbenzene_Domestic_吉林石化',
-    'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东'
+    'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东',
+    'Toluene': 'Toluene_Domestic_山东'
 }
 
 # Helper to find matching column in dataframe
@@ -379,12 +384,12 @@ for prod_key, conf in TARGET_CONFIGS.items():
             # Simulated Trading Strategy on feedstocks:
             # We look at Bollinger Bands of the spread up to eval_date
             historical_spreads = spread.loc[:eval_date]
-            if len(historical_spreads) < 20:
+            if len(historical_spreads) < 60:
                 continue
                 
             current_spread_val = historical_spreads.iloc[-1]
-            roll_mean = historical_spreads.rolling(20).mean().iloc[-1]
-            roll_std = historical_spreads.rolling(20).std().iloc[-1]
+            roll_mean = historical_spreads.rolling(60).mean().iloc[-1]
+            roll_std = historical_spreads.rolling(60).std().iloc[-1]
             lower_band = roll_mean - 2 * roll_std
             upper_band = roll_mean + 2 * roll_std
             rsi_val = calculate_rsi(historical_spreads, 14).iloc[-1]

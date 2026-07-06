@@ -155,6 +155,10 @@ TARGET_CONFIGS = {
     'Styrene': {
         'precursors': {'benzene': 'Benzene', 'ethylene': 'Ethylene'},
         'coefficients': {'benzene': 0.80, 'ethylene': 0.30}
+    },
+    'Toluene': {
+        'precursors': {'benzene': 'Benzene', 'methanol': 'Methanol'},
+        'coefficients': {'benzene': 0.795, 'methanol': 0.327}
     }
 }
 
@@ -177,7 +181,8 @@ FEEDSTOCK_BENCHMARKS = {
     'm_Xylene': 'm_Xylene_Domestic_燕山石化',
     'PX': 'PX_Domestic_扬子石化',
     'Ethylbenzene': 'Ethylbenzene_Domestic_吉林石化',
-    'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东'
+    'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东',
+    'Toluene': 'Toluene_Domestic_山东'
 }
 
 # Helper to find matching column in dataframe for a product and region
@@ -316,8 +321,8 @@ for prod_key, conf in TARGET_CONFIGS.items():
             
         # 4. Technical Indicators on Spread
         rsi_series = calculate_rsi(spread, 14)
-        bb_middle = spread.rolling(window=20).mean()
-        bb_std = spread.rolling(window=20).std()
+        bb_middle = spread.rolling(window=60).mean()
+        bb_std = spread.rolling(window=60).std()
         bb_upper = bb_middle + 2 * bb_std
         bb_lower = bb_middle - 2 * bb_std
         

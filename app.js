@@ -671,6 +671,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Benzene',
                 'Ethylene'
             ]
+        },
+        'Toluene': {
+            title: "Toluene (Toluène)",
+            precursors: {
+                butyl: 'Toluene',
+                butanol: 'Benzene',
+                acetic: 'Methanol'
+            },
+            labels: {
+                butyl: "Toluene (Target)",
+                butanol: "Benzene (Feedstock)",
+                acetic: "Methanol (Feedstock)"
+            },
+            defaultChecked: [
+                'Toluene',
+                'Benzene',
+                'Methanol'
+            ]
         }
     };
 
@@ -812,7 +830,8 @@ document.addEventListener("DOMContentLoaded", () => {
         'm_Xylene': 'm_Xylene_Domestic_燕山石化',
         'PX': 'PX_Domestic_扬子石化',
         'Ethylbenzene': 'Ethylbenzene_Domestic_吉林石化',
-        'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东'
+        'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东',
+        'Toluene': 'Toluene_Domestic_山东'
     };
 
     // Helper to resolve the correct column name with region fallback
@@ -1082,6 +1101,10 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Propylene') || 
                    header.includes('Reformed_Naphtha') || 
                    header.includes('Naphtha');
+        } else if (product === 'Toluene') {
+            return header.includes('Toluene') || 
+                   header.includes('Benzene') || 
+                   header.includes('Methanol');
         }
         return false;
     }
@@ -2474,28 +2497,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 modeBadge.style.color = '#10b981';
                 modeBadge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
                 if (spreadLabel) spreadLabel.textContent = 'Spread';
-                if (bbLabel) bbLabel.textContent = 'Bollinger Margin Position';
+                if (bbLabel) bbLabel.textContent = 'Bollinger Margin Position (60d)';
             } else if (mode === 'price') {
                 modeBadge.textContent = 'Absolute Price Mode';
                 modeBadge.style.background = 'rgba(99, 102, 241, 0.15)';
                 modeBadge.style.color = '#6366f1';
                 modeBadge.style.borderColor = 'rgba(99, 102, 241, 0.3)';
                 if (spreadLabel) spreadLabel.textContent = 'Price';
-                if (bbLabel) bbLabel.textContent = 'Bollinger Price Position';
+                if (bbLabel) bbLabel.textContent = 'Bollinger Price Position (60d)';
             } else if (mode === 'feedstock_index') {
                 modeBadge.textContent = 'Raw Material Index';
                 modeBadge.style.background = 'rgba(245, 158, 11, 0.15)';
                 modeBadge.style.color = '#f59e0b';
                 modeBadge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
                 if (spreadLabel) spreadLabel.textContent = 'Feedstock Cost';
-                if (bbLabel) bbLabel.textContent = 'Bollinger Cost Position';
+                if (bbLabel) bbLabel.textContent = 'Bollinger Cost Position (60d)';
             } else {
                 modeBadge.textContent = 'Low-Data Mode';
                 modeBadge.style.background = 'rgba(239, 68, 68, 0.15)';
                 modeBadge.style.color = '#ef4444';
                 modeBadge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
                 if (spreadLabel) spreadLabel.textContent = 'Price';
-                if (bbLabel) bbLabel.textContent = 'Bollinger Position';
+                if (bbLabel) bbLabel.textContent = 'Bollinger Position (60d)';
             }
         }
 
