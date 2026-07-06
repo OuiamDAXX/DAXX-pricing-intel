@@ -2452,42 +2452,100 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Custom Searchable Dropdown Logic (Native Select Filter)
+    // Custom Searchable Select with Dropdown Search
     function initializeCustomSearchableSelect() {
+        const container = document.getElementById('custom-target-select-container');
+        const trigger = container?.querySelector('.custom-select-trigger');
+        const selectedValueSpan = document.getElementById('custom-select-selected-value');
+        const dropdown = container?.querySelector('.custom-select-dropdown');
         const searchInput = document.getElementById('target-product-search');
+        const list = document.getElementById('target-product-options-list');
         const select = document.getElementById('target-product-select');
         
-        if (!searchInput || !select) return;
+        if (!container || !trigger || !selectedValueSpan || !dropdown || !searchInput || !list || !select) return;
 
         const originalOptions = Array.from(select.options).map(opt => ({
             value: opt.value,
             text: opt.textContent
         }));
 
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const currentValue = select.value;
-            
-            select.innerHTML = "";
-            
-            const filtered = originalOptions.filter(opt => 
-                opt.text.toLowerCase().includes(query)
-            );
-            
-            filtered.forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt.value;
-                option.textContent = opt.text;
-                if (opt.value === currentValue) {
-                    option.selected = true;
-                }
-                select.appendChild(option);
-            });
-            
-            if (filtered.length > 0 && !filtered.some(opt => opt.value === currentValue)) {
-                select.value = filtered[0].value;
-                select.dispatchEvent(new Event('change'));
+        // Set initial selected value text
+        const updateTriggerText = () => {
+            const selectedOpt = select.options[select.selectedIndex];
+            if (selectedOpt) {
+                selectedValueSpan.textContent = selectedOpt.textContent;
             }
+        };
+        updateTriggerText();
+
+        // Toggle dropdown open/closed
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = container.classList.contains('open');
+            document.querySelectorAll('.custom-select-container').forEach(el => el.classList.remove('open'));
+            if (!isOpen) {
+                container.classList.add('open');
+                searchInput.value = "";
+                renderOptions("");
+                setTimeout(() => searchInput.focus(), 50);
+            } else {
+                container.classList.remove('open');
+            }
+        });
+
+        // Search options
+        searchInput.addEventListener('input', (e) => {
+            renderOptions(e.target.value);
+        });
+
+        // Avoid closing dropdown when clicking inside the dropdown wrapper
+        dropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            container.classList.remove('open');
+        });
+
+        // Render options in list
+        function renderOptions(query) {
+            list.innerHTML = "";
+            const filtered = originalOptions.filter(opt => 
+                opt.text.toLowerCase().includes(query.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'no-results';
+                li.textContent = "No products found";
+                list.appendChild(li);
+                return;
+            }
+
+            filtered.forEach(opt => {
+                const li = document.createElement('li');
+                li.textContent = opt.text;
+                li.setAttribute('data-value', opt.value);
+                
+                if (select.value === opt.value) {
+                    li.className = 'selected';
+                }
+
+                li.addEventListener('click', () => {
+                    select.value = opt.value;
+                    updateTriggerText();
+                    select.dispatchEvent(new Event('change'));
+                    container.classList.remove('open');
+                });
+
+                list.appendChild(li);
+            });
+        }
+
+        // Sync back when selection changes externally
+        select.addEventListener('change', () => {
+            updateTriggerText();
         });
     }
 
