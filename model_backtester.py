@@ -96,8 +96,8 @@ TARGET_CONFIGS = {
         'coefficients': {'butanol': 0.72}
     },
     'PMA': {
-        'precursors': {'butanol': 'PM', 'acetic': 'Acetic_Acid'},
-        'coefficients': {'butanol': 0.69, 'acetic': 0.46}
+        'precursors': {'po': 'Propylene_Oxide', 'acetic': 'Acetic_Acid', 'methanol': 'Methanol'},
+        'coefficients': {'po': 0.48, 'acetic': 0.46, 'methanol': 0.26}
     },
     'PM': {
         'precursors': {'butanol': 'Propylene_Oxide'},
@@ -310,6 +310,12 @@ for prod_key, conf in TARGET_CONFIGS.items():
             for prec_key, f_col in feedstocks.items():
                 cost_series += df[f_col] * coefs.get(prec_key, 0.0)
             spread = df[target_col] - cost_series
+        elif analysis_mode == "feedstock_index" and 'coefficients' in conf and len(conf['coefficients']) > 0:
+            coefs = conf['coefficients']
+            cost_series = pd.Series(0.0, index=df.index)
+            for prec_key, f_col in feedstocks.items():
+                cost_series += df[f_col] * coefs.get(prec_key, 0.0)
+            spread = cost_series
         else:
             cost_series = df[active_col].copy()
             spread = df[active_col].copy()

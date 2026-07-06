@@ -503,21 +503,20 @@ document.addEventListener("DOMContentLoaded", () => {
             title: "Methoxy propyl acetate (MPA)",
             precursors: {
                 butyl: 'PMA',
-                butanol: 'PM',
+                butanol: 'Propylene_Oxide',
                 acetic: 'Acetic_Acid',
                 methanol: 'Methanol'
             },
             labels: {
                 butyl: "MPA (Target)",
-                butanol: "Methoxypropanol (Feedstock)",
+                butanol: "Propylene Oxide (Feedstock)",
                 acetic: "Acetic Acid (Feedstock)",
-                methanol: "Methanol (Upstream)"
+                methanol: "Methanol (Feedstock)"
             },
             defaultChecked: [
                 'PMA',
-                'PM',
-                'Acetic_Acid',
                 'Propylene_Oxide',
+                'Acetic_Acid',
                 'Methanol'
             ]
         },
@@ -1061,7 +1060,6 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Naphtha');
         } else if (product === 'PMA') {
             return header.includes('PMA') || 
-                   header.includes('PM') || 
                    header.includes('Propylene_Oxide') || 
                    header.includes('Acetic_Acid') || 
                    header.includes('Methanol');
@@ -2864,7 +2862,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'Acetone_V2': { 'butanol': 1.40, 'acetic': 0.75 },
             'Dibasic_Ester': { 'butanol': 0.70, 'acetic': 0.35 },
             'Isopropanol': { 'butanol': 0.72 },
-            'PMA': { 'butanol': 0.69, 'acetic': 0.46 },
+            'PMA': { 'butanol': 0.48, 'acetic': 0.46, 'methanol': 0.26 },
             'PM': { 'butanol': 0.69 },
             'Isophthalic_Acid': { 'butanol': 0.70 },
             'PTA': {},
@@ -2937,7 +2935,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'Acetone_V2': { 'butanol': 1.40, 'acetic': 0.75 },
             'Dibasic_Ester': { 'butanol': 0.70, 'acetic': 0.35 },
             'Isopropanol': { 'butanol': 0.72 },
-            'PMA': { 'butanol': 0.69, 'acetic': 0.46 },
+            'PMA': { 'butanol': 0.48, 'acetic': 0.46, 'methanol': 0.26 },
             'PM': { 'butanol': 0.69 },
             'Isophthalic_Acid': { 'butanol': 0.70 },
             'PTA': {},

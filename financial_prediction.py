@@ -121,8 +121,8 @@ TARGET_CONFIGS = {
         'coefficients': {'butanol': 0.72}
     },
     'PMA': {
-        'precursors': {'butanol': 'PM', 'acetic': 'Acetic_Acid'},
-        'coefficients': {'butanol': 0.69, 'acetic': 0.46}
+        'precursors': {'po': 'Propylene_Oxide', 'acetic': 'Acetic_Acid', 'methanol': 'Methanol'},
+        'coefficients': {'po': 0.48, 'acetic': 0.46, 'methanol': 0.26}
     },
     'PM': {
         'precursors': {'butanol': 'Propylene_Oxide'},
@@ -307,7 +307,7 @@ for prod_key, conf in TARGET_CONFIGS.items():
             continue
             
         print(f"Processing target: {target_col if target_exists else prod_key} | Mode: {analysis_mode} | Active Column: {active_col}")
-        
+         
         # 3. Calculate historical Spread/Margin (or fallback to absolute price)
         if analysis_mode == "margin":
             coefs = conf['coefficients']
@@ -316,6 +316,13 @@ for prod_key, conf in TARGET_CONFIGS.items():
                 coef = coefs.get(prec_key, 0.0)
                 cost_series += df[f_col] * coef
             spread = df[target_col] - cost_series
+        elif analysis_mode == "feedstock_index" and 'coefficients' in conf and len(conf['coefficients']) > 0:
+            coefs = conf['coefficients']
+            cost_series = pd.Series(0.0, index=df.index)
+            for prec_key, f_col in feedstocks.items():
+                coef = coefs.get(prec_key, 0.0)
+                cost_series += df[f_col] * coef
+            spread = cost_series
         else:
             spread = df[active_col].copy()
             

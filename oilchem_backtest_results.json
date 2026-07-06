@@ -1,17 +1,5 @@
 {
     "Butyl_Acetate": {
-        "华南": {
-            "target_column": "Butyl_Acetate_Domestic_华南",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 5.77,
-            "mae_14d": 422.2,
-            "precision_pct": 94.23,
-            "baseline_avg_cost": 6084.7,
-            "active_avg_cost": 6085.8,
-            "savings_per_ton": -1.1,
-            "savings_pct": -0.02
-        },
         "华东": {
             "target_column": "Butyl_Acetate_Domestic_华东",
             "analysis_mode": "margin",
@@ -35,21 +23,21 @@
             "active_avg_cost": 6063.7,
             "savings_per_ton": 21.0,
             "savings_pct": 0.35
+        },
+        "华南": {
+            "target_column": "Butyl_Acetate_Domestic_华南",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 5.77,
+            "mae_14d": 422.2,
+            "precision_pct": 94.23,
+            "baseline_avg_cost": 6084.7,
+            "active_avg_cost": 6085.8,
+            "savings_per_ton": -1.1,
+            "savings_pct": -0.02
         }
     },
     "Ethyl_Acetate": {
-        "华南": {
-            "target_column": "Ethyl_Acetate_Domestic_华南",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 4.57,
-            "mae_14d": 289.8,
-            "precision_pct": 95.43,
-            "baseline_avg_cost": 5099.6,
-            "active_avg_cost": 5184.8,
-            "savings_per_ton": -85.3,
-            "savings_pct": -1.67
-        },
         "华东": {
             "target_column": "Ethyl_Acetate_Domestic_华东",
             "analysis_mode": "margin",
@@ -73,6 +61,18 @@
             "active_avg_cost": 5069.5,
             "savings_per_ton": 30.1,
             "savings_pct": 0.59
+        },
+        "华南": {
+            "target_column": "Ethyl_Acetate_Domestic_华南",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 4.57,
+            "mae_14d": 289.8,
+            "precision_pct": 95.43,
+            "baseline_avg_cost": 5099.6,
+            "active_avg_cost": 5184.8,
+            "savings_per_ton": -85.3,
+            "savings_pct": -1.67
         }
     },
     "n_Propyl_Acetate": {
@@ -97,25 +97,13 @@
             "mape_14d": 7.59,
             "mae_14d": 581.8,
             "precision_pct": 92.41,
-            "baseline_avg_cost": 7152.3,
-            "active_avg_cost": 7182.8,
-            "savings_per_ton": -30.5,
-            "savings_pct": -0.43
+            "baseline_avg_cost": 6039.0,
+            "active_avg_cost": 6087.2,
+            "savings_per_ton": -48.3,
+            "savings_pct": -0.8
         }
     },
     "Acrylic_Acid": {
-        "华南": {
-            "target_column": "Acrylic_Acid_Domestic_华南",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 7.09,
-            "mae_14d": 710.4,
-            "precision_pct": 92.91,
-            "baseline_avg_cost": 5093.2,
-            "active_avg_cost": 5166.5,
-            "savings_per_ton": -73.3,
-            "savings_pct": -1.44
-        },
         "华东": {
             "target_column": "Acrylic_Acid_Domestic_华东",
             "analysis_mode": "margin",
@@ -139,6 +127,18 @@
             "active_avg_cost": 5182.2,
             "savings_per_ton": -89.0,
             "savings_pct": -1.75
+        },
+        "华南": {
+            "target_column": "Acrylic_Acid_Domestic_华南",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 7.09,
+            "mae_14d": 710.4,
+            "precision_pct": 92.91,
+            "baseline_avg_cost": 5093.2,
+            "active_avg_cost": 5166.5,
+            "savings_per_ton": -73.3,
+            "savings_pct": -1.44
         }
     },
     "Phthalic_Anhydride": {
@@ -178,18 +178,6 @@
             "savings_per_ton": 8.6,
             "savings_pct": 0.14
         },
-        "华南": {
-            "target_column": "Phthalic_Anhydride_Domestic_华南",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 4.4,
-            "mae_14d": 358.0,
-            "precision_pct": 95.6,
-            "baseline_avg_cost": 5993.8,
-            "active_avg_cost": 6021.8,
-            "savings_per_ton": -28.0,
-            "savings_pct": -0.47
-        },
         "华东": {
             "target_column": "Phthalic_Anhydride_Domestic_华东",
             "analysis_mode": "margin",
@@ -201,6 +189,18 @@
             "active_avg_cost": 6049.2,
             "savings_per_ton": -55.4,
             "savings_pct": -0.93
+        },
+        "华南": {
+            "target_column": "Phthalic_Anhydride_Domestic_华南",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 4.4,
+            "mae_14d": 358.0,
+            "precision_pct": 95.6,
+            "baseline_avg_cost": 5993.8,
+            "active_avg_cost": 6021.8,
+            "savings_per_ton": -28.0,
+            "savings_pct": -0.47
         },
         "广东": {
             "target_column": "Phthalic_Anhydride_Domestic_广东",
@@ -216,6 +216,18 @@
         }
     },
     "Maleic_Anhydride": {
+        "浙江": {
+            "target_column": "Maleic_Anhydride_Domestic_浙江",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 8.63,
+            "mae_14d": 648.0,
+            "precision_pct": 91.37,
+            "baseline_avg_cost": 5904.0,
+            "active_avg_cost": 5874.5,
+            "savings_per_ton": 29.5,
+            "savings_pct": 0.5
+        },
         "山西": {
             "target_column": "Maleic_Anhydride_Domestic_山西",
             "analysis_mode": "margin",
@@ -240,42 +252,6 @@
             "savings_per_ton": 99.0,
             "savings_pct": 1.68
         },
-        "江苏": {
-            "target_column": "Maleic_Anhydride_Domestic_江苏",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 7.97,
-            "mae_14d": 568.5,
-            "precision_pct": 92.03,
-            "baseline_avg_cost": 5904.0,
-            "active_avg_cost": 5847.5,
-            "savings_per_ton": 56.5,
-            "savings_pct": 0.96
-        },
-        "浙江": {
-            "target_column": "Maleic_Anhydride_Domestic_浙江",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 8.63,
-            "mae_14d": 648.0,
-            "precision_pct": 91.37,
-            "baseline_avg_cost": 5904.0,
-            "active_avg_cost": 5874.5,
-            "savings_per_ton": 29.5,
-            "savings_pct": 0.5
-        },
-        "西北": {
-            "target_column": "Maleic_Anhydride_Domestic_西北",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 7.05,
-            "mae_14d": 540.5,
-            "precision_pct": 92.95,
-            "baseline_avg_cost": 5904.0,
-            "active_avg_cost": 5874.2,
-            "savings_per_ton": 29.8,
-            "savings_pct": 0.51
-        },
         "山东": {
             "target_column": "Maleic_Anhydride_Domestic_山东",
             "analysis_mode": "margin",
@@ -287,6 +263,18 @@
             "active_avg_cost": 5847.2,
             "savings_per_ton": 56.9,
             "savings_pct": 0.96
+        },
+        "鲁东": {
+            "target_column": "Maleic_Anhydride_Domestic_鲁东",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 8.92,
+            "mae_14d": 604.5,
+            "precision_pct": 91.08,
+            "baseline_avg_cost": 5904.0,
+            "active_avg_cost": 5847.7,
+            "savings_per_ton": 56.4,
+            "savings_pct": 0.95
         },
         "河南": {
             "target_column": "Maleic_Anhydride_Domestic_河南",
@@ -312,20 +300,44 @@
             "savings_per_ton": 41.9,
             "savings_pct": 0.71
         },
-        "鲁东": {
-            "target_column": "Maleic_Anhydride_Domestic_鲁东",
+        "江苏": {
+            "target_column": "Maleic_Anhydride_Domestic_江苏",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 8.92,
-            "mae_14d": 604.5,
-            "precision_pct": 91.08,
+            "mape_14d": 7.97,
+            "mae_14d": 568.5,
+            "precision_pct": 92.03,
             "baseline_avg_cost": 5904.0,
-            "active_avg_cost": 5847.7,
-            "savings_per_ton": 56.4,
-            "savings_pct": 0.95
+            "active_avg_cost": 5847.5,
+            "savings_per_ton": 56.5,
+            "savings_pct": 0.96
+        },
+        "西北": {
+            "target_column": "Maleic_Anhydride_Domestic_西北",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 7.05,
+            "mae_14d": 540.5,
+            "precision_pct": 92.95,
+            "baseline_avg_cost": 5904.0,
+            "active_avg_cost": 5874.2,
+            "savings_per_ton": 29.8,
+            "savings_pct": 0.51
         }
     },
     "MMA": {
+        "华东": {
+            "target_column": "MMA_Domestic_华东",
+            "analysis_mode": "margin",
+            "test_days": 141,
+            "mape_14d": 4.52,
+            "mae_14d": 591.4,
+            "precision_pct": 95.48,
+            "baseline_avg_cost": 8715.7,
+            "active_avg_cost": 6171.0,
+            "savings_per_ton": 2544.7,
+            "savings_pct": 29.2
+        },
         "山东": {
             "target_column": "MMA_Domestic_山东",
             "analysis_mode": "margin",
@@ -349,33 +361,9 @@
             "active_avg_cost": 6139.7,
             "savings_per_ton": 2576.0,
             "savings_pct": 29.56
-        },
-        "华东": {
-            "target_column": "MMA_Domestic_华东",
-            "analysis_mode": "margin",
-            "test_days": 141,
-            "mape_14d": 4.52,
-            "mae_14d": 591.4,
-            "precision_pct": 95.48,
-            "baseline_avg_cost": 8715.7,
-            "active_avg_cost": 6171.0,
-            "savings_per_ton": 2544.7,
-            "savings_pct": 29.2
         }
     },
     "Butyl_Acrylate": {
-        "华南": {
-            "target_column": "Butyl_Acrylate_Domestic_华南",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 7.25,
-            "mae_14d": 723.1,
-            "precision_pct": 92.75,
-            "baseline_avg_cost": 9013.2,
-            "active_avg_cost": 9548.3,
-            "savings_per_ton": -535.1,
-            "savings_pct": -5.94
-        },
         "华东": {
             "target_column": "Butyl_Acrylate_Domestic_华东",
             "analysis_mode": "margin",
@@ -399,21 +387,21 @@
             "active_avg_cost": 6202.7,
             "savings_per_ton": 3954.1,
             "savings_pct": 38.93
+        },
+        "华南": {
+            "target_column": "Butyl_Acrylate_Domestic_华南",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 7.25,
+            "mae_14d": 723.1,
+            "precision_pct": 92.75,
+            "baseline_avg_cost": 9013.2,
+            "active_avg_cost": 9548.3,
+            "savings_per_ton": -535.1,
+            "savings_pct": -5.94
         }
     },
     "VAM": {
-        "华中": {
-            "target_column": "VAM_Domestic_华中",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 8.82,
-            "mae_14d": 758.6,
-            "precision_pct": 91.18,
-            "baseline_avg_cost": 4675.8,
-            "active_avg_cost": 4652.1,
-            "savings_per_ton": 23.7,
-            "savings_pct": 0.51
-        },
         "华北": {
             "target_column": "VAM_Domestic_华北",
             "analysis_mode": "margin",
@@ -425,18 +413,6 @@
             "active_avg_cost": 4725.3,
             "savings_per_ton": -49.4,
             "savings_pct": -1.06
-        },
-        "江苏": {
-            "target_column": "VAM_Domestic_江苏",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 8.96,
-            "mae_14d": 737.3,
-            "precision_pct": 91.04,
-            "baseline_avg_cost": 4675.8,
-            "active_avg_cost": 4540.0,
-            "savings_per_ton": 135.9,
-            "savings_pct": 2.91
         },
         "山东": {
             "target_column": "VAM_Domestic_山东",
@@ -450,17 +426,17 @@
             "savings_per_ton": 30.2,
             "savings_pct": 0.65
         },
-        "华南": {
-            "target_column": "VAM_Domestic_华南",
+        "华中": {
+            "target_column": "VAM_Domestic_华中",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 8.62,
-            "mae_14d": 753.0,
-            "precision_pct": 91.38,
+            "mape_14d": 8.82,
+            "mae_14d": 758.6,
+            "precision_pct": 91.18,
             "baseline_avg_cost": 4675.8,
-            "active_avg_cost": 4700.7,
-            "savings_per_ton": -24.8,
-            "savings_pct": -0.53
+            "active_avg_cost": 4652.1,
+            "savings_per_ton": 23.7,
+            "savings_pct": 0.51
         },
         "华东": {
             "target_column": "VAM_Domestic_华东",
@@ -473,21 +449,33 @@
             "active_avg_cost": 4540.0,
             "savings_per_ton": 135.9,
             "savings_pct": 2.91
+        },
+        "华南": {
+            "target_column": "VAM_Domestic_华南",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 8.62,
+            "mae_14d": 753.0,
+            "precision_pct": 91.38,
+            "baseline_avg_cost": 4675.8,
+            "active_avg_cost": 4700.7,
+            "savings_per_ton": -24.8,
+            "savings_pct": -0.53
+        },
+        "江苏": {
+            "target_column": "VAM_Domestic_江苏",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 8.96,
+            "mae_14d": 737.3,
+            "precision_pct": 91.04,
+            "baseline_avg_cost": 4675.8,
+            "active_avg_cost": 4540.0,
+            "savings_per_ton": 135.9,
+            "savings_pct": 2.91
         }
     },
     "2_EHA": {
-        "华南": {
-            "target_column": "2_EHA_Domestic_华南",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 7.25,
-            "mae_14d": 788.1,
-            "precision_pct": 92.75,
-            "baseline_avg_cost": 9109.8,
-            "active_avg_cost": 9367.0,
-            "savings_per_ton": -257.2,
-            "savings_pct": -2.82
-        },
         "华东": {
             "target_column": "2_EHA_Domestic_华东",
             "analysis_mode": "margin",
@@ -499,6 +487,18 @@
             "active_avg_cost": 9264.1,
             "savings_per_ton": -154.3,
             "savings_pct": -1.69
+        },
+        "华南": {
+            "target_column": "2_EHA_Domestic_华南",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 7.25,
+            "mae_14d": 788.1,
+            "precision_pct": 92.75,
+            "baseline_avg_cost": 9109.8,
+            "active_avg_cost": 9367.0,
+            "savings_per_ton": -257.2,
+            "savings_pct": -2.82
         }
     },
     "Ethyl_Acrylate": {
@@ -523,9 +523,9 @@
             "mape_14d": 7.7,
             "mae_14d": 586.4,
             "precision_pct": 92.3,
-            "baseline_avg_cost": 7152.3,
-            "active_avg_cost": 7182.8,
-            "savings_per_ton": -30.5,
+            "baseline_avg_cost": 7509.9,
+            "active_avg_cost": 7541.9,
+            "savings_per_ton": -32.0,
             "savings_pct": -0.43
         }
     },
@@ -537,37 +537,13 @@
             "mape_14d": 5.59,
             "mae_14d": 427.8,
             "precision_pct": 94.41,
-            "baseline_avg_cost": 7321.0,
-            "active_avg_cost": 7262.0,
-            "savings_per_ton": 59.0,
-            "savings_pct": 0.81
+            "baseline_avg_cost": 16126.1,
+            "active_avg_cost": 16179.8,
+            "savings_per_ton": -53.7,
+            "savings_pct": -0.33
         }
     },
     "Dibasic_Ester": {
-        "山东": {
-            "target_column": "Dibasic_Ester_Domestic_山东",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 1.27,
-            "mae_14d": 121.3,
-            "precision_pct": 98.73,
-            "baseline_avg_cost": 7454.4,
-            "active_avg_cost": 7420.2,
-            "savings_per_ton": 34.2,
-            "savings_pct": 0.46
-        },
-        "华南": {
-            "target_column": "Dibasic_Ester_Domestic_华南",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 1.13,
-            "mae_14d": 111.5,
-            "precision_pct": 98.87,
-            "baseline_avg_cost": 7454.4,
-            "active_avg_cost": 7394.6,
-            "savings_per_ton": 59.8,
-            "savings_pct": 0.8
-        },
         "华东": {
             "target_column": "Dibasic_Ester_Domestic_华东",
             "analysis_mode": "margin",
@@ -580,6 +556,18 @@
             "savings_per_ton": 105.5,
             "savings_pct": 1.41
         },
+        "山东": {
+            "target_column": "Dibasic_Ester_Domestic_山东",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 1.27,
+            "mae_14d": 121.3,
+            "precision_pct": 98.73,
+            "baseline_avg_cost": 7454.4,
+            "active_avg_cost": 7420.2,
+            "savings_per_ton": 34.2,
+            "savings_pct": 0.46
+        },
         "华北": {
             "target_column": "Dibasic_Ester_Domestic_华北",
             "analysis_mode": "margin",
@@ -591,21 +579,21 @@
             "active_avg_cost": 7348.9,
             "savings_per_ton": 105.5,
             "savings_pct": 1.41
+        },
+        "华南": {
+            "target_column": "Dibasic_Ester_Domestic_华南",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 1.13,
+            "mae_14d": 111.5,
+            "precision_pct": 98.87,
+            "baseline_avg_cost": 7454.4,
+            "active_avg_cost": 7394.6,
+            "savings_per_ton": 59.8,
+            "savings_pct": 0.8
         }
     },
     "Isopropanol": {
-        "江苏": {
-            "target_column": "Isopropanol_Domestic_江苏",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 7.62,
-            "mae_14d": 578.8,
-            "precision_pct": 92.38,
-            "baseline_avg_cost": 5641.7,
-            "active_avg_cost": 5755.1,
-            "savings_per_ton": -113.4,
-            "savings_pct": -2.01
-        },
         "浙江": {
             "target_column": "Isopropanol_Domestic_浙江",
             "analysis_mode": "margin",
@@ -617,6 +605,18 @@
             "active_avg_cost": 5760.7,
             "savings_per_ton": -119.1,
             "savings_pct": -2.11
+        },
+        "辽宁": {
+            "target_column": "Isopropanol_Domestic_辽宁",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 9.26,
+            "mae_14d": 676.5,
+            "precision_pct": 90.74,
+            "baseline_avg_cost": 5641.7,
+            "active_avg_cost": 5707.1,
+            "savings_per_ton": -65.4,
+            "savings_pct": -1.16
         },
         "山东": {
             "target_column": "Isopropanol_Domestic_山东",
@@ -642,58 +642,70 @@
             "savings_per_ton": -33.9,
             "savings_pct": -0.6
         },
-        "辽宁": {
-            "target_column": "Isopropanol_Domestic_辽宁",
+        "江苏": {
+            "target_column": "Isopropanol_Domestic_江苏",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 9.26,
-            "mae_14d": 676.5,
-            "precision_pct": 90.74,
+            "mape_14d": 7.62,
+            "mae_14d": 578.8,
+            "precision_pct": 92.38,
             "baseline_avg_cost": 5641.7,
-            "active_avg_cost": 5707.1,
-            "savings_per_ton": -65.4,
-            "savings_pct": -1.16
+            "active_avg_cost": 5755.1,
+            "savings_per_ton": -113.4,
+            "savings_pct": -2.01
         }
     },
     "PMA": {
+        "华东": {
+            "target_column": "PMA_Domestic_华东",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 4.36,
+            "mae_14d": 485.0,
+            "precision_pct": 95.64,
+            "baseline_avg_cost": 6699.2,
+            "active_avg_cost": 6675.3,
+            "savings_per_ton": 24.0,
+            "savings_pct": 0.36
+        },
         "山东": {
             "target_column": "PMA_Domestic_山东",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 5.2,
-            "mae_14d": 552.7,
-            "precision_pct": 94.8,
-            "baseline_avg_cost": 8343.8,
-            "active_avg_cost": 8565.3,
-            "savings_per_ton": -221.5,
-            "savings_pct": -2.65
+            "mape_14d": 5.26,
+            "mae_14d": 556.9,
+            "precision_pct": 94.74,
+            "baseline_avg_cost": 6599.6,
+            "active_avg_cost": 6638.1,
+            "savings_per_ton": -38.5,
+            "savings_pct": -0.58
         },
         "华南": {
             "target_column": "PMA_Domestic_华南",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 4.56,
-            "mae_14d": 513.7,
-            "precision_pct": 95.44,
-            "baseline_avg_cost": 8343.8,
-            "active_avg_cost": 8279.8,
-            "savings_per_ton": 64.0,
-            "savings_pct": 0.77
-        },
-        "华东": {
-            "target_column": "PMA_Domestic_华东",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 4.61,
-            "mae_14d": 511.7,
-            "precision_pct": 95.39,
-            "baseline_avg_cost": 8343.8,
-            "active_avg_cost": 8240.3,
-            "savings_per_ton": 103.5,
-            "savings_pct": 1.24
+            "mape_14d": 4.46,
+            "mae_14d": 502.8,
+            "precision_pct": 95.54,
+            "baseline_avg_cost": 6790.4,
+            "active_avg_cost": 6740.8,
+            "savings_per_ton": 49.6,
+            "savings_pct": 0.73
         }
     },
     "PM": {
+        "华东": {
+            "target_column": "PM_Domestic_华东",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 4.44,
+            "mae_14d": 499.0,
+            "precision_pct": 95.56,
+            "baseline_avg_cost": 6668.3,
+            "active_avg_cost": 6576.4,
+            "savings_per_ton": 91.8,
+            "savings_pct": 1.38
+        },
         "山东": {
             "target_column": "PM_Domestic_山东",
             "analysis_mode": "margin",
@@ -717,18 +729,6 @@
             "active_avg_cost": 6797.7,
             "savings_per_ton": 1.7,
             "savings_pct": 0.02
-        },
-        "华东": {
-            "target_column": "PM_Domestic_华东",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 4.44,
-            "mae_14d": 499.0,
-            "precision_pct": 95.56,
-            "baseline_avg_cost": 6668.3,
-            "active_avg_cost": 6576.4,
-            "savings_per_ton": 91.8,
-            "savings_pct": 1.38
         }
     },
     "Isophthalic_Acid": {
@@ -767,25 +767,13 @@
             "mape_14d": 5.92,
             "mae_14d": 475.8,
             "precision_pct": 94.08,
-            "baseline_avg_cost": 7835.6,
-            "active_avg_cost": 7957.1,
-            "savings_per_ton": -121.4,
+            "baseline_avg_cost": 4701.4,
+            "active_avg_cost": 4774.2,
+            "savings_per_ton": -72.9,
             "savings_pct": -1.55
         }
     },
     "Isobutanol": {
-        "华南": {
-            "target_column": "Isobutanol_Domestic_华南",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 7.55,
-            "mae_14d": 538.0,
-            "precision_pct": 92.45,
-            "baseline_avg_cost": 4701.4,
-            "active_avg_cost": 4722.8,
-            "savings_per_ton": -21.4,
-            "savings_pct": -0.46
-        },
         "华东": {
             "target_column": "Isobutanol_Domestic_华东",
             "analysis_mode": "margin",
@@ -809,6 +797,18 @@
             "active_avg_cost": 4713.4,
             "savings_per_ton": -12.0,
             "savings_pct": -0.26
+        },
+        "华南": {
+            "target_column": "Isobutanol_Domestic_华南",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 7.55,
+            "mae_14d": 538.0,
+            "precision_pct": 92.45,
+            "baseline_avg_cost": 4701.4,
+            "active_avg_cost": 4722.8,
+            "savings_per_ton": -21.4,
+            "savings_pct": -0.46
         }
     },
     "MEK": {
@@ -823,18 +823,6 @@
             "active_avg_cost": 8717.2,
             "savings_per_ton": 33.7,
             "savings_pct": 0.39
-        },
-        "华南": {
-            "target_column": "MEK_Domestic_华南",
-            "analysis_mode": "price",
-            "test_days": 180,
-            "mape_14d": 9.21,
-            "mae_14d": 947.0,
-            "precision_pct": 90.79,
-            "baseline_avg_cost": 8967.5,
-            "active_avg_cost": 9073.1,
-            "savings_per_ton": -105.6,
-            "savings_pct": -1.18
         },
         "宁波": {
             "target_column": "MEK_Domestic_宁波",
@@ -859,45 +847,33 @@
             "active_avg_cost": 8789.4,
             "savings_per_ton": -51.5,
             "savings_pct": -0.59
+        },
+        "华南": {
+            "target_column": "MEK_Domestic_华南",
+            "analysis_mode": "price",
+            "test_days": 180,
+            "mape_14d": 9.21,
+            "mae_14d": 947.0,
+            "precision_pct": 90.79,
+            "baseline_avg_cost": 8967.5,
+            "active_avg_cost": 9073.1,
+            "savings_per_ton": -105.6,
+            "savings_pct": -1.18
         }
     },
     "MEK_V2": {},
     "Styrene": {
-        "山东利华益": {
-            "target_column": "Styrene_Domestic_山东利华益",
+        "渤化发展": {
+            "target_column": "Styrene_Domestic_渤化发展",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 6.65,
-            "mae_14d": 591.3,
-            "precision_pct": 93.35,
+            "mape_14d": 6.69,
+            "mae_14d": 607.9,
+            "precision_pct": 93.31,
             "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8176.0,
-            "savings_per_ton": -49.1,
-            "savings_pct": -0.6
-        },
-        "华星石化": {
-            "target_column": "Styrene_Domestic_华星石化",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 0.2,
-            "mae_14d": 19.2,
-            "precision_pct": 99.8,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8069.9,
-            "savings_per_ton": 57.0,
-            "savings_pct": 0.7
-        },
-        "唐山旭阳": {
-            "target_column": "Styrene_Domestic_唐山旭阳",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 4.98,
-            "mae_14d": 431.0,
-            "precision_pct": 95.02,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8227.5,
-            "savings_per_ton": -100.6,
-            "savings_pct": -1.24
+            "active_avg_cost": 8257.2,
+            "savings_per_ton": -130.2,
+            "savings_pct": -1.6
         },
         "锦州石化": {
             "target_column": "Styrene_Domestic_锦州石化",
@@ -923,101 +899,77 @@
             "savings_per_ton": -150.0,
             "savings_pct": -1.85
         },
-        "渤化发展": {
-            "target_column": "Styrene_Domestic_渤化发展",
+        "浙江石化": {
+            "target_column": "Styrene_Domestic_浙江石化",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 6.69,
-            "mae_14d": 607.9,
-            "precision_pct": 93.31,
+            "mape_14d": 1.07,
+            "mae_14d": 86.5,
+            "precision_pct": 98.93,
             "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8257.2,
-            "savings_per_ton": -130.2,
-            "savings_pct": -1.6
+            "active_avg_cost": 8069.9,
+            "savings_per_ton": 57.0,
+            "savings_pct": 0.7
         },
-        "齐鲁石化": {
-            "target_column": "Styrene_Domestic_齐鲁石化",
+        "青岛炼化": {
+            "target_column": "Styrene_Domestic_青岛炼化",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 6.53,
-            "mae_14d": 584.6,
-            "precision_pct": 93.47,
+            "mape_14d": 6.47,
+            "mae_14d": 584.1,
+            "precision_pct": 93.53,
             "baseline_avg_cost": 8126.9,
             "active_avg_cost": 8288.5,
             "savings_per_ton": -161.6,
             "savings_pct": -1.99
         },
-        "京博思达睿新材料": {
-            "target_column": "Styrene_Domestic_京博思达睿新材料",
+        "唐山旭阳": {
+            "target_column": "Styrene_Domestic_唐山旭阳",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 2.82,
-            "mae_14d": 245.4,
-            "precision_pct": 97.18,
+            "mape_14d": 4.98,
+            "mae_14d": 431.0,
+            "precision_pct": 95.02,
             "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8047.6,
-            "savings_per_ton": 79.3,
-            "savings_pct": 0.98
+            "active_avg_cost": 8227.5,
+            "savings_per_ton": -100.6,
+            "savings_pct": -1.24
         },
-        "大庆石化": {
-            "target_column": "Styrene_Domestic_大庆石化",
+        "山东利华益": {
+            "target_column": "Styrene_Domestic_山东利华益",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 6.63,
-            "mae_14d": 585.2,
-            "precision_pct": 93.37,
+            "mape_14d": 6.65,
+            "mae_14d": 591.3,
+            "precision_pct": 93.35,
             "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8318.9,
-            "savings_per_ton": -192.0,
-            "savings_pct": -2.36
+            "active_avg_cost": 8176.0,
+            "savings_per_ton": -49.1,
+            "savings_pct": -0.6
         },
-        "燕山石化": {
-            "target_column": "Styrene_Domestic_燕山石化",
+        "中石化华东": {
+            "target_column": "Styrene_Domestic_中石化华东",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 0.73,
-            "mae_14d": 59.1,
-            "precision_pct": 99.27,
+            "mape_14d": 7.12,
+            "mae_14d": 640.9,
+            "precision_pct": 92.88,
             "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8069.9,
-            "savings_per_ton": 57.0,
-            "savings_pct": 0.7
+            "active_avg_cost": 8270.5,
+            "savings_per_ton": -143.5,
+            "savings_pct": -1.77
         },
-        "中海壳牌": {
-            "target_column": "Styrene_Domestic_中海壳牌",
+        "茂名石化": {
+            "target_column": "Styrene_Domestic_茂名石化",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 0.25,
-            "mae_14d": 22.7,
-            "precision_pct": 99.75,
+            "mape_14d": 6.64,
+            "mae_14d": 602.7,
+            "precision_pct": 93.36,
             "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8069.9,
-            "savings_per_ton": 57.0,
-            "savings_pct": 0.7
-        },
-        "天津大沽": {
-            "target_column": "Styrene_Domestic_天津大沽",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.75,
-            "mae_14d": 608.3,
-            "precision_pct": 93.25,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8235.3,
-            "savings_per_ton": -108.4,
-            "savings_pct": -1.33
-        },
-        "吉林石化": {
-            "target_column": "Styrene_Domestic_吉林石化",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.63,
-            "mae_14d": 585.2,
-            "precision_pct": 93.37,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8318.9,
-            "savings_per_ton": -192.0,
-            "savings_pct": -2.36
+            "active_avg_cost": 8292.4,
+            "savings_per_ton": -165.5,
+            "savings_pct": -2.04
         },
         "安徽嘉玺": {
             "target_column": "Styrene_Domestic_安徽嘉玺",
@@ -1031,17 +983,101 @@
             "savings_per_ton": -73.7,
             "savings_pct": -0.91
         },
-        "浙江石化": {
-            "target_column": "Styrene_Domestic_浙江石化",
+        "抚顺石化": {
+            "target_column": "Styrene_Domestic_抚顺石化",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 1.07,
-            "mae_14d": 86.5,
-            "precision_pct": 98.93,
+            "mape_14d": 6.63,
+            "mae_14d": 585.2,
+            "precision_pct": 93.37,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8318.9,
+            "savings_per_ton": -192.0,
+            "savings_pct": -2.36
+        },
+        "盛虹石化": {
+            "target_column": "Styrene_Domestic_盛虹石化",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 6.42,
+            "mae_14d": 574.0,
+            "precision_pct": 93.58,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8313.6,
+            "savings_per_ton": -186.7,
+            "savings_pct": -2.3
+        },
+        "兰州汇丰": {
+            "target_column": "Styrene_Domestic_兰州汇丰",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 0.14,
+            "mae_14d": 12.7,
+            "precision_pct": 99.86,
             "baseline_avg_cost": 8126.9,
             "active_avg_cost": 8069.9,
             "savings_per_ton": 57.0,
             "savings_pct": 0.7
+        },
+        "连云港石化": {
+            "target_column": "Styrene_Domestic_连云港石化",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 6.72,
+            "mae_14d": 612.2,
+            "precision_pct": 93.28,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8169.4,
+            "savings_per_ton": -42.5,
+            "savings_pct": -0.52
+        },
+        "齐鲁石化": {
+            "target_column": "Styrene_Domestic_齐鲁石化",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 6.53,
+            "mae_14d": 584.6,
+            "precision_pct": 93.47,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8288.5,
+            "savings_per_ton": -161.6,
+            "savings_pct": -1.99
+        },
+        "吉林石化": {
+            "target_column": "Styrene_Domestic_吉林石化",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 6.63,
+            "mae_14d": 585.2,
+            "precision_pct": 93.37,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8318.9,
+            "savings_per_ton": -192.0,
+            "savings_pct": -2.36
+        },
+        "广州石化": {
+            "target_column": "Styrene_Domestic_广州石化",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 6.58,
+            "mae_14d": 606.0,
+            "precision_pct": 93.42,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8305.7,
+            "savings_per_ton": -178.7,
+            "savings_pct": -2.2
+        },
+        "大庆石化": {
+            "target_column": "Styrene_Domestic_大庆石化",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 6.63,
+            "mae_14d": 585.2,
+            "precision_pct": 93.37,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8318.9,
+            "savings_per_ton": -192.0,
+            "savings_pct": -2.36
         },
         "中沙天津": {
             "target_column": "Styrene_Domestic_中沙天津",
@@ -1067,17 +1103,41 @@
             "savings_per_ton": -230.9,
             "savings_pct": -2.84
         },
-        "中石化华东": {
-            "target_column": "Styrene_Domestic_中石化华东",
+        "山东晟原": {
+            "target_column": "Styrene_Domestic_山东晟原",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 7.12,
-            "mae_14d": 640.9,
-            "precision_pct": 92.88,
+            "mape_14d": 0.0,
+            "mae_14d": 0.1,
+            "precision_pct": 100.0,
             "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8270.5,
-            "savings_per_ton": -143.5,
-            "savings_pct": -1.77
+            "active_avg_cost": 8069.9,
+            "savings_per_ton": 57.0,
+            "savings_pct": 0.7
+        },
+        "京博思达睿新材料": {
+            "target_column": "Styrene_Domestic_京博思达睿新材料",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 2.82,
+            "mae_14d": 245.4,
+            "precision_pct": 97.18,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8047.6,
+            "savings_per_ton": 79.3,
+            "savings_pct": 0.98
+        },
+        "燕山石化": {
+            "target_column": "Styrene_Domestic_燕山石化",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 0.73,
+            "mae_14d": 59.1,
+            "precision_pct": 99.27,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8069.9,
+            "savings_per_ton": 57.0,
+            "savings_pct": 0.7
         },
         "古雷石化": {
             "target_column": "Styrene_Domestic_古雷石化",
@@ -1091,90 +1151,6 @@
             "savings_per_ton": -160.5,
             "savings_pct": -1.97
         },
-        "茂名石化": {
-            "target_column": "Styrene_Domestic_茂名石化",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.64,
-            "mae_14d": 602.7,
-            "precision_pct": 93.36,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8292.4,
-            "savings_per_ton": -165.5,
-            "savings_pct": -2.04
-        },
-        "抚顺石化": {
-            "target_column": "Styrene_Domestic_抚顺石化",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.63,
-            "mae_14d": 585.2,
-            "precision_pct": 93.37,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8318.9,
-            "savings_per_ton": -192.0,
-            "savings_pct": -2.36
-        },
-        "广州石化": {
-            "target_column": "Styrene_Domestic_广州石化",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.58,
-            "mae_14d": 606.0,
-            "precision_pct": 93.42,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8305.7,
-            "savings_per_ton": -178.7,
-            "savings_pct": -2.2
-        },
-        "连云港石化": {
-            "target_column": "Styrene_Domestic_连云港石化",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.72,
-            "mae_14d": 612.2,
-            "precision_pct": 93.28,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8169.4,
-            "savings_per_ton": -42.5,
-            "savings_pct": -0.52
-        },
-        "青岛炼化": {
-            "target_column": "Styrene_Domestic_青岛炼化",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.47,
-            "mae_14d": 584.1,
-            "precision_pct": 93.53,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8288.5,
-            "savings_per_ton": -161.6,
-            "savings_pct": -1.99
-        },
-        "盛虹石化": {
-            "target_column": "Styrene_Domestic_盛虹石化",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.42,
-            "mae_14d": 574.0,
-            "precision_pct": 93.58,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8313.6,
-            "savings_per_ton": -186.7,
-            "savings_pct": -2.3
-        },
-        "山东晟原": {
-            "target_column": "Styrene_Domestic_山东晟原",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 0.0,
-            "mae_14d": 0.1,
-            "precision_pct": 100.0,
-            "baseline_avg_cost": 8126.9,
-            "active_avg_cost": 8069.9,
-            "savings_per_ton": 57.0,
-            "savings_pct": 0.7
-        },
         "河北盛腾": {
             "target_column": "Styrene_Domestic_河北盛腾",
             "analysis_mode": "margin",
@@ -1187,13 +1163,37 @@
             "savings_per_ton": -63.6,
             "savings_pct": -0.78
         },
-        "兰州汇丰": {
-            "target_column": "Styrene_Domestic_兰州汇丰",
+        "天津大沽": {
+            "target_column": "Styrene_Domestic_天津大沽",
             "analysis_mode": "margin",
             "test_days": 180,
-            "mape_14d": 0.14,
-            "mae_14d": 12.7,
-            "precision_pct": 99.86,
+            "mape_14d": 6.75,
+            "mae_14d": 608.3,
+            "precision_pct": 93.25,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8235.3,
+            "savings_per_ton": -108.4,
+            "savings_pct": -1.33
+        },
+        "华星石化": {
+            "target_column": "Styrene_Domestic_华星石化",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 0.2,
+            "mae_14d": 19.2,
+            "precision_pct": 99.8,
+            "baseline_avg_cost": 8126.9,
+            "active_avg_cost": 8069.9,
+            "savings_per_ton": 57.0,
+            "savings_pct": 0.7
+        },
+        "中海壳牌": {
+            "target_column": "Styrene_Domestic_中海壳牌",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 0.25,
+            "mae_14d": 22.7,
+            "precision_pct": 99.75,
             "baseline_avg_cost": 8126.9,
             "active_avg_cost": 8069.9,
             "savings_per_ton": 57.0,
@@ -1201,42 +1201,6 @@
         }
     },
     "Toluene": {
-        "张家港": {
-            "target_column": "Toluene_Domestic_张家港",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 5.43,
-            "mae_14d": 387.2,
-            "precision_pct": 94.57,
-            "baseline_avg_cost": 6697.9,
-            "active_avg_cost": 6715.3,
-            "savings_per_ton": -17.4,
-            "savings_pct": -0.26
-        },
-        "武汉": {
-            "target_column": "Toluene_Domestic_武汉",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.22,
-            "mae_14d": 437.4,
-            "precision_pct": 93.78,
-            "baseline_avg_cost": 6697.9,
-            "active_avg_cost": 6572.1,
-            "savings_per_ton": 125.8,
-            "savings_pct": 1.88
-        },
-        "西南": {
-            "target_column": "Toluene_Domestic_西南",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.08,
-            "mae_14d": 437.3,
-            "precision_pct": 93.92,
-            "baseline_avg_cost": 6697.9,
-            "active_avg_cost": 6595.8,
-            "savings_per_ton": 102.2,
-            "savings_pct": 1.53
-        },
         "江苏": {
             "target_column": "Toluene_Domestic_江苏",
             "analysis_mode": "margin",
@@ -1248,30 +1212,6 @@
             "active_avg_cost": 6715.3,
             "savings_per_ton": -17.4,
             "savings_pct": -0.26
-        },
-        "山东": {
-            "target_column": "Toluene_Domestic_山东",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.67,
-            "mae_14d": 460.3,
-            "precision_pct": 93.33,
-            "baseline_avg_cost": 6697.9,
-            "active_avg_cost": 6587.3,
-            "savings_per_ton": 110.7,
-            "savings_pct": 1.65
-        },
-        "京津": {
-            "target_column": "Toluene_Domestic_京津",
-            "analysis_mode": "margin",
-            "test_days": 180,
-            "mape_14d": 6.0,
-            "mae_14d": 420.1,
-            "precision_pct": 94.0,
-            "baseline_avg_cost": 6697.9,
-            "active_avg_cost": 6598.1,
-            "savings_per_ton": 99.8,
-            "savings_pct": 1.49
         },
         "宁波": {
             "target_column": "Toluene_Domestic_宁波",
@@ -1285,6 +1225,30 @@
             "savings_per_ton": 16.0,
             "savings_pct": 0.24
         },
+        "山东": {
+            "target_column": "Toluene_Domestic_山东",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 6.67,
+            "mae_14d": 460.3,
+            "precision_pct": 93.33,
+            "baseline_avg_cost": 6697.9,
+            "active_avg_cost": 6587.3,
+            "savings_per_ton": 110.7,
+            "savings_pct": 1.65
+        },
+        "西南": {
+            "target_column": "Toluene_Domestic_西南",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 6.08,
+            "mae_14d": 437.3,
+            "precision_pct": 93.92,
+            "baseline_avg_cost": 6697.9,
+            "active_avg_cost": 6595.8,
+            "savings_per_ton": 102.2,
+            "savings_pct": 1.53
+        },
         "广东": {
             "target_column": "Toluene_Domestic_广东",
             "analysis_mode": "margin",
@@ -1296,6 +1260,42 @@
             "active_avg_cost": 6621.0,
             "savings_per_ton": 76.9,
             "savings_pct": 1.15
+        },
+        "武汉": {
+            "target_column": "Toluene_Domestic_武汉",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 6.22,
+            "mae_14d": 437.4,
+            "precision_pct": 93.78,
+            "baseline_avg_cost": 6697.9,
+            "active_avg_cost": 6572.1,
+            "savings_per_ton": 125.8,
+            "savings_pct": 1.88
+        },
+        "张家港": {
+            "target_column": "Toluene_Domestic_张家港",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 5.43,
+            "mae_14d": 387.2,
+            "precision_pct": 94.57,
+            "baseline_avg_cost": 6697.9,
+            "active_avg_cost": 6715.3,
+            "savings_per_ton": -17.4,
+            "savings_pct": -0.26
+        },
+        "京津": {
+            "target_column": "Toluene_Domestic_京津",
+            "analysis_mode": "margin",
+            "test_days": 180,
+            "mape_14d": 6.0,
+            "mae_14d": 420.1,
+            "precision_pct": 94.0,
+            "baseline_avg_cost": 6697.9,
+            "active_avg_cost": 6598.1,
+            "savings_per_ton": 99.8,
+            "savings_pct": 1.49
         }
     }
 }
