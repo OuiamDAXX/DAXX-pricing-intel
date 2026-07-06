@@ -110,6 +110,7 @@
                                 <option value="Acetone_V1">Acetone (Route 1)</option>
                                 <option value="Acetone_V2">Acetone (Route 2)</option>
                                 <option value="Acrylic_Acid">Acrylic Acid</option>
+                                <option value="Brent">Brent Crude</option>
                                 <option value="Butyl_Acetate" selected>Butyl Acetate</option>
                                 <option value="Butyl_Acrylate">Butyl Acrylate</option>
                                 <option value="Dibasic_Ester">Dibasic Ester (DBE)</option>
@@ -132,10 +133,18 @@
                                 <option value="PX">p-Xylene</option>
                                 <option value="Styrene">Styrene</option>
                                 <option value="Toluene">Toluene</option>
+                                <option value="MEG">Monoethylene Glycol (MEG)</option>
+                                <option value="DEG">Diethylene Glycol (DEG)</option>
+                                <option value="PG">Propylene Glycol (PG)</option>
                                 <option value="VAM">Vinyl Acetate Monomer</option>
                             </select>
                             
-                            <span class="target-select-label" style="margin-left: 15px;"><i class="fa-solid fa-map-location-dot"></i> Region:</span>
+                            <span class="target-select-label" style="margin-left: 15px;"><i class="fa-solid fa-earth-europe"></i> Region:</span>
+                            <select id="market-main-region-select" class="target-select">
+                                <!-- Populated dynamically by JavaScript -->
+                            </select>
+                            
+                            <span class="target-select-label" id="market-subregion-label" style="margin-left: 15px;"><i class="fa-solid fa-map-location-dot"></i> Sub-Region:</span>
                             <select id="market-region-select" class="target-select">
                                 <!-- Populated dynamically by JavaScript -->
                             </select>

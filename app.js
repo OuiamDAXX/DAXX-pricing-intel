@@ -160,7 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
         '弘润石化': 'Hongrun Petrochemical',
         'Yahoo': 'Yahoo Finance',
         'NWE': 'Northwest Europe',
-        'Gulf': 'US Gulf Coast'
+        'Gulf': 'US Gulf Coast',
+        'Global': 'Global / International'
     };
 
     // Product configurations using base product keys
@@ -709,6 +710,84 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Toluene',
                 'Methanol'
             ]
+        },
+        'MEG': {
+            title: "Monoethylene Glycol (MEG)",
+            precursors: {
+                butyl: 'MEG',
+                butanol: 'EO',
+                acetic: 'Ethylene',
+                methanol: 'Naphtha'
+            },
+            labels: {
+                butyl: "MEG (Target)",
+                butanol: "Ethylene Oxide (Feedstock)",
+                acetic: "Ethylene (Upstream)",
+                methanol: "Naphtha (Upstream)"
+            },
+            defaultChecked: [
+                'MEG',
+                'EO',
+                'Ethylene',
+                'Naphtha'
+            ]
+        },
+        'DEG': {
+            title: "Diethylene Glycol (DEG)",
+            precursors: {
+                butyl: 'DEG',
+                butanol: 'EO',
+                acetic: 'Ethylene',
+                methanol: 'Naphtha'
+            },
+            labels: {
+                butyl: "DEG (Target)",
+                butanol: "Ethylene Oxide (Feedstock)",
+                acetic: "Ethylene (Upstream)",
+                methanol: "Naphtha (Upstream)"
+            },
+            defaultChecked: [
+                'DEG',
+                'EO',
+                'Ethylene',
+                'Naphtha'
+            ]
+        },
+        'PG': {
+            title: "Propylene Glycol (PG)",
+            precursors: {
+                butyl: 'PG',
+                butanol: 'Propylene_Oxide',
+                acetic: 'Propylene',
+                methanol: 'Naphtha'
+            },
+            labels: {
+                butyl: "Propylene Glycol (Target)",
+                butanol: "Propylene Oxide (Feedstock)",
+                acetic: "Propylene (Upstream)",
+                methanol: "Naphtha (Upstream)"
+            },
+            defaultChecked: [
+                'PG',
+                'Propylene_Oxide',
+                'Propylene',
+                'Naphtha'
+            ]
+        },
+        'Brent': {
+            title: "Brent Crude",
+            precursors: {
+                butyl: 'Brent'
+            },
+            labels: {
+                butyl: "Brent Crude Oil",
+                butanol: "n-Butanol",
+                acetic: "Acetic Acid",
+                methanol: "Methanol"
+            },
+            defaultChecked: [
+                'Brent'
+            ]
         }
     };
 
@@ -851,7 +930,10 @@ document.addEventListener("DOMContentLoaded", () => {
         'PX': 'PX_Domestic_扬子石化',
         'Ethylbenzene': 'Ethylbenzene_Domestic_吉林石化',
         'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东',
-        'Toluene': 'Toluene_Domestic_山东'
+        'Toluene': 'Toluene_Domestic_山东',
+        'EO': 'EO_Domestic_华东',
+        'Propylene_Oxide': 'Propylene_Oxide_Domestic_华东',
+        'Naphtha': 'Naphtha_Domestic_中国'
     };
 
     // Helper to resolve the correct column name with region fallback
@@ -906,6 +988,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Extract regions available in CSV for a given product
     function getAvailableRegionsForProduct(product) {
+        if (product === 'Brent') {
+            return ['Global'];
+        }
         let searchPattern = product;
         if (product === 'Isopropyl_Acetate_Proxy') {
             searchPattern = 'n_Propyl_Acetate_Domestic';
@@ -946,43 +1031,132 @@ document.addEventListener("DOMContentLoaded", () => {
             'Dibasic_Ester': '华东',
             'Isopropanol': '江苏',
             'PMA': '华东',
-            'PM': '华东'
+            'PM': '华东',
+            'MEG': '华东',
+            'DEG': '张家港',
+            'PG': '山东',
+            'Brent': 'Global'
         };
         return defaultMap[product] || '华东';
     }
 
-    // Populate region select dynamically
+    // Mapping sub-regions to Main Region Groups
+    const MAIN_REGION_GROUPS = {
+        'Chine': ['华东', '华南', '华北', '山东', '江苏', '宁波', '四川', '河南', '湖北', '东北', '西北', '西南', '山西', '浙江', '辽宁', '吉林', '云南', '广东', '广西', '河北', '川渝', '重庆', '东莞', '苏北', '苏南', '锦州', '黑龙江', '东营', '华中', '山东鲁中', '鲁东', '临沂', '云南中东部地区', '内蒙古', '唐山', '天津', '新疆北疆', '新疆南疆', '新疆疆外', '昭通', '格尔木', '榆林', '济宁', '淄bo', '淄博', '甘肃', 'Fujian', '福建', '贵州', '鄂尔多斯北线', '鄂尔多斯南线', '银川', '陕西关中', '连云港', '鲁西南', '黄海西岸', '燕山石化', '弘润石化', '张家港', '山东中部'],
+        'Europe': ['Europe', 'NWE', 'Northwest Europe', '西北欧', '西北欧鹿特丹'],
+        'Global': ['Global', 'International', 'Yahoo', 'Gulf', 'US Gulf Coast', '美国', '美国海湾', '日本', '韩国', '东南亚', '中国']
+    };
+
+    function getMainRegionForSubRegion(subRegion) {
+        for (const [mainReg, subs] of Object.entries(MAIN_REGION_GROUPS)) {
+            if (subs.includes(subRegion)) return mainReg;
+        }
+        return 'Chine'; // Default fallback
+    }
+
+    // Populate region select dynamically (two-level hierarchy)
     function populateRegionSelector(product) {
+        const mainRegionSelect = document.getElementById('market-main-region-select');
+        const regionSelect = document.getElementById('market-region-select');
+        if (!mainRegionSelect || !regionSelect) return;
+
+        mainRegionSelect.innerHTML = "";
+        regionSelect.innerHTML = "";
+
+        const subRegions = getAvailableRegionsForProduct(product);
+
+        // Determine available Main Regions
+        const availableMainRegions = [];
+        subRegions.forEach(subReg => {
+            const mainReg = getMainRegionForSubRegion(subReg);
+            if (!availableMainRegions.includes(mainReg)) {
+                availableMainRegions.push(mainReg);
+            }
+        });
+
+        // Always include Europe to "prepare the terrain" as requested
+        if (!availableMainRegions.includes('Europe')) {
+            availableMainRegions.push('Europe');
+        }
+
+        // Sort available main regions: China, Europe, Global
+        const order = ['Chine', 'Europe', 'Global'];
+        const sortedMainRegions = order.filter(r => availableMainRegions.includes(r));
+        availableMainRegions.forEach(r => {
+            if (!sortedMainRegions.includes(r)) sortedMainRegions.push(r);
+        });
+
+        const mainRegionMap = {
+            'Chine': 'China',
+            'Europe': 'Europe',
+            'Global': 'Global / International'
+        };
+
+        sortedMainRegions.forEach(mainReg => {
+            const opt = document.createElement('option');
+            opt.value = mainReg;
+            opt.textContent = mainRegionMap[mainReg] || mainReg;
+            mainRegionSelect.appendChild(opt);
+        });
+
+        // Resolve product default region
+        const preferredSubDefault = getDefaultRegionForProduct(product);
+        const preferredMainDefault = getMainRegionForSubRegion(preferredSubDefault);
+
+        let activeMainRegion = sortedMainRegions[0];
+        if (sortedMainRegions.includes(preferredMainDefault)) {
+            activeMainRegion = preferredMainDefault;
+        }
+        mainRegionSelect.value = activeMainRegion;
+
+        populateSubRegionSelector(product, activeMainRegion);
+    }
+
+    function populateSubRegionSelector(product, mainRegion) {
         const regionSelect = document.getElementById('market-region-select');
         if (!regionSelect) return;
         regionSelect.innerHTML = "";
 
-        const regions = getAvailableRegionsForProduct(product);
-        regions.forEach(region => {
-            const opt = document.createElement('option');
-            opt.value = region;
-            opt.textContent = REGION_MAP[region] || region;
-            regionSelect.appendChild(opt);
-        });
+        const subRegions = getAvailableRegionsForProduct(product);
+        const filteredSubRegions = subRegions.filter(subReg => getMainRegionForSubRegion(subReg) === mainRegion);
 
-        // Resolve product-specific benchmark default, with general fallbacks
-        const preferredDefault = getDefaultRegionForProduct(product);
-        let defaultRegion = regions[0];
-        if (regions.includes(preferredDefault)) {
-            defaultRegion = preferredDefault;
+        const subregionLabel = document.getElementById('market-subregion-label');
+
+        if (filteredSubRegions.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = mainRegion;
+            opt.textContent = `No subregion (${mainRegion})`;
+            regionSelect.appendChild(opt);
+            regionSelect.disabled = true;
+            if (subregionLabel) subregionLabel.style.opacity = '0.5';
+            currentRegion = mainRegion;
         } else {
-            const preferredRegionsOrder = ['华东', '山东', '华南', '华北', '江苏'];
-            for (const pref of preferredRegionsOrder) {
-                if (regions.includes(pref)) {
-                    defaultRegion = pref;
-                    break;
+            regionSelect.disabled = false;
+            if (subregionLabel) subregionLabel.style.opacity = '1';
+
+            filteredSubRegions.forEach(subReg => {
+                const opt = document.createElement('option');
+                opt.value = subReg;
+                opt.textContent = REGION_MAP[subReg] || subReg;
+                regionSelect.appendChild(opt);
+            });
+
+            const preferredSubDefault = getDefaultRegionForProduct(product);
+            let defaultSubRegion = filteredSubRegions[0];
+            if (filteredSubRegions.includes(preferredSubDefault)) {
+                defaultSubRegion = preferredSubDefault;
+            } else {
+                const preferredRegionsOrder = ['华东', '山东', '华南', '华北', '江苏', 'Global', 'Europe'];
+                for (const pref of preferredRegionsOrder) {
+                    if (filteredSubRegions.includes(pref)) {
+                        defaultSubRegion = pref;
+                        break;
+                    }
                 }
             }
+            regionSelect.value = defaultSubRegion;
+            currentRegion = defaultSubRegion;
         }
-
-        const defaultIndex = regions.indexOf(defaultRegion);
-        regionSelect.selectedIndex = defaultIndex >= 0 ? defaultIndex : 0;
-        currentRegion = regionSelect.value;
     }
 
     // Update active KPI columns based on current target config and region
@@ -1128,6 +1302,19 @@ document.addEventListener("DOMContentLoaded", () => {
             return header.includes('PX') || 
                    header.includes('Toluene') || 
                    header.includes('Methanol');
+        } else if (product === 'MEG' || product === 'DEG') {
+            return header.includes('MEG') || 
+                   header.includes('DEG') || 
+                   header.includes('EO_Domestic') || 
+                   header.includes('Ethylene') || 
+                   header.includes('Naphtha');
+        } else if (product === 'PG') {
+            return header.includes('PG_Domestic') || 
+                   header.includes('Propylene_Oxide') || 
+                   header.includes('Propylene') || 
+                   header.includes('Naphtha');
+        } else if (product === 'Brent') {
+            return header.includes('Brent');
         }
         return false;
     }
@@ -1171,7 +1358,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         updateFinancialSignals();
         
-        document.getElementById('chart-loader').style.display = 'none';
+        checkDataAvailability();
     }
 
     // ==========================================
@@ -1372,6 +1559,15 @@ document.addEventListener("DOMContentLoaded", () => {
             'Styrene': {
                 'benzene': 0.80,  // benzene
                 'ethylene': 0.30  // ethylene
+            },
+            'MEG': {
+                'butanol': 0.57   // ethylene oxide (EO)
+            },
+            'DEG': {
+                'butanol': 0.30   // ethylene oxide (EO), co-product of MEG
+            },
+            'PG': {
+                'butanol': 0.70   // propylene oxide (PO)
             }
         };
 
@@ -1400,6 +1596,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Theoretical Margin = Target Price - Feedstock Costs
         return targetVal - precursorsCost;
+    }
+
+    function checkDataAvailability() {
+        const hasRealData = priceHeaders.includes(currentTarget);
+        const loader = document.getElementById('chart-loader');
+        const chartDiv = document.getElementById('main-chart');
+        
+        if (!loader || !chartDiv) return;
+
+        if (!hasRealData) {
+            chartDiv.style.opacity = '0.1';
+            loader.style.display = 'flex';
+            loader.style.flexDirection = 'column';
+            loader.style.alignItems = 'center';
+            loader.style.justifyContent = 'center';
+            
+            let message = "";
+            let title = "";
+            if (currentRegion === 'Europe' || getMainRegionForSubRegion(currentRegion) === 'Europe') {
+                title = "European Market Integration";
+                message = "Historical price data for Europe is currently being prepared. Predictive Ridge models and pricing benchmarks for European hubs (NWE/Rotterdam) will be integrated in the next release.";
+            } else {
+                title = "Data Temporarily Unavailable";
+                message = `No active price series found for ${currentProduct.replace(/_/g, ' ')} in region ${currentRegion}. Please select a different region or check back later.`;
+            }
+
+            loader.innerHTML = `
+                <div class="no-data-overlay-content" style="text-align: center; max-width: 500px; padding: 25px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; backdrop-filter: blur(10px); box-shadow: var(--shadow-glass);">
+                    <i class="fa-solid fa-earth-europe" style="font-size: 3rem; color: var(--accent-blue); margin-bottom: 15px; text-shadow: 0 0 10px rgba(6, 182, 212, 0.4);"></i>
+                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">${title}</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">${message}</p>
+                </div>
+            `;
+            return false;
+        } else {
+            chartDiv.style.opacity = '1';
+            loader.style.display = 'none';
+            loader.innerHTML = `
+                <div class="spinner"></div>
+                <p>Loading charts...</p>
+            `;
+            return true;
+        }
     }
 
     function initializeChart() {
@@ -1492,6 +1731,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Initializing chart with shared tooltip: true, intersect: false");
         chartInstance = new ApexCharts(document.querySelector("#main-chart"), options);
         chartInstance.render();
+        checkDataAvailability();
     }
 
     function getChartSeries() {
@@ -1703,6 +1943,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 dashArray: dashArrayOpt
             }
         });
+        checkDataAvailability();
     }
 
     // ==========================================
@@ -2064,6 +2305,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamB: 'Naphtha',
                 feedstockB: 'Propylene',
                 target: 'Styrene'
+            },
+            'MEG': {
+                upstreamA: 'Naphtha',
+                feedstockA: 'Ethylene',
+                upstreamB: 'EO_Domestic',
+                feedstockB: 'EO_Domestic',
+                target: 'MEG'
+            },
+            'DEG': {
+                upstreamA: 'Naphtha',
+                feedstockA: 'Ethylene',
+                upstreamB: 'EO_Domestic',
+                feedstockB: 'EO_Domestic',
+                target: 'DEG'
+            },
+            'PG': {
+                upstreamA: 'Naphtha',
+                feedstockA: 'Propylene',
+                upstreamB: 'Propylene_Oxide',
+                feedstockB: 'Propylene_Oxide',
+                target: 'PG'
             }
         };
 
@@ -2437,6 +2699,17 @@ document.addEventListener("DOMContentLoaded", () => {
         targetSelect.addEventListener('change', (e) => {
             currentProduct = e.target.value;
             populateRegionSelector(currentProduct);
+            currentTarget = resolveTargetColumn(currentProduct, currentRegion);
+            handleTargetProductChange();
+        });
+    }
+
+    // Main Region Select Change Event Listener
+    const mainRegionSelect = document.getElementById('market-main-region-select');
+    if (mainRegionSelect) {
+        mainRegionSelect.addEventListener('change', (e) => {
+            const selectedMainRegion = e.target.value;
+            populateSubRegionSelector(currentProduct, selectedMainRegion);
             currentTarget = resolveTargetColumn(currentProduct, currentRegion);
             handleTargetProductChange();
         });
@@ -2974,7 +3247,10 @@ document.addEventListener("DOMContentLoaded", () => {
             'Isobutanol': { 'butanol': 0.60 },
             'MEK': { 'butanol': 0.80 },
             'MEK_V2': { 'butanol': 1.05 },
-            'Styrene': { 'benzene': 0.80, 'ethylene': 0.30 }
+            'Styrene': { 'benzene': 0.80, 'ethylene': 0.30 },
+            'MEG': { 'butanol': 0.57 },
+            'DEG': { 'butanol': 0.30 },
+            'PG':  { 'butanol': 0.70 }
         };
 
         const formula = consumptionCoeffs[currentProduct] || {};
