@@ -32,6 +32,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (typeof updateSidebarTabs === 'function') {
                 updateSidebarTabs();
             }
+            if (typeof renderTable === 'function') {
+                renderTable();
+            }
         });
     }
 
@@ -2265,7 +2268,11 @@ document.addEventListener("DOMContentLoaded", () => {
         
         displayHeaders.forEach(col => {
             const th = document.createElement('th');
-            th.textContent = col.replace('_Domestic', '').replace(/_/g, ' ');
+            let headerText = col.replace('_Domestic', '').replace(/_/g, ' ');
+            if (col !== 'Date') {
+                headerText += ` (${getCurrencySymbol()}/t)`;
+            }
+            th.textContent = headerText;
             tableHeaders.appendChild(th);
         });
 
@@ -2283,7 +2290,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     const val = row[col];
                     td.textContent = (val !== null && val !== undefined) 
-                        ? Number(val).toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) 
+                        ? Number(convertValue(val)).toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) 
                         : '-';
                 }
                 tr.appendChild(td);
@@ -2388,7 +2395,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute("download", "oilchem_china_prices_aligned.csv");
+        link.setAttribute("download", "daxx_pricing_intel_prices_aligned.csv");
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
