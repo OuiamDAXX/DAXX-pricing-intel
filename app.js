@@ -565,21 +565,13 @@ document.addEventListener("DOMContentLoaded", () => {
         'PTA': {
             title: "Purified Terephthalic Acid (PTA)",
             precursors: {
-                butyl: 'PTA',
-                butanol: 'PX',
-                acetic: 'Reformed_Naphtha',
-                methanol: 'Reformed_Naphtha'
+                butyl: 'PTA'
             },
             labels: {
-                butyl: "PTA (Target)",
-                butanol: "p-Xylene (Feedstock)",
-                acetic: "Reformed Naphtha (Upstream)",
-                methanol: "Reformed Naphtha (Upstream)"
+                butyl: "PTA (Target)"
             },
             defaultChecked: [
-                'PTA',
-                'PX',
-                'Reformed_Naphtha'
+                'PTA'
             ]
         },
         'n_Butanol': {
@@ -666,22 +658,18 @@ document.addEventListener("DOMContentLoaded", () => {
             title: "Styrene (Estireno)",
             precursors: {
                 butyl: 'Styrene',
-                butanol: 'Ethylbenzene',
-                acetic: 'Reformed_Naphtha',
-                methanol: 'Propylene'
+                benzene: 'Benzene',
+                ethylene: 'Ethylene'
             },
             labels: {
                 butyl: "Styrene (Target)",
-                butanol: "Ethylbenzene (Feedstock)",
-                acetic: "Reformed Naphtha / Ethane (Upstream)",
-                methanol: "Propylene (Feedstock)"
+                benzene: "Benzene (Feedstock)",
+                ethylene: "Ethylene (Feedstock)"
             },
             defaultChecked: [
                 'Styrene',
-                'Ethylbenzene',
-                'Reformed_Naphtha',
-                'Propylene',
-                'Naphtha'
+                'Benzene',
+                'Ethylene'
             ]
         }
     };
@@ -721,8 +709,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let backtestResultsData = null;
     let whatIfState = {};
     let simulatedForecastPoints = null;
-    const FORECAST_JSON_PATH = "oilchem_financial_forecasts.json";
-    const BACKTEST_JSON_PATH = "oilchem_backtest_results.json";
+    const FORECAST_JSON_PATH = "oilchem_financial_forecasts.json?t=" + new Date().getTime();
+    const BACKTEST_JSON_PATH = "oilchem_backtest_results.json?t=" + new Date().getTime();
 
     // ==========================================
     // INITIALIZATION & LOADING
@@ -805,8 +793,36 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    const FEEDSTOCK_BENCHMARKS = {
+        'n-Butanol': 'n-Butanol_Domestic_山东',
+        'Acetic_Acid': 'Acetic_Acid_Domestic_江苏',
+        'Ethanol': 'Ethanol_Domestic_山东',
+        'n-Propanol': 'n-Propanol_Domestic_华东',
+        'Isopropanol': 'Isopropanol_Domestic_江苏',
+        'Propylene': 'Propylene_Domestic_山东',
+        'o_Xylene': 'o_Xylene_Domestic_华东',
+        'Acetone': 'Acetone_Domestic_华东',
+        'Methanol': 'Methanol_Domestic_山东中部',
+        'Ethylene': 'Ethylene_Domestic_华东',
+        'Octanol': 'Octanol_Domestic_山东',
+        'Benzene': 'Benzene_Domestic_华东',
+        'Dicarboxylic_Acid': 'Dicarboxylic_Acid_Domestic_华东',
+        'Cyclohexane': 'Cyclohexane_Domestic_山东',
+        'PM': 'PM_Domestic_华东',
+        'm_Xylene': 'm_Xylene_Domestic_燕山石化',
+        'PX': 'PX_Domestic_扬子石化',
+        'Ethylbenzene': 'Ethylbenzene_Domestic_吉林石化',
+        'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东'
+    };
+
     // Helper to resolve the correct column name with region fallback
-    function resolveColumnForRegion(baseProd, region) {
+    function resolveColumnForRegion(baseProd, region, isFeedstock = false) {
+        // If it is a feedstock, check canonical benchmarks first to align with LaTeX documentation
+        if (isFeedstock && FEEDSTOCK_BENCHMARKS[baseProd]) {
+            const col = FEEDSTOCK_BENCHMARKS[baseProd];
+            if (priceHeaders.includes(col)) return col;
+        }
+
         // 1. Find exact match for baseProd and region
         const exact = priceHeaders.find(h => h.startsWith(baseProd + '_') && h.includes(region));
         if (exact) return exact;
@@ -934,10 +950,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateKPIColumns() {
         const config = TARGET_CONFIGS[currentProduct];
         KPI_COLUMNS = {
-            butyl: resolveColumnForRegion(config.precursors.butyl, currentRegion),
-            butanol: resolveColumnForRegion(config.precursors.butanol, currentRegion),
-            acetic: resolveColumnForRegion(config.precursors.acetic, currentRegion),
-            methanol: resolveColumnForRegion(config.precursors.methanol, currentRegion)
+            butyl: resolveColumnForRegion(config.precursors.butyl, currentRegion, false),
+            butanol: resolveColumnForRegion(config.precursors.butanol, currentRegion, true),
+            acetic: resolveColumnForRegion(config.precursors.acetic, currentRegion, true),
+            methanol: resolveColumnForRegion(config.precursors.methanol, currentRegion, true)
         };
     }
 
@@ -1173,7 +1189,7 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = "";
 
         const config = TARGET_CONFIGS[currentProduct];
-        const defaultMatches = config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion));
+        const defaultMatches = config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion, col !== config.precursors.butyl));
         const relatedHeaders = priceHeaders.filter(h => isColumnRelated(h, currentProduct));
 
         selectedSeries = [...defaultMatches];
@@ -1218,7 +1234,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const config = TARGET_CONFIGS[product];
         if (!config) return null;
 
-        const targetCol = resolveColumnForRegion(config.precursors.butyl, region);
+        const targetCol = resolveColumnForRegion(config.precursors.butyl, region, false);
         const targetVal = row[targetCol];
         if (targetVal === undefined || targetVal === null) return null;
 
@@ -1287,6 +1303,29 @@ document.addEventListener("DOMContentLoaded", () => {
             'PMA': {
                 'butanol': 0.69, // PM
                 'acetic': 0.46   // acetic acid
+            },
+            'PM': {
+                'butanol': 0.69  // propylene oxide
+            },
+            'Isophthalic_Acid': {
+                'butanol': 0.70  // m-xylene
+            },
+            'PTA': {},
+            'n_Butanol': {
+                'butanol': 0.60  // propylene
+            },
+            'Isobutanol': {
+                'butanol': 0.60  // propylene
+            },
+            'MEK': {
+                'butanol': 0.80  // 2-butene
+            },
+            'MEK_V2': {
+                'butanol': 1.05  // 2-butanol
+            },
+            'Styrene': {
+                'benzene': 0.80,  // benzene
+                'ethylene': 0.30  // ethylene
             }
         };
 
@@ -1302,7 +1341,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 valid = false;
                 break;
             }
-            const colName = resolveColumnForRegion(rawColName, region);
+            const colName = resolveColumnForRegion(rawColName, region, true);
             const val = row[colName];
             if (val === undefined || val === null) {
                 valid = false;
@@ -1362,7 +1401,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } : {
                 type: 'datetime',
-                categories: alignedDates,
                 labels: {
                     style: {
                         fontFamily: 'Plus Jakarta Sans, sans-serif'
@@ -1405,6 +1443,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chartInstance) {
             chartInstance.destroy();
         }
+        console.log("Initializing chart with shared tooltip: true, intersect: false");
         chartInstance = new ApexCharts(document.querySelector("#main-chart"), options);
         chartInstance.render();
     }
@@ -1414,7 +1453,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const config = TARGET_CONFIGS[currentProduct];
             if (!config) return [];
             
-            const targetCol = resolveColumnForRegion(config.precursors.butyl, currentRegion);
+            const targetCol = resolveColumnForRegion(config.precursors.butyl, currentRegion, false);
             
             // Group by year
             const yearsData = {};
@@ -1519,13 +1558,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 
                 const forecastDataPoints = [];
+                for (let i = 0; i < slicedData.length - 1; i++) {
+                    forecastDataPoints.push({
+                        x: new Date(slicedData[i].Date).getTime(),
+                        y: null
+                    });
+                }
                 if (lastRealVal !== null && lastRealDate !== null) {
                     forecastDataPoints.push({
                         x: new Date(lastRealDate).getTime(),
                         y: convertValue(lastRealVal)
                     });
                 }
-                
                 forecasts.predictions.forEach((val, idx) => {
                     forecastDataPoints.push({
                         x: new Date(forecasts.prediction_dates[idx]).getTime(),
@@ -1542,6 +1586,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Add Simulated Scenario curve
                 if (simulatedForecastPoints && simulatedForecastPoints.length > 0) {
                     const simDataPoints = [];
+                    for (let i = 0; i < slicedData.length - 1; i++) {
+                        simDataPoints.push({
+                            x: new Date(slicedData[i].Date).getTime(),
+                            y: null
+                        });
+                    }
                     if (lastRealVal !== null && lastRealDate !== null) {
                         simDataPoints.push({
                             x: new Date(lastRealDate).getTime(),
@@ -1584,15 +1634,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const dashArrayOpt = seriesData.map(s => s.name.includes('Forecast') ? 5 : (s.name.includes('Simulated') ? 4 : 0));
         const widthOpt = seriesData.map(s => s.name.includes('Simulated') ? 2.5 : 3.5);
         
+        console.log("Updating chart options with shared tooltip: true, intersect: false");
         chartInstance.updateOptions({
+            series: seriesData,
             xaxis: {
                 type: 'datetime',
-                categories: newDates,
                 labels: {
                     format: undefined
                 }
             },
             tooltip: {
+                theme: 'dark',
+                shared: true,
+                intersect: false,
                 x: {
                     format: 'dd MMM yyyy'
                 }
@@ -1603,7 +1657,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 dashArray: dashArrayOpt
             }
         });
-        chartInstance.updateSeries(seriesData);
     }
 
     // ==========================================
@@ -2368,7 +2421,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Reset selections based on newly selected target & region
-        const defaultMatches = config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion));
+        const defaultMatches = config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion, col !== config.precursors.butyl));
         selectedSeries = [...defaultMatches];
 
         // Recompute KPIs, rebuild selectors, redraw chart & table, redraw Lead-Lag
@@ -2407,15 +2460,54 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        // Update analysis mode and labels dynamically
+        const modeBadge = document.getElementById('analysis-mode-badge');
+        const spreadLabel = document.getElementById('fin-metric-spread-label');
+        const bbLabel = document.getElementById('bb-label');
+        
+        const mode = forecasts.analysis_mode || 'margin';
+        if (modeBadge) {
+            modeBadge.style.display = 'inline-block';
+            if (mode === 'margin') {
+                modeBadge.textContent = 'Margin Spread Mode';
+                modeBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+                modeBadge.style.color = '#10b981';
+                modeBadge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                if (spreadLabel) spreadLabel.textContent = 'Spread';
+                if (bbLabel) bbLabel.textContent = 'Bollinger Margin Position';
+            } else if (mode === 'price') {
+                modeBadge.textContent = 'Absolute Price Mode';
+                modeBadge.style.background = 'rgba(99, 102, 241, 0.15)';
+                modeBadge.style.color = '#6366f1';
+                modeBadge.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+                if (spreadLabel) spreadLabel.textContent = 'Price';
+                if (bbLabel) bbLabel.textContent = 'Bollinger Price Position';
+            } else if (mode === 'feedstock_index') {
+                modeBadge.textContent = 'Raw Material Index';
+                modeBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+                modeBadge.style.color = '#f59e0b';
+                modeBadge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+                if (spreadLabel) spreadLabel.textContent = 'Feedstock Cost';
+                if (bbLabel) bbLabel.textContent = 'Bollinger Cost Position';
+            } else {
+                modeBadge.textContent = 'Low-Data Mode';
+                modeBadge.style.background = 'rgba(239, 68, 68, 0.15)';
+                modeBadge.style.color = '#ef4444';
+                modeBadge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                if (spreadLabel) spreadLabel.textContent = 'Price';
+                if (bbLabel) bbLabel.textContent = 'Bollinger Position';
+            }
+        }
+
         // Update badge
         if (signalVal) {
-            signalVal.textContent = forecasts.signal;
+            signalVal.textContent = forecasts.signal.toUpperCase();
             signalVal.className = 'signal-badge'; // Reset classes
             
-            const lowerSignal = forecasts.signal.toLowerCase();
-            if (lowerSignal.includes('buy')) {
+            const sig = forecasts.signal;
+            if (sig === 'Favorable') {
                 signalVal.classList.add('badge-acheter');
-            } else if (lowerSignal.includes('delay') || lowerSignal.includes('wait')) {
+            } else if (sig === 'Unfavorable') {
                 signalVal.classList.add('badge-reporter');
             } else {
                 signalVal.classList.add('badge-neutral');
@@ -2505,6 +2597,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const backtestMetricMae = document.getElementById('backtest-metric-mae');
         const backtestMetricSavings = document.getElementById('backtest-metric-savings');
 
+        console.log("Backtest debug:", {
+            backtestResultsData: backtestResultsData,
+            currentProduct: currentProduct,
+            currentRegion: currentRegion
+        });
         if (backtestResultsData && backtestResultsData[currentProduct]) {
             const productBacktest = backtestResultsData[currentProduct];
             const backtest = productBacktest[currentRegion] || Object.values(productBacktest)[0];
@@ -2516,7 +2613,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     else backtestMetricPrecision.style.color = 'var(--text-primary)';
                 }
                 if (backtestMetricMae) {
-                    backtestMetricMae.textContent = formatVal(backtest.mae_14d, 0);
+                    const maeConverted = Math.round(convertValue(backtest.mae_14d));
+                    backtestMetricMae.textContent = `${getCurrencySymbol()}${maeConverted} (${backtest.mape_14d}%)`;
                 }
                 if (backtestMetricSavings) {
                     backtestMetricSavings.textContent = `${backtest.savings_pct > 0 ? '+' : ''}${backtest.savings_pct}% (${formatVal(backtest.savings_per_ton, 0)})`;
@@ -2743,7 +2841,15 @@ document.addEventListener("DOMContentLoaded", () => {
             'Acetone_V2': { 'butanol': 1.40, 'acetic': 0.75 },
             'Dibasic_Ester': { 'butanol': 0.70, 'acetic': 0.35 },
             'Isopropanol': { 'butanol': 0.72 },
-            'PMA': { 'butanol': 0.69, 'acetic': 0.46 }
+            'PMA': { 'butanol': 0.69, 'acetic': 0.46 },
+            'PM': { 'butanol': 0.69 },
+            'Isophthalic_Acid': { 'butanol': 0.70 },
+            'PTA': {},
+            'n_Butanol': { 'butanol': 0.60 },
+            'Isobutanol': { 'butanol': 0.60 },
+            'MEK': { 'butanol': 0.80 },
+            'MEK_V2': { 'butanol': 1.05 },
+            'Styrene': { 'benzene': 0.80, 'ethylene': 0.30 }
         };
 
         const formula = consumptionCoeffs[currentProduct] || {};
@@ -2808,7 +2914,15 @@ document.addEventListener("DOMContentLoaded", () => {
             'Acetone_V2': { 'butanol': 1.40, 'acetic': 0.75 },
             'Dibasic_Ester': { 'butanol': 0.70, 'acetic': 0.35 },
             'Isopropanol': { 'butanol': 0.72 },
-            'PMA': { 'butanol': 0.69, 'acetic': 0.46 }
+            'PMA': { 'butanol': 0.69, 'acetic': 0.46 },
+            'PM': { 'butanol': 0.69 },
+            'Isophthalic_Acid': { 'butanol': 0.70 },
+            'PTA': {},
+            'n_Butanol': { 'butanol': 0.60 },
+            'Isobutanol': { 'butanol': 0.60 },
+            'MEK': { 'butanol': 0.80 },
+            'MEK_V2': { 'butanol': 1.05 },
+            'Styrene': { 'benzene': 0.80, 'ethylene': 0.30 }
         };
 
         const formula = consumptionCoeffs[currentProduct] || {};

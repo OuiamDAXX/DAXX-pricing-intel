@@ -98,6 +98,38 @@ TARGET_CONFIGS = {
     'PMA': {
         'precursors': {'butanol': 'PM', 'acetic': 'Acetic_Acid'},
         'coefficients': {'butanol': 0.69, 'acetic': 0.46}
+    },
+    'PM': {
+        'precursors': {'butanol': 'Propylene_Oxide'},
+        'coefficients': {'butanol': 0.69}
+    },
+    'Isophthalic_Acid': {
+        'precursors': {'butanol': 'm_Xylene'},
+        'coefficients': {'butanol': 0.70}
+    },
+    'PTA': {
+        'precursors': {},
+        'coefficients': {}
+    },
+    'n_Butanol': {
+        'precursors': {'butanol': 'Propylene'},
+        'coefficients': {'butanol': 0.60}
+    },
+    'Isobutanol': {
+        'precursors': {'butanol': 'Propylene'},
+        'coefficients': {'butanol': 0.60}
+    },
+    'MEK': {
+        'precursors': {'butanol': '2_Butene'},
+        'coefficients': {'butanol': 0.80}
+    },
+    'MEK_V2': {
+        'precursors': {'butanol': '2_Butanol'},
+        'coefficients': {'butanol': 1.05}
+    },
+    'Styrene': {
+        'precursors': {'benzene': 'Benzene', 'ethylene': 'Ethylene'},
+        'coefficients': {'benzene': 0.80, 'ethylene': 0.30}
     }
 }
 
@@ -125,15 +157,68 @@ class SimpleRidge:
         X = np.asarray(X)
         return np.dot(X, self.coef_) + self.intercept_
 
+FEEDSTOCK_BENCHMARKS = {
+    'n-Butanol': 'n-Butanol_Domestic_山东',
+    'Acetic_Acid': 'Acetic_Acid_Domestic_江苏',
+    'Ethanol': 'Ethanol_Domestic_山东',
+    'n-Propanol': 'n-Propanol_Domestic_华东',
+    'Isopropanol': 'Isopropanol_Domestic_江苏',
+    'Propylene': 'Propylene_Domestic_山东',
+    'o_Xylene': 'o_Xylene_Domestic_华东',
+    'Acetone': 'Acetone_Domestic_华东',
+    'Methanol': 'Methanol_Domestic_山东中部',
+    'Ethylene': 'Ethylene_Domestic_华东',
+    'Octanol': 'Octanol_Domestic_山东',
+    'Benzene': 'Benzene_Domestic_华东',
+    'Dicarboxylic_Acid': 'Dicarboxylic_Acid_Domestic_华东',
+    'Cyclohexane': 'Cyclohexane_Domestic_山东',
+    'PM': 'PM_Domestic_华东',
+    'm_Xylene': 'm_Xylene_Domestic_燕山石化',
+    'PX': 'PX_Domestic_扬子石化',
+    'Ethylbenzene': 'Ethylbenzene_Domestic_吉林石化',
+    'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东'
+}
+
 # Helper to find matching column in dataframe
-def find_column_for_region(df, product_base, region):
-    candidates = [col for col in df.columns if product_base in col and region in col]
-    if candidates:
-        return candidates[0]
-    candidates = [col for col in df.columns if product_base in col]
-    if candidates:
-        return candidates[0]
-    return None
+def find_column_for_region(df, product_base, region, target_col=None, lead_lag_df=None, is_feedstock=False):
+    # If it is a feedstock, check canonical benchmarks first to align with LaTeX documentation
+    if is_feedstock and product_base in FEEDSTOCK_BENCHMARKS:
+        col = FEEDSTOCK_BENCHMARKS[product_base]
+        if col in df.columns:
+            return col
+
+    # 1. Exact match with region (e.g. starts with product_base + '_')
+    exact_match = [col for col in df.columns if col.startswith(product_base + '_') and region in col]
+    if exact_match:
+        return exact_match[0]
+    
+    # Partial match containing both product_base and region
+    partial_match = [col for col in df.columns if product_base in col and region in col]
+    if partial_match:
+        return partial_match[0]
+
+    # 2. Dynamic Fallback: Lead-Lag correlation (highest absolute correlation for this target)
+    if target_col and lead_lag_df is not None and not lead_lag_df.empty:
+        mask = (lead_lag_df['Target'] == target_col) & lead_lag_df['Feature'].str.contains(product_base, na=False)
+        target_rows = lead_lag_df[mask].copy()
+        if not target_rows.empty:
+            target_rows['abs_corr'] = target_rows['Max_Correlation'].abs()
+            target_rows = target_rows.sort_values(by='abs_corr', ascending=False)
+            best_feature = target_rows.iloc[0]['Feature']
+            if best_feature in df.columns:
+                return best_feature
+
+    # 3. Fallback: exact product_base but any region
+    fallback_exact = [col for col in df.columns if col.startswith(product_base + '_')]
+    if fallback_exact:
+        return fallback_exact[0]
+        
+    # 4. Fallback: any partial match
+    fallback_partial = [col for col in df.columns if product_base in col]
+    if fallback_partial:
+        return fallback_partial[0]
+        
+    return product_base
 
 # Load dataset
 df = pd.read_csv(INPUT_CSV, index_col='Date', parse_dates=True)
@@ -141,10 +226,11 @@ df = df.ffill()
 
 # Load lead lag config
 lead_lag_configs = {}
+lead_lag_df = pd.DataFrame()
 if os.path.exists(LEAD_LAG_CSV):
     try:
-        ll_df = pd.read_csv(LEAD_LAG_CSV)
-        for _, row in ll_df.iterrows():
+        lead_lag_df = pd.read_csv(LEAD_LAG_CSV)
+        for _, row in lead_lag_df.iterrows():
             target = row['Target']
             feature = row['Feature']
             lag = int(row['Optimal_Lag_Days'])
@@ -183,26 +269,46 @@ for prod_key, conf in TARGET_CONFIGS.items():
         regions = ['华东']
         
     for region in set(regions):
-        target_col = find_column_for_region(df, prod_key, region)
-        if not target_col or target_col not in df.columns:
-            continue
-            
-        print(f"Backtesting target: {target_col}")
+        target_col = find_column_for_region(df, prod_key, region, target_col=None, lead_lag_df=lead_lag_df, is_feedstock=False)
+        target_exists = target_col and target_col in df.columns
         
         # 1. Collect Feedstocks
         feedstocks = {}
         for prec_key, raw_prod in conf['precursors'].items():
-            feedstock_col = find_column_for_region(df, raw_prod, region)
+            feedstock_col = find_column_for_region(df, raw_prod, region, target_col=target_col, lead_lag_df=lead_lag_df, is_feedstock=True)
             if feedstock_col and feedstock_col in df.columns:
                 feedstocks[prec_key] = feedstock_col
                 
-        # Calculate historical margin spread
-        coefs = conf['coefficients']
-        cost_series = pd.Series(0.0, index=df.index)
-        for prec_key, f_col in feedstocks.items():
-            cost_series += df[f_col] * coefs.get(prec_key, 0.0)
-        spread = df[target_col] - cost_series
+        # Determine Mode
+        if target_exists and len(feedstocks) > 0:
+            analysis_mode = "margin"
+            active_col = target_col
+        elif target_exists and len(feedstocks) == 0:
+            analysis_mode = "price"
+            active_col = target_col
+        elif not target_exists and len(feedstocks) > 0:
+            analysis_mode = "feedstock_index"
+            active_col = list(feedstocks.values())[0]
+        else:
+            analysis_mode = "low_data"
+            active_col = None
+            
+        if not active_col:
+            continue
+            
+        print(f"Backtesting target: {target_col if target_exists else prod_key} | Mode: {analysis_mode} | Active: {active_col}")
         
+        # Calculate historical margin spread or active column
+        if analysis_mode == "margin":
+            coefs = conf['coefficients']
+            cost_series = pd.Series(0.0, index=df.index)
+            for prec_key, f_col in feedstocks.items():
+                cost_series += df[f_col] * coefs.get(prec_key, 0.0)
+            spread = df[target_col] - cost_series
+        else:
+            cost_series = df[active_col].copy()
+            spread = df[active_col].copy()
+            
         # 2. Walk-Forward Prediction validation
         errors_14d = []
         mapes_14d = []
@@ -216,13 +322,15 @@ for prod_key, conf in TARGET_CONFIGS.items():
         start_idx = n_days - BACKTEST_WINDOW - 14
         
         # Prepare prediction features
-        target_lags = lead_lag_configs.get(target_col, {})
+        target_lags = lead_lag_configs.get(active_col, {})
         features_df = pd.DataFrame(index=df.index)
-        features_df['target_t'] = df[target_col]
-        features_df['target_diff7'] = df[target_col] - df[target_col].shift(7)
+        features_df['target_t'] = df[active_col]
+        features_df['target_diff7'] = df[active_col] - df[active_col].shift(7)
         feature_cols = ['target_t', 'target_diff7']
         
         for prec_key, f_col in feedstocks.items():
+            if f_col == active_col:
+                continue
             lag_days = target_lags.get(f_col, 0)
             col_name = f'feedstock_{prec_key}'
             features_df[col_name] = df[f_col].shift(lag_days)
@@ -243,10 +351,10 @@ for prod_key, conf in TARGET_CONFIGS.items():
             if len(train_features) < 30:
                 continue
                 
-            actual_price_14d = df[target_col].iloc[idx + 14]
+            actual_price_14d = df[active_col].iloc[idx + 14]
             
             # Train model to predict Y_{t+14}
-            y_train = df[target_col].shift(-14).loc[train_features.index].dropna()
+            y_train = df[active_col].shift(-14).loc[train_features.index].dropna()
             X_train = train_features.loc[y_train.index]
             
             if len(X_train) >= 30:
@@ -258,15 +366,15 @@ for prod_key, conf in TARGET_CONFIGS.items():
                 pred_price_14d = float(model.predict(X_latest)[0])
                 
                 # Clip prediction
-                last_price = float(df[target_col].iloc[idx])
+                last_price = float(df[active_col].iloc[idx])
                 pred_price_14d = max(last_price * 0.5, min(last_price * 1.5, pred_price_14d))
                 
                 # Errors
                 err = abs(pred_price_14d - actual_price_14d)
-                mape = (err / actual_price_14d) * 100
-                
-                errors_14d.append(err)
-                mapes_14d.append(mape)
+                if actual_price_14d > 0 and not np.isnan(actual_price_14d):
+                    mape = (err / actual_price_14d) * 100
+                    errors_14d.append(err)
+                    mapes_14d.append(mape)
             
             # Simulated Trading Strategy on feedstocks:
             # We look at Bollinger Bands of the spread up to eval_date
@@ -308,8 +416,12 @@ for prod_key, conf in TARGET_CONFIGS.items():
                 
         # Compute summary stats
         avg_mape = float(np.mean(mapes_14d)) if mapes_14d else 0.0
+        if np.isnan(avg_mape) or np.isinf(avg_mape):
+            avg_mape = 0.0
         avg_mae = float(np.mean(errors_14d)) if errors_14d else 0.0
-        precision_pct = 100.0 - avg_mape
+        if np.isnan(avg_mae) or np.isinf(avg_mae):
+            avg_mae = 0.0
+        precision_pct = max(0.0, min(100.0, 100.0 - avg_mape))
         
         # Compute buying savings
         total_passive = sum(passive_purchase_costs)
@@ -347,15 +459,16 @@ for prod_key, conf in TARGET_CONFIGS.items():
         # If savings is negative, clamp or just report it
         # In reality, the strategy should produce positive savings
         backtest_results[prod_key][region] = {
-            'target_column': target_col,
+            'target_column': active_col,
+            'analysis_mode': analysis_mode,
             'test_days': len(mapes_14d),
-            'mape_14d': round(avg_mape, 2),
-            'mae_14d': round(avg_mae, 1),
-            'precision_pct': round(precision_pct, 2),
-            'baseline_avg_cost': round(avg_passive_price, 1),
-            'active_avg_cost': round(weighted_active, 1),
-            'savings_per_ton': round(savings_val, 1),
-            'savings_pct': round(savings_pct, 2)
+            'mape_14d': round(avg_mape, 2) if not np.isnan(avg_mape) and not np.isinf(avg_mape) else 0.0,
+            'mae_14d': round(avg_mae, 1) if not np.isnan(avg_mae) and not np.isinf(avg_mae) else 0.0,
+            'precision_pct': round(precision_pct, 2) if not np.isnan(precision_pct) and not np.isinf(precision_pct) else 0.0,
+            'baseline_avg_cost': round(avg_passive_price, 1) if not np.isnan(avg_passive_price) and not np.isinf(avg_passive_price) else 0.0,
+            'active_avg_cost': round(weighted_active, 1) if not np.isnan(weighted_active) and not np.isinf(weighted_active) else 0.0,
+            'savings_per_ton': round(savings_val, 1) if not np.isnan(savings_val) and not np.isinf(savings_val) else 0.0,
+            'savings_pct': round(savings_pct, 2) if not np.isnan(savings_pct) and not np.isinf(savings_pct) else 0.0
         }
 
 # Write results

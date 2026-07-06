@@ -54,6 +54,7 @@ if not os.path.exists(INPUT_CSV):
     sys.exit(1)
 
 # Product configurations matching app.js
+# Product configurations matching app.js
 TARGET_CONFIGS = {
     'Butyl_Acetate': {
         'precursors': {'butanol': 'n-Butanol', 'acetic': 'Acetic_Acid'},
@@ -122,20 +123,103 @@ TARGET_CONFIGS = {
     'PMA': {
         'precursors': {'butanol': 'PM', 'acetic': 'Acetic_Acid'},
         'coefficients': {'butanol': 0.69, 'acetic': 0.46}
+    },
+    'PM': {
+        'precursors': {'butanol': 'Propylene_Oxide'},
+        'coefficients': {'butanol': 0.69}
+    },
+    'Isophthalic_Acid': {
+        'precursors': {'butanol': 'm_Xylene'},
+        'coefficients': {'butanol': 0.70}
+    },
+    'PTA': {
+        'precursors': {},
+        'coefficients': {}
+    },
+    'n_Butanol': {
+        'precursors': {'butanol': 'Propylene'},
+        'coefficients': {'butanol': 0.60}
+    },
+    'Isobutanol': {
+        'precursors': {'butanol': 'Propylene'},
+        'coefficients': {'butanol': 0.60}
+    },
+    'MEK': {
+        'precursors': {'butanol': '2_Butene'},
+        'coefficients': {'butanol': 0.80}
+    },
+    'MEK_V2': {
+        'precursors': {'butanol': '2_Butanol'},
+        'coefficients': {'butanol': 1.05}
+    },
+    'Styrene': {
+        'precursors': {'benzene': 'Benzene', 'ethylene': 'Ethylene'},
+        'coefficients': {'benzene': 0.80, 'ethylene': 0.30}
     }
 }
 
+FEEDSTOCK_BENCHMARKS = {
+    'n-Butanol': 'n-Butanol_Domestic_山东',
+    'Acetic_Acid': 'Acetic_Acid_Domestic_江苏',
+    'Ethanol': 'Ethanol_Domestic_山东',
+    'n-Propanol': 'n-Propanol_Domestic_华东',
+    'Isopropanol': 'Isopropanol_Domestic_江苏',
+    'Propylene': 'Propylene_Domestic_山东',
+    'o_Xylene': 'o_Xylene_Domestic_华东',
+    'Acetone': 'Acetone_Domestic_华东',
+    'Methanol': 'Methanol_Domestic_山东中部',
+    'Ethylene': 'Ethylene_Domestic_华东',
+    'Octanol': 'Octanol_Domestic_山东',
+    'Benzene': 'Benzene_Domestic_华东',
+    'Dicarboxylic_Acid': 'Dicarboxylic_Acid_Domestic_华东',
+    'Cyclohexane': 'Cyclohexane_Domestic_山东',
+    'PM': 'PM_Domestic_华东',
+    'm_Xylene': 'm_Xylene_Domestic_燕山石化',
+    'PX': 'PX_Domestic_扬子石化',
+    'Ethylbenzene': 'Ethylbenzene_Domestic_吉林石化',
+    'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东'
+}
+
 # Helper to find matching column in dataframe for a product and region
-def find_column_for_region(df, product_base, region):
-    # Try exact match with domestic and region
-    candidates = [col for col in df.columns if product_base in col and region in col]
-    if candidates:
-        return candidates[0]
-    # Try any column containing product_base
-    candidates = [col for col in df.columns if product_base in col]
-    if candidates:
-        return candidates[0]
-    return None
+def find_column_for_region(df, product_base, region, target_col=None, lead_lag_df=None, is_feedstock=False):
+    # If it is a feedstock, check canonical benchmarks first to align with LaTeX documentation
+    if is_feedstock and product_base in FEEDSTOCK_BENCHMARKS:
+        col = FEEDSTOCK_BENCHMARKS[product_base]
+        if col in df.columns:
+            return col
+
+    # 1. Exact match with region (e.g. starts with product_base + '_')
+    exact_match = [col for col in df.columns if col.startswith(product_base + '_') and region in col]
+    if exact_match:
+        return exact_match[0]
+    
+    # Partial match containing both product_base and region
+    partial_match = [col for col in df.columns if product_base in col and region in col]
+    if partial_match:
+        return partial_match[0]
+
+    # 2. Dynamic Fallback: Lead-Lag correlation (highest absolute correlation for this target)
+    if target_col and lead_lag_df is not None and not lead_lag_df.empty:
+        mask = (lead_lag_df['Target'] == target_col) & lead_lag_df['Feature'].str.contains(product_base, na=False)
+        target_rows = lead_lag_df[mask].copy()
+        if not target_rows.empty:
+            target_rows['abs_corr'] = target_rows['Max_Correlation'].abs()
+            target_rows = target_rows.sort_values(by='abs_corr', ascending=False)
+            best_feature = target_rows.iloc[0]['Feature']
+            if best_feature in df.columns:
+                return best_feature
+
+    # 3. Fallback: exact product_base but any region
+    fallback_exact = [col for col in df.columns if col.startswith(product_base + '_')]
+    if fallback_exact:
+        return fallback_exact[0]
+        
+    # 4. Fallback: any partial match
+    fallback_partial = [col for col in df.columns if product_base in col]
+    if fallback_partial:
+        return fallback_partial[0]
+        
+    return product_base
 
 # Load aligned daily prices
 df = pd.read_csv(INPUT_CSV, index_col='Date', parse_dates=True)
@@ -143,10 +227,11 @@ df = df.ffill()
 
 # Load lead lag result configurations
 lead_lag_configs = {}
+lead_lag_df = pd.DataFrame()
 if os.path.exists(LEAD_LAG_CSV):
     try:
-        ll_df = pd.read_csv(LEAD_LAG_CSV)
-        for _, row in ll_df.iterrows():
+        lead_lag_df = pd.read_csv(LEAD_LAG_CSV)
+        for _, row in lead_lag_df.iterrows():
             target = row['Target']
             feature = row['Feature']
             lag = int(row['Optimal_Lag_Days'])
@@ -189,31 +274,47 @@ for prod_key, conf in TARGET_CONFIGS.items():
         regions = ['华东'] # Default fallback
         
     for region in set(regions):
-        target_col = find_column_for_region(df, prod_key, region)
-        if not target_col or target_col not in df.columns:
-            continue
-            
-        print(f"Processing target: {target_col}")
+        target_col = find_column_for_region(df, prod_key, region, target_col=None, lead_lag_df=lead_lag_df, is_feedstock=False)
+        target_exists = target_col and target_col in df.columns
         
         # 1. Collect Feedstocks
         feedstocks = {}
         for prec_key, raw_prod in conf['precursors'].items():
-            feedstock_col = find_column_for_region(df, raw_prod, region)
+            feedstock_col = find_column_for_region(df, raw_prod, region, target_col=target_col, lead_lag_df=lead_lag_df, is_feedstock=True)
             if feedstock_col and feedstock_col in df.columns:
                 feedstocks[prec_key] = feedstock_col
                 
-        # 2. Calculate historical Spread/Margin
-        coefs = conf['coefficients']
-        spread = df[target_col].copy()
-        valid_spread = True
-        cost_series = pd.Series(0.0, index=df.index)
-        for prec_key, f_col in feedstocks.items():
-            coef = coefs.get(prec_key, 0.0)
-            cost_series += df[f_col] * coef
+        # 2. Determine Analysis Mode
+        if target_exists and len(feedstocks) > 0:
+            analysis_mode = "margin"
+            active_col = target_col
+        elif target_exists and len(feedstocks) == 0:
+            analysis_mode = "price"
+            active_col = target_col
+        elif not target_exists and len(feedstocks) > 0:
+            analysis_mode = "feedstock_index"
+            active_col = list(feedstocks.values())[0]
+        else:
+            analysis_mode = "low_data"
+            active_col = None
             
-        spread = df[target_col] - cost_series
+        if not active_col:
+            continue
+            
+        print(f"Processing target: {target_col if target_exists else prod_key} | Mode: {analysis_mode} | Active Column: {active_col}")
         
-        # 3. Technical Indicators on Spread
+        # 3. Calculate historical Spread/Margin (or fallback to absolute price)
+        if analysis_mode == "margin":
+            coefs = conf['coefficients']
+            cost_series = pd.Series(0.0, index=df.index)
+            for prec_key, f_col in feedstocks.items():
+                coef = coefs.get(prec_key, 0.0)
+                cost_series += df[f_col] * coef
+            spread = df[target_col] - cost_series
+        else:
+            spread = df[active_col].copy()
+            
+        # 4. Technical Indicators on Spread
         rsi_series = calculate_rsi(spread, 14)
         bb_middle = spread.rolling(window=20).mean()
         bb_std = spread.rolling(window=20).std()
@@ -226,34 +327,49 @@ for prod_key, conf in TARGET_CONFIGS.items():
         current_bb_lower = float(bb_lower.iloc[-1]) if not np.isnan(bb_lower.iloc[-1]) else current_spread
         current_bb_middle = float(bb_middle.iloc[-1]) if not np.isnan(bb_middle.iloc[-1]) else current_spread
         
-        # Determine Buy/Sell Signal based on margin spread + RSI
-        signal = "Neutral"
-        reason = "The market is in a relatively stable phase. The theoretical margin spread is balanced compared to its historical average."
-        
-        if current_spread < current_bb_lower or current_rsi < 35:
-            signal = "Buy"
-            reason = "The margin spread is historically low and the RSI indicates an oversold condition. This is an excellent opportunity to buy feedstocks before an expected price increase in the target product."
-        elif current_spread > current_bb_upper or current_rsi > 68:
-            signal = "Delay Purchase"
-            reason = "Margins on this product are currently very high or the market is overbought. It is recommended to delay feedstock purchases and wait for a correction."
+        # Determine Market Conditions Signal based on active series + RSI (objective descriptions)
+        signal = "Standard"
+        if analysis_mode == "margin":
+            reason = "The margin spread is currently within its standard historical range, indicating balanced market conditions between feedstock costs and finished product prices."
+            if current_spread < current_bb_lower or current_rsi < 35:
+                signal = "Favorable"
+                reason = "The theoretical margin spread is in the bottom percentile (oversold). Historically, this indicates a period where feedstock costs are highly competitive relative to finished product prices."
+            elif current_spread > current_bb_upper or current_rsi > 68:
+                signal = "Unfavorable"
+                reason = "The theoretical margin spread is in the upper percentile (overbought). Historically, this indicates a period of high valuation where margins are stretched and a correction towards the mean is statistically more likely."
+        elif analysis_mode == "price":
+            reason = "The market price is currently within its standard historical range, indicating stable and balanced pricing conditions."
+            if current_spread < current_bb_lower or current_rsi < 35:
+                signal = "Favorable"
+                reason = "The absolute market price is in the bottom percentile (oversold). Historically, this indicates a period where the product price is competitive and represents a potential buying window."
+            elif current_spread > current_bb_upper or current_rsi > 68:
+                signal = "Unfavorable"
+                reason = "The absolute market price is in the upper percentile (overbought). Historically, this indicates a period of high valuation where prices are stretched and a correction towards the mean is statistically more likely."
+        elif analysis_mode == "feedstock_index":
+            reason = f"Final product price data is currently unavailable. Decision support is calculated directly on the primary feedstock {active_col}. Feedstock prices are currently in their standard range."
+            if current_spread < current_bb_lower or current_rsi < 35:
+                signal = "Favorable"
+                reason = f"Final product price data is unavailable. Primary feedstock cost {active_col} is in the bottom percentile (low cost). A lower feedstock cost historically translates to a buying window for raw materials before finished product prices recover."
+            elif current_spread > current_bb_upper or current_rsi > 68:
+                signal = "Unfavorable"
+                reason = f"Final product price data is unavailable. Primary feedstock cost {active_col} is in the upper percentile (high cost). Rising feedstock costs historically put pressure on finished product pricing, suggesting a period of high procurement costs."
+        else:
+            reason = "Limited pricing data available. Analysis is based on simple momentum and historical seasonal trends."
             
-        # 4. Multi-step forecasting (J+1 to J+14) using Ridge Regression
-        predictions = []
-        forecast_dates = []
-        last_date = df.index[-1]
-        
         # Collect optimal lags for this target
-        target_lags = lead_lag_configs.get(target_col, {})
+        target_lags = lead_lag_configs.get(active_col, {})
         
         # Create forecasting dataframe
         features_df = pd.DataFrame(index=df.index)
-        features_df['target_t'] = df[target_col]
-        features_df['target_diff7'] = df[target_col] - df[target_col].shift(7)
+        features_df['target_t'] = df[active_col]
+        features_df['target_diff7'] = df[active_col] - df[active_col].shift(7)
         
         feature_cols = ['target_t', 'target_diff7']
         
         # Add feedstock features with their optimal lag
         for prec_key, f_col in feedstocks.items():
+            if f_col == active_col:
+                continue
             lag_days = target_lags.get(f_col, 0)
             col_name = f'feedstock_{prec_key}'
             features_df[col_name] = df[f_col].shift(lag_days)
@@ -269,11 +385,11 @@ for prod_key, conf in TARGET_CONFIGS.items():
             latest_feedstock_prices[prec_key] = float(df[f_col].iloc[-1])
 
         for h in range(1, 15):
-            y_train = df[target_col].shift(-h).loc[features_df.index].dropna()
+            y_train = df[active_col].shift(-h).loc[features_df.index].dropna()
             X_train = features_df.loc[y_train.index]
             
             if len(X_train) < 30:
-                last_price = float(df[target_col].iloc[-1])
+                last_price = float(df[active_col].iloc[-1])
                 pred_val = last_price
                 horizon_preds.append(pred_val)
                 for prec_key in feedstocks.keys():
@@ -286,7 +402,7 @@ for prod_key, conf in TARGET_CONFIGS.items():
             X_latest = features_df.iloc[[-1]]
             pred_val = float(model.predict(X_latest)[0])
             
-            last_price = float(df[target_col].iloc[-1])
+            last_price = float(df[active_col].iloc[-1])
             pred_val = max(last_price * 0.5, min(last_price * 1.5, pred_val))
             
             horizon_preds.append(pred_val)
@@ -302,7 +418,7 @@ for prod_key, conf in TARGET_CONFIGS.items():
                 coeff_lists[prec_key].append(coeff_val)
             
         # Direction of forecast
-        price_now = float(df[target_col].iloc[-1])
+        price_now = float(df[active_col].iloc[-1])
         price_14d = horizon_preds[-1]
         pct_change = (price_14d - price_now) / price_now * 100
         
@@ -313,10 +429,10 @@ for prod_key, conf in TARGET_CONFIGS.items():
             direction = "Bearish"
             
         # 3.5 Calculate Risk Metrics
-        returns = np.log(df[target_col] / df[target_col].shift(1)).dropna().iloc[-60:]
+        returns = np.log(df[active_col] / df[active_col].shift(1)).dropna().iloc[-60:]
         ann_vol = float(returns.std() * np.sqrt(252) * 100) if len(returns) > 5 else 0.0
         
-        price_diff_10d = (df[target_col] - df[target_col].shift(10)).dropna()
+        price_diff_10d = (df[active_col] - df[active_col].shift(10)).dropna()
         var_95 = float(np.percentile(price_diff_10d, 95)) if len(price_diff_10d) > 10 else 0.0
         var_95 = max(0.0, var_95)
         
@@ -327,18 +443,21 @@ for prod_key, conf in TARGET_CONFIGS.items():
             risk_level = "Medium"
 
         # Generate forecast dates
+        last_date = df.index[-1]
+        forecast_dates = []
         for day in range(1, 15):
             f_date = last_date + datetime.timedelta(days=day)
             forecast_dates.append(f_date.strftime('%Y-%m-%d'))
             
         # Calculate monthly seasonal price averages
-        target_monthly = df[target_col].groupby(df.index.month).mean().fillna(0.0).round(1).tolist()
+        target_monthly = df[active_col].groupby(df.index.month).mean().fillna(0.0).round(1).tolist()
         feedstocks_monthly = {}
         for prec_key, f_col in feedstocks.items():
             feedstocks_monthly[prec_key] = df[f_col].groupby(df.index.month).mean().fillna(0.0).round(1).tolist()
             
         output_data['products'][prod_key][region] = {
-            'target_column': target_col,
+            'target_column': active_col,
+            'analysis_mode': analysis_mode,
             'current_price': price_now,
             'rsi': round(current_rsi, 1),
             'spread': round(current_spread, 1),
