@@ -159,6 +159,10 @@ TARGET_CONFIGS = {
     'Toluene': {
         'precursors': {'benzene': 'Benzene', 'methanol': 'Methanol'},
         'coefficients': {'benzene': 0.795, 'methanol': 0.327}
+    },
+    'PX': {
+        'precursors': {'butanol': 'Toluene', 'acetic': 'Methanol'},
+        'coefficients': {'butanol': 0.742, 'acetic': 0.258}
     }
 }
 

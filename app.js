@@ -657,7 +657,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         'Styrene': {
-            title: "Styrene (Estireno)",
+            title: "Styrene",
             precursors: {
                 butyl: 'Styrene',
                 benzene: 'Benzene',
@@ -675,7 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         'Toluene': {
-            title: "Toluene (Toluène)",
+            title: "Toluene",
             precursors: {
                 butyl: 'Toluene',
                 butanol: 'Benzene',
@@ -689,6 +689,24 @@ document.addEventListener("DOMContentLoaded", () => {
             defaultChecked: [
                 'Toluene',
                 'Benzene',
+                'Methanol'
+            ]
+        },
+        'PX': {
+            title: "p-Xylene",
+            precursors: {
+                butyl: 'PX',
+                butanol: 'Toluene',
+                acetic: 'Methanol'
+            },
+            labels: {
+                butyl: "p-Xylene (Target)",
+                butanol: "Toluene (Feedstock)",
+                acetic: "Methanol (Feedstock)"
+            },
+            defaultChecked: [
+                'PX',
+                'Toluene',
                 'Methanol'
             ]
         }
@@ -1105,6 +1123,10 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (product === 'Toluene') {
             return header.includes('Toluene') || 
                    header.includes('Benzene') || 
+                   header.includes('Methanol');
+        } else if (product === 'PX') {
+            return header.includes('PX') || 
+                   header.includes('Toluene') || 
                    header.includes('Methanol');
         }
         return false;
@@ -2429,6 +2451,107 @@ document.addEventListener("DOMContentLoaded", () => {
             handleTargetProductChange();
         });
     }
+
+    // Custom Searchable Dropdown Logic
+    function initializeCustomSearchableSelect() {
+        const container = document.getElementById('custom-target-select-container');
+        const input = document.getElementById('target-product-search-input');
+        const list = document.getElementById('target-product-options-list');
+        const select = document.getElementById('target-product-select');
+        
+        if (!container || !input || !list || !select) return;
+
+        // Read options
+        const options = Array.from(select.options).map(opt => ({
+            value: opt.value,
+            text: opt.textContent
+        }));
+
+        // Set initial value
+        const selectedOpt = select.options[select.selectedIndex];
+        if (selectedOpt) {
+            input.value = selectedOpt.textContent;
+        }
+
+        // Toggle open/closed
+        input.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = container.classList.contains('open');
+            document.querySelectorAll('.custom-searchable-select').forEach(el => el.classList.remove('open'));
+            if (!isOpen) {
+                container.classList.add('open');
+                input.readOnly = false;
+                input.value = "";
+                renderOptions("");
+            }
+        });
+
+        // Search input
+        input.addEventListener('input', (e) => {
+            renderOptions(e.target.value);
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', () => {
+            closeDropdown();
+        });
+
+        function closeDropdown() {
+            container.classList.remove('open');
+            input.readOnly = true;
+            const currentSelectedOpt = select.options[select.selectedIndex];
+            if (currentSelectedOpt) {
+                input.value = currentSelectedOpt.textContent;
+            }
+        }
+
+        // Render options list
+        function renderOptions(query) {
+            list.innerHTML = "";
+            const filtered = options.filter(opt => 
+                opt.text.toLowerCase().includes(query.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'no-results';
+                li.textContent = "No products found";
+                list.appendChild(li);
+                return;
+            }
+
+            filtered.forEach(opt => {
+                const li = document.createElement('li');
+                li.textContent = opt.text;
+                li.setAttribute('data-value', opt.value);
+                
+                if (select.value === opt.value) {
+                    li.className = 'selected';
+                }
+
+                li.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    select.value = opt.value;
+                    input.value = opt.text;
+                    select.dispatchEvent(new Event('change'));
+                    closeDropdown();
+                });
+
+                list.appendChild(li);
+            });
+        }
+
+        // Synchronize when the native select changes from other code (e.g. tree clicks)
+        select.addEventListener('change', () => {
+            const externalSelectedOpt = select.options[select.selectedIndex];
+            if (externalSelectedOpt) {
+                input.value = externalSelectedOpt.textContent;
+            }
+        });
+    }
+
+    // Initialize custom select
+    initializeCustomSearchableSelect();
 
     function handleTargetProductChange() {
         const config = TARGET_CONFIGS[currentProduct];

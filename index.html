@@ -105,34 +105,44 @@
                         <h2>Price Series Trend</h2>
                         <div class="target-select-wrapper">
                             <span class="target-select-label"><i class="fa-solid fa-crosshairs"></i> Target Product:</span>
-                            <select id="target-product-select" class="target-select">
-                                <option value="Butyl_Acetate" selected>Butyl Acetate</option>
-                                <option value="Ethyl_Acetate">Ethyl Acetate</option>
-                                <option value="n_Propyl_Acetate">Propyl Acetate</option>
-                                <option value="Isopropyl_Acetate_Proxy">Isopropyl Acetate</option>
-                                <option value="Acrylic_Acid">Acrylic Acid</option>
-                                <option value="Phthalic_Anhydride">Phthalic Anhydride</option>
-                                <option value="Maleic_Anhydride">Maleic Anhydride</option>
-                                <option value="MMA">Methyl Methacrylate</option>
-                                <option value="Butyl_Acrylate">Butyl Acrylate</option>
-                                <option value="VAM">Vinyl Acetate Monomer</option>
-                                <option value="2_EHA">2-Ethylhexyl Acrylate</option>
-                                <option value="Ethyl_Acrylate">Ethyl Acrylate</option>
-                                <option value="Acetone_V1">Acetone (Route 1)</option>
-                                <option value="Acetone_V2">Acetone (Route 2)</option>
-                                <option value="Dibasic_Ester">Dibasic Ester (DBE)</option>
-                                <option value="Isopropanol">Isopropyl Alcohol (IPA)</option>
-                                <option value="PMA">Methoxy propyl acetate (MPA)</option>
-                                <option value="PM">Methoxy propanol (PM)</option>
-                                <option value="Isophthalic_Acid">Isophthalic Acid (PIA)</option>
-                                <option value="PTA">Purified Terephthalic Acid (PTA)</option>
-                                <option value="n_Butanol">n-Butanol</option>
-                                <option value="Isobutanol">Isobutanol</option>
-                                <option value="MEK">Methyl Ethyl Ketone (MEK) Route 1</option>
-                                <option value="MEK_V2">Methyl Ethyl Ketone (MEK) Route 2</option>
-                                <option value="Styrene">Styrene (Estireno)</option>
-                                <option value="Toluene">Toluene (Toluène)</option>
-                            </select>
+                            <div class="custom-searchable-select" id="custom-target-select-container">
+                                <div class="select-search-wrapper">
+                                    <input type="text" id="target-product-search-input" placeholder="Search product..." autocomplete="off" readonly>
+                                    <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                                </div>
+                                <ul class="select-dropdown-options" id="target-product-options-list">
+                                    <!-- Filled dynamically by JS -->
+                                </ul>
+                                <select id="target-product-select" class="target-select" style="display: none;">
+                                    <option value="2_EHA">2-Ethylhexyl Acrylate</option>
+                                    <option value="Acetone_V1">Acetone (Route 1)</option>
+                                    <option value="Acetone_V2">Acetone (Route 2)</option>
+                                    <option value="Acrylic_Acid">Acrylic Acid</option>
+                                    <option value="Butyl_Acetate" selected>Butyl Acetate</option>
+                                    <option value="Butyl_Acrylate">Butyl Acrylate</option>
+                                    <option value="Dibasic_Ester">Dibasic Ester (DBE)</option>
+                                    <option value="Ethyl_Acetate">Ethyl Acetate</option>
+                                    <option value="Ethyl_Acrylate">Ethyl Acrylate</option>
+                                    <option value="Isobutanol">Isobutanol</option>
+                                    <option value="Isophthalic_Acid">Isophthalic Acid (PIA)</option>
+                                    <option value="Isopropyl_Acetate_Proxy">Isopropyl Acetate</option>
+                                    <option value="Isopropanol">Isopropyl Alcohol (IPA)</option>
+                                    <option value="Maleic_Anhydride">Maleic Anhydride</option>
+                                    <option value="PM">Methoxy propanol (PM)</option>
+                                    <option value="PMA">Methoxy propyl acetate (MPA)</option>
+                                    <option value="MEK">Methyl Ethyl Ketone (MEK) Route 1</option>
+                                    <option value="MEK_V2">Methyl Ethyl Ketone (MEK) Route 2</option>
+                                    <option value="MMA">Methyl Methacrylate</option>
+                                    <option value="n_Butanol">n-Butanol</option>
+                                    <option value="Phthalic_Anhydride">Phthalic Anhydride</option>
+                                    <option value="n_Propyl_Acetate">Propyl Acetate</option>
+                                    <option value="PTA">Purified Terephthalic Acid (PTA)</option>
+                                    <option value="PX">p-Xylene</option>
+                                    <option value="Styrene">Styrene</option>
+                                    <option value="Toluene">Toluene</option>
+                                    <option value="VAM">Vinyl Acetate Monomer</option>
+                                </select>
+                            </div>
                             
                             <span class="target-select-label" style="margin-left: 15px;"><i class="fa-solid fa-map-location-dot"></i> Region:</span>
                             <select id="market-region-select" class="target-select">
