@@ -84,13 +84,17 @@ PRODUCTS = [
     ("Isophthalic_Acid_Domestic", "间苯二甲酸", 3),
     ("m_Xylene_Domestic", "间二甲苯", 2),
     ("PTA_Domestic", "PTA", 3),
-    ("PX_Domestic", "PX", 2),
+    ("Xylene_Domestic", "二甲苯", 3),
     ("Isobutanol_Domestic", "异丁醇", 3),
     ("MEK_Domestic", "丁酮", 3),
     ("2_Butene_Domestic", "醚后C4", 2),
     ("Styrene_Domestic", "苯乙烯", 2),
-    ("Ethylbenzene_Domestic", "乙苯", 2)
+    ("MEG_Domestic", "乙二醇", 3),
+    ("DEG_Domestic", "二甘醇", 3),
+    ("PG_Domestic", "丙二醇", 3),
+    ("EO_Domestic", "环氧乙烷", 3)
 ]
+
 
 # Create session
 session = requests.Session()

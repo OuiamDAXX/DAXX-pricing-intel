@@ -182,4 +182,59 @@ En combinant :
 \end{enumerate}
 Le système génère le signal d'achat **`FAVORABLE`**, indiquant aux acheteurs de DAXX EU qu'il s'agit d'une fenêtre d'opportunité d'achat majeure sur la matière première (Isopropanol) avant la remontée prévisible des cours.
 
+\subsection{Acetone (Route 2)}
+
+\subsubsection{Description et Contexte Opérationnel}
+L'Acétone (Route 2) représente une voie de synthèse alternative basée sur le craquage/oxydation à partir du Benzène et du Propylène (procédé classique au cumène). Pour DAXX EU, comparer cette route avec la Route 1 (Isopropanol) permet d'arbitrer les stratégies d'achat selon la rentabilité relative des deux filières.
+
+\subsubsection{Choix Métrologiques et Justifications}
+\begin{itemize}
+    \item \textbf{Région de Référence (Cible)} : Chine de l'Est (\textit{East China - 华东}).
+    \item \textbf{Matières Premières \& Rendements (Route 2)} :
+    \begin{itemize}
+        \item \textbf{Benzène} (precursor \texttt{butanol}) : Résolu en Chine de l'Est (\textit{East China - 华东}) avec un coefficient de \textbf{1.40} tonne de benzène par tonne d'acétone.
+        \item \textbf{Propylène} (precursor \texttt{acetic}) : Résolu au Shandong (\textit{Shandong - 山东}) avec un coefficient de \textbf{0.75} tonne de propylène par tonne d'acétone.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Calcul de la Marge de Transformation (Données du 2026-07-07)}
+Sur la base du dernier enregistrement disponible (7 juillet 2026) :
+\begin{itemize}
+    \item Prix cible Acétone (Est) : $4\,750$ \yen / tonne (soit \textbf{709.4 \$/t} en USD)
+    \item Prix du Benzène (Est) : $6\,925$ \yen / tonne (soit \textbf{1 021.1 \$/t} en USD)
+    \item Prix du Propylène (Shandong) : $7\,750$ \yen / tonne (soit \textbf{1 139.4 \$/t} en USD)
+    \item Taux de change : $6.8015$ CNY/USD
+\end{itemize}
+
+Calcul de la marge en CNY :
+\begin{align*}
+S_t &= 4750 - (1.40 \times 6925 + 0.75 \times 7750) \\
+S_t &= 4750 - (9695 + 5812.5) \\
+S_t &= 4750 - 15507.5 = \mathbf{-10\,757.5\text{ \yen{} / tonne}}
+\end{align*}
+En convertissant en USD :
+\begin{equation*}
+S_t = \frac{-10757.5}{6.8015} \approx \mathbf{-1\,581.6\text{ \$/t}}
+\end{equation*}
+Cette valeur théorique correspond au centime près à la valeur de **-1 581.6 $/t** affichée sur le panneau principal (Screenshot 1). La marge fortement négative s'explique par les coûts très élevés du benzène et du propylène par rapport au prix de l'acétone finie, indiquant que la production par cette route s'effectue actuellement à perte.
+
+\subsubsection{Position Bollinger et Signal Décisionnel}
+\begin{itemize}
+    \item Borne Inférieure ($\text{Bollinger Lower}$) = $-1\,677$ \$/t
+    \item Borne Supérieure ($\text{Bollinger Upper}$) = $-1\,420$ \$/t
+    \item Valeur actuelle = $-1\,581.6$ \$/t
+\end{itemize}
+Calcul du positionnement relatif :
+\begin{equation*}
+\text{Position} = \frac{-1581.6 - (-1677)}{-1420 - (-1677)} = \frac{95.4}{257} \approx \mathbf{37.1\%}
+\end{equation*}
+La position à \textbf{37.1\%} est bien au centre de l'intervalle. Par conséquent, l'état affecté par le système est **`STANDARD`**, car la marge, bien que négative, oscille dans son tunnel de variation statistique habituel sur 60 jours.
+
+\subsubsection{Analyse Lead-Lag}
+\begin{itemize}
+    \item \textbf{Benzène (Chine de l'Est)} (DIRECT FEEDSTOCK) : Corrélation maximale extrêmement forte de \textbf{+0.953} avec un décalage de \textbf{0 jour}.
+    \item \textbf{Propylène (Shandong)} (DIRECT FEEDSTOCK) : Corrélation positive forte de \textbf{+0.950} avec un décalage de \textbf{0 jour}.
+\end{itemize}
+Les deux intrants ont une transmission de prix instantanée vers la cétone, confirmant que le prix de l'acétone est entièrement structuré par ces deux flux de coûts.
+
 \end{document}
