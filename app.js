@@ -569,13 +569,19 @@ document.addEventListener("DOMContentLoaded", () => {
         'PTA': {
             title: "Purified Terephthalic Acid (PTA)",
             precursors: {
-                butyl: 'PTA'
+                butyl: 'PTA',
+                butanol: 'Xylene',
+                acetic: 'Reformed_Naphtha'
             },
             labels: {
-                butyl: "PTA (Target)"
+                butyl: "PTA (Target)",
+                butanol: "Mixed Xylene (Feedstock)",
+                acetic: "Reformed Naphtha (Upstream)"
             },
             defaultChecked: [
-                'PTA'
+                'PTA',
+                'Xylene',
+                'Reformed_Naphtha'
             ]
         },
         'n_Butanol': {
@@ -694,22 +700,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Methanol'
             ]
         },
-        'PX': {
-            title: "p-Xylene",
+        'Xylene': {
+            title: "Mixed Xylene",
             precursors: {
-                butyl: 'PX',
+                butyl: 'Xylene',
                 butanol: 'Toluene',
-                acetic: 'Methanol'
+                acetic: 'Reformed_Naphtha'
             },
             labels: {
-                butyl: "p-Xylene (Target)",
+                butyl: "Mixed Xylene (Target)",
                 butanol: "Toluene (Feedstock)",
-                acetic: "Methanol (Feedstock)"
+                acetic: "Reformed Naphtha (Upstream)"
             },
             defaultChecked: [
-                'PX',
+                'Xylene',
                 'Toluene',
-                'Methanol'
+                'Reformed_Naphtha'
             ]
         },
         'MEG': {
@@ -928,7 +934,7 @@ document.addEventListener("DOMContentLoaded", () => {
         'Cyclohexane': 'Cyclohexane_Domestic_山东',
         'PM': 'PM_Domestic_华东',
         'm_Xylene': 'm_Xylene_Domestic_燕山石化',
-        'PX': 'PX_Domestic_扬子石化',
+        'Xylene': 'Xylene_Domestic_山东 异构级',
         'Ethylbenzene': 'Ethylbenzene_Domestic_吉林石化',
         'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东',
         'Toluene': 'Toluene_Domestic_山东',
@@ -1036,6 +1042,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'MEG': '华东',
             'DEG': '张家港',
             'PG': '山东',
+            'Xylene': '山东',
             'Brent': 'Global'
         };
         return defaultMap[product] || '华东';
@@ -1270,7 +1277,7 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Reformed_Naphtha');
         } else if (product === 'PTA') {
             return header.includes('PTA') || 
-                   header.includes('PX') || 
+                   header.includes('Xylene_Domestic') || 
                    header.includes('Reformed_Naphtha');
         } else if (product === 'n_Butanol') {
             return header.includes('n-Butanol') || 
@@ -1314,6 +1321,11 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Propylene_Oxide') || 
                    header.includes('Propylene') || 
                    header.includes('Naphtha');
+        } else if (product === 'Xylene') {
+            return header.includes('Xylene_Domestic') || 
+                   header.includes('Toluene') || 
+                   header.includes('Reformed_Naphtha') || 
+                   header.includes('Naphtha');
         } else if (product === 'Brent') {
             return header.includes('Brent');
         }
@@ -1342,6 +1354,20 @@ document.addEventListener("DOMContentLoaded", () => {
         populateRegionSelector(currentProduct);
         currentTarget = resolveTargetColumn(currentProduct, currentRegion);
         updateKPIColumns();
+
+        // Update titles of KPIs dynamically on initial load
+        const config = TARGET_CONFIGS[currentProduct];
+        if (config) {
+            document.querySelector('#kpi-butyl h3').textContent = config.labels.butyl;
+            document.querySelector('#kpi-butanol h3').textContent = config.labels.butanol;
+            document.querySelector('#kpi-acetic h3').textContent = config.labels.acetic;
+            document.querySelector('#kpi-methanol h3').textContent = config.labels.methanol;
+
+            const leadLagDesc = document.querySelector('#lead-lag-card .card-header p');
+            if (leadLagDesc) {
+                leadLagDesc.textContent = `Correlations vs. ${config.title} (Target)`;
+            }
+        }
 
         if (alignedDates.length > 0) {
             const lastDate = alignedDates[alignedDates.length - 1];
@@ -1569,6 +1595,9 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             'PG': {
                 'butanol': 0.70   // propylene oxide (PO)
+            },
+            'Xylene': {
+                'butanol': 0.85   // toluene (disproportionation)
             }
         };
 
@@ -1997,7 +2026,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const optLag = parseInt(item.Optimal_Lag_Days);
             const maxCorr = parseFloat(item.Max_Correlation);
 
-            const isDirect = featureName.includes('n-Butanol') || featureName.includes('Ethanol') || featureName.includes('Isopropanol') || featureName.includes('Acetic_Acid') || featureName.includes('Octanol');
+            const isDirect = featureName.includes('n-Butanol') || 
+                             featureName.includes('Ethanol') || 
+                             featureName.includes('Isopropanol') || 
+                             featureName.includes('Acetic_Acid') || 
+                             featureName.includes('Octanol') ||
+                             featureName.includes('Acrylic_Acid') ||
+                             featureName.includes('Benzene') ||
+                             featureName.includes('Ethylene') ||
+                             featureName.includes('Propylene_Oxide') ||
+                             featureName.includes('EO') ||
+                             featureName.includes('Dicarboxylic_Acid');
             const tagClass = isDirect ? 'direct' : 'upstream';
             const tagLabel = isDirect ? 'Direct Feedstock' : 'Upstream / Other';
 
@@ -2267,7 +2306,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             'PTA': {
                 upstreamA: 'Reformed_Naphtha',
-                feedstockA: 'PX',
+                feedstockA: 'Xylene',
                 upstreamB: '',
                 feedstockB: '',
                 target: 'PTA'
@@ -2320,6 +2359,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamB: 'EO_Domestic',
                 feedstockB: 'EO_Domestic',
                 target: 'DEG'
+            },
+            'Xylene': {
+                upstreamA: 'Brent',
+                feedstockA: 'Naphtha',
+                upstreamB: '',
+                feedstockB: '',
+                target: 'Xylene'
             },
             'PG': {
                 upstreamA: 'Naphtha',
@@ -3225,7 +3271,11 @@ document.addEventListener("DOMContentLoaded", () => {
             'Isobutanol': { 'butanol': 0.60 },
             'MEK': { 'butanol': 0.80 },
             'MEK_V2': { 'butanol': 1.05 },
-            'Styrene': { 'benzene': 0.80, 'ethylene': 0.30 }
+            'Styrene': { 'benzene': 0.80, 'ethylene': 0.30 },
+            'MEG': { 'butanol': 0.57 },
+            'DEG': { 'butanol': 0.30 },
+            'PG':  { 'butanol': 0.70 },
+            'Xylene': { 'butanol': 0.85 }
         };
 
         const formula = consumptionCoeffs[currentProduct] || {};

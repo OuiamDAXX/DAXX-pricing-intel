@@ -269,9 +269,14 @@ output_data = {
 for prod_key, conf in TARGET_CONFIGS.items():
     output_data['products'][prod_key] = {}
     
+    # Resolve base name (strip _V1/_V2 variations and handle proxies)
+    base_name = prod_key.split('_V')[0]
+    if base_name == 'Isopropyl_Acetate_Proxy':
+        base_name = 'n_Propyl_Acetate'
+        
     # Let's find all regions available for this product in df
     # Columns look like: Butyl_Acetate_Domestic_华东
-    possible_cols = [c for c in df.columns if c.startswith(prod_key + '_')]
+    possible_cols = [c for c in df.columns if c.startswith(base_name + '_')]
     regions = []
     for c in possible_cols:
         parts = c.split('_')
@@ -283,7 +288,7 @@ for prod_key, conf in TARGET_CONFIGS.items():
         regions = ['华东'] # Default fallback
         
     for region in set(regions):
-        target_col = find_column_for_region(df, prod_key, region, target_col=None, lead_lag_df=lead_lag_df, is_feedstock=False)
+        target_col = find_column_for_region(df, base_name, region, target_col=None, lead_lag_df=lead_lag_df, is_feedstock=False)
         target_exists = target_col and target_col in df.columns
         
         # 1. Collect Feedstocks

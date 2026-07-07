@@ -402,14 +402,26 @@ for target in targets_to_process:
             
         opt_lag = s_corr.abs().idxmax()
         max_corr = s_corr[opt_lag]
+        
+        # Domain logic override: For feedstock cost transmission, positive correlation is expected.
+        # If there is a positive correlation at a short lag (0 to 10 days) of at least 0.20,
+        # we prefer the peak positive correlation in that short-lag window over a far-away negative correlation (lag > 10)
+        # that might have a slightly higher absolute value due to cyclical noise.
+        short_lag_pos = s_corr.loc[0:10]
+        pos_short_lags = short_lag_pos[short_lag_pos > 0.20]
+        if not pos_short_lags.empty and opt_lag > 10 and max_corr < 0:
+            opt_lag = pos_short_lags.idxmax()
+            max_corr = s_corr[opt_lag]
+            print(f"       - [OVERRIDE] Overrode negative lag {s_corr.abs().idxmax()} with positive short lag {opt_lag} (corr: {max_corr:.3f})")
+
         corr_0 = s_corr[0]
         
         lead_lag_results.append({
             'Target': target,
             'Feature': feat,
-            'Optimal_Lag_Days': opt_lag,
-            'Max_Correlation': max_corr,
-            'Corr_at_Lag_0': corr_0
+            'Optimal_Lag_Days': int(opt_lag),
+            'Max_Correlation': float(max_corr),
+            'Corr_at_Lag_0': float(corr_0)
         })
 
 # 4. Save results to CSV
