@@ -230,8 +230,7 @@ for target in targets_to_process:
     elif 'Acrylic_Acid' in target:
         keywords = {
             'Propylene': ['Propylene_Domestic'],
-            'Naphtha': ['Naphtha_Domestic'],
-            'Methanol': ['Methanol_Domestic']
+            'Naphtha': ['Naphtha_Domestic']
         }
     elif 'Phthalic_Anhydride' in target:
         keywords = {

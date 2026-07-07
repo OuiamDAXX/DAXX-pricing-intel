@@ -258,20 +258,17 @@ document.addEventListener("DOMContentLoaded", () => {
             precursors: {
                 butyl: 'Acrylic_Acid',
                 butanol: 'Propylene',
-                acetic: 'Naphtha',
-                methanol: 'Methanol'
+                acetic: 'Naphtha'
             },
             labels: {
                 butyl: "Acrylic Acid (Target)",
                 butanol: "Propylene (Feedstock)",
-                acetic: "Naphtha (Feedstock)",
-                methanol: "Methanol (Upstream)"
+                acetic: "Naphtha (Upstream)"
             },
             defaultChecked: [
                 'Acrylic_Acid',
                 'Propylene',
-                'Naphtha',
-                'Methanol'
+                'Naphtha'
             ]
         },
         'Phthalic_Anhydride': {
