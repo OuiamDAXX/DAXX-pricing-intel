@@ -190,21 +190,36 @@ FEEDSTOCK_BENCHMARKS = {
 
 # Helper to find matching column in dataframe
 def find_column_for_region(df, product_base, region, target_col=None, lead_lag_df=None, is_feedstock=False):
-    # If it is a feedstock, check canonical benchmarks first to align with LaTeX documentation
-    if is_feedstock and product_base in FEEDSTOCK_BENCHMARKS:
-        col = FEEDSTOCK_BENCHMARKS[product_base]
+    # Normalize product_base (hyphens to underscores)
+    clean_base = product_base.replace('-', '_')
+    
+    # Determine if this is an international/European region
+    is_intl = any(x in str(region) for x in ["Europe", "Global", "Rotterdam", "NWE", "ARA"])
+    
+    # If it is a feedstock, check canonical benchmarks first (only for China regions)
+    if is_feedstock and not is_intl and (product_base in FEEDSTOCK_BENCHMARKS or clean_base in FEEDSTOCK_BENCHMARKS):
+        col = FEEDSTOCK_BENCHMARKS.get(product_base) or FEEDSTOCK_BENCHMARKS.get(clean_base)
         if col in df.columns:
             return col
 
     # 1. Exact match with region (e.g. starts with product_base + '_')
-    exact_match = [col for col in df.columns if col.startswith(product_base + '_') and region in col]
+    exact_match = [col for col in df.columns if (col.startswith(product_base + '_') or col.startswith(clean_base + '_')) and region in col]
     if exact_match:
         return exact_match[0]
     
     # Partial match containing both product_base and region
-    partial_match = [col for col in df.columns if product_base in col and region in col]
+    partial_match = [col for col in df.columns if (product_base in col or clean_base in col) and region in col]
     if partial_match:
         return partial_match[0]
+        
+    # 1.5 Fallback to Europe precursor columns if in Europe/Global region
+    if is_intl:
+        eu_match = [col for col in df.columns if col.startswith(product_base + '_Europe_') or col.startswith(clean_base + '_Europe_') or (product_base in col and '_Europe_' in col) or (clean_base in col and '_Europe_' in col)]
+        if eu_match:
+            return eu_match[0]
+        global_match = [col for col in df.columns if col.startswith(product_base + '_Global_') or col.startswith(clean_base + '_Global_') or (product_base in col and '_Global_' in col) or (clean_base in col and '_Global_' in col)]
+        if global_match:
+            return global_match[0]
 
     # 2. Dynamic Fallback: Lead-Lag correlation (highest absolute correlation for this target)
     if target_col and lead_lag_df is not None and not lead_lag_df.empty:

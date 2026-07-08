@@ -4,8 +4,8 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     // API data paths
-    const PRICES_CSV_PATH = "oilchem_aligned_prices.csv";
-    const LEAD_LAG_CSV_PATH = "oilchem_lead_lag_results.csv";
+    const PRICES_CSV_PATH = "oilchem_aligned_prices.csv?t=" + new Date().getTime();
+    const LEAD_LAG_CSV_PATH = "oilchem_lead_lag_results.csv?t=" + new Date().getTime();
 
     // Currency conversion variables and state
     let exchangeRates = { USD: 1, CNY: 7.25 };
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function convertValue(valInCNY) {
+    function convertValue(valInCNY, date = null) {
         if (typeof valInCNY !== 'number') {
             valInCNY = parseFloat(valInCNY);
         }
@@ -60,7 +60,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentCurrency === 'CNY') {
             return valInCNY;
         } else if (currentCurrency === 'USD') {
-            return valInCNY / exchangeRates.CNY;
+            let rate = exchangeRates.CNY || 7.25;
+            if (date && rawPricesData && rawPricesData.length > 0) {
+                const row = rawPricesData.find(r => r.Date === date);
+                if (row && row.USD_CNY_Rate) {
+                    rate = parseFloat(row.USD_CNY_Rate) || rate;
+                }
+            } else if (rawPricesData && rawPricesData.length > 0) {
+                const lastRow = rawPricesData[rawPricesData.length - 1];
+                if (lastRow && lastRow.USD_CNY_Rate) {
+                    rate = parseFloat(lastRow.USD_CNY_Rate) || rate;
+                }
+            }
+            return valInCNY / rate;
         }
         return valInCNY;
     }
@@ -73,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function formatVal(valInCNY, decimals = 1) {
         const converted = convertValue(valInCNY);
-        const unit = (currentProduct === 'Brent') ? 'bbl' : 't';
+        const unit = 't';
         return `${Number(converted).toLocaleString('en-US', {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals
@@ -955,24 +967,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Helper to resolve the correct column name with region fallback
     function resolveColumnForRegion(baseProd, region, isFeedstock = false) {
-        // If it is a feedstock, check canonical benchmarks first to align with LaTeX documentation
-        if (isFeedstock && FEEDSTOCK_BENCHMARKS[baseProd]) {
-            const col = FEEDSTOCK_BENCHMARKS[baseProd];
+        if (!baseProd) return null;
+        const cleanBase = baseProd.replace(/-/g, '_');
+        const mainReg = getMainRegionForSubRegion(region);
+        
+        if (isFeedstock && mainReg !== 'Europe' && mainReg !== 'Global' && (FEEDSTOCK_BENCHMARKS[baseProd] || FEEDSTOCK_BENCHMARKS[cleanBase])) {
+            const col = FEEDSTOCK_BENCHMARKS[baseProd] || FEEDSTOCK_BENCHMARKS[cleanBase];
             if (priceHeaders.includes(col)) return col;
         }
 
-        // 1. Find exact match for baseProd and region
-        const exact = priceHeaders.find(h => h.startsWith(baseProd + '_') && h.includes(region));
+        // 1. Find exact match for baseProd/cleanBase and region
+        const exact = priceHeaders.find(h => (h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_')) && h.includes(region));
         if (exact) return exact;
-        const partial = priceHeaders.find(h => h.includes(baseProd) && h.includes(region));
+        const partial = priceHeaders.find(h => (h.includes(baseProd) || h.includes(cleanBase)) && h.includes(region));
         if (partial) return partial;
+
+        // 1.5 Fallback to Europe or Global precursor columns if in Europe/Global region
+        if (mainReg === 'Europe') {
+            const euFallback = priceHeaders.find(h => 
+                h.startsWith(baseProd + '_Europe_') || h.startsWith(cleanBase + '_Europe_') || 
+                (h.includes(baseProd) && h.includes('_Europe_')) || (h.includes(cleanBase) && h.includes('_Europe_'))
+            );
+            if (euFallback) return euFallback;
+        }
+        if (mainReg === 'Global') {
+            const globalFallback = priceHeaders.find(h => 
+                h.startsWith(baseProd + '_Global_') || h.startsWith(cleanBase + '_Global_') ||
+                (h.includes(baseProd) && h.includes('_Global_')) || (h.includes(cleanBase) && h.includes('_Global_'))
+            );
+            if (globalFallback) return globalFallback;
+            const euFallback = priceHeaders.find(h => 
+                h.startsWith(baseProd + '_Europe_') || h.startsWith(cleanBase + '_Europe_') || 
+                (h.includes(baseProd) && h.includes('_Europe_')) || (h.includes(cleanBase) && h.includes('_Europe_'))
+            );
+            if (euFallback) return euFallback;
+        }
 
         // 2. Dynamic Fallback: Try to find a region for baseProd that has computed Lead-Lag data for currentTarget
         if (rawLeadLagData && rawLeadLagData.length > 0) {
             const targetRows = rawLeadLagData.filter(item => 
                 item.Target === currentTarget && 
                 item.Feature && 
-                item.Feature.includes(baseProd)
+                (item.Feature.includes(baseProd) || item.Feature.includes(cleanBase))
             );
             if (targetRows.length > 0) {
                 // Sort by absolute correlation to pick the strongest reference market
@@ -984,27 +1020,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 3. Fallback: exact baseProd but any region
-        const fallbackExact = priceHeaders.find(h => h.startsWith(baseProd + '_'));
+        const fallbackExact = priceHeaders.find(h => h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_'));
         if (fallbackExact) return fallbackExact;
         
         // 4. Fallback: any partial match
-        const fallbackPartial = priceHeaders.find(h => h.includes(baseProd));
-        return fallbackPartial || baseProd;
+        const fallbackPartial = priceHeaders.find(h => h.includes(baseProd) || h.includes(cleanBase));
+        return fallbackPartial || null;
     }
 
-    // Resolve exact target column based on select product and region
     function resolveTargetColumn(product, region) {
         if (product === 'Isopropyl_Acetate_Proxy') {
             return priceHeaders.find(h => h.includes('n_Propyl_Acetate') && h.includes(region)) || 'n_Propyl_Acetate_Domestic_华东';
         }
         if (product === 'Acetone_V1' || product === 'Acetone_V2') {
-            return priceHeaders.find(h => h.includes('Acetone_Domestic') && h.includes(region)) || 'Acetone_Domestic_华东';
+            return priceHeaders.find(h => h.includes('Acetone') && h.includes(region)) || 'Acetone_Domestic_华东';
         }
         if (product === 'Xylene') {
-            return priceHeaders.find(h => h.includes('Xylene_Domestic') && !h.includes('o_Xylene') && !h.includes('m_Xylene') && h.includes(region)) || 'Xylene_Domestic_山东';
+            return priceHeaders.find(h => h.includes('Xylene') && !h.includes('o_Xylene') && !h.includes('m_Xylene') && h.includes(region)) || 'Xylene_Domestic_山东';
         }
         return priceHeaders.find(h => h.includes(product) && h.includes(region)) || `${product}_Domestic_${region}`;
-
     }
 
     // Extract regions available in CSV for a given product
@@ -1012,37 +1046,31 @@ document.addEventListener("DOMContentLoaded", () => {
         if (product === 'Brent') {
             return ['Global'];
         }
-        let searchPattern = product;
+        let basePattern = product;
         if (product === 'Isopropyl_Acetate_Proxy') {
-            searchPattern = 'n_Propyl_Acetate_Domestic';
+            basePattern = 'n_Propyl_Acetate';
         } else if (product === 'Acetone_V1' || product === 'Acetone_V2') {
-            searchPattern = 'Acetone_Domestic';
-        } else {
-            searchPattern = product + '_Domestic';
+            basePattern = 'Acetone';
         }
-
+        
         const matchedCols = priceHeaders.filter(h => {
             if (product === 'Xylene') {
-                return h.includes(searchPattern) && !h.includes('o_Xylene') && !h.includes('m_Xylene');
+                return (h.startsWith(basePattern + '_Domestic_') || h.startsWith(basePattern + '_Europe_') || h.startsWith(basePattern + '_Global_')) && !h.includes('o_Xylene') && !h.includes('m_Xylene');
             }
-            return h.includes(searchPattern);
+            return h.startsWith(basePattern + '_Domestic_') || h.startsWith(basePattern + '_Europe_') || h.startsWith(basePattern + '_Global_');
         });
 
         const regions = [];
         matchedCols.forEach(col => {
-            // e.g. "Xylene_Domestic_山东 异构级" should extract "山东 异构级"
-            const prefix = searchPattern + '_';
-            if (col.startsWith(prefix)) {
-                const region = col.substring(prefix.length);
-                if (region && !regions.includes(region)) {
-                    regions.push(region);
+            let subRegion = col;
+            for (const prefix of [basePattern + '_Domestic_', basePattern + '_Europe_', basePattern + '_Global_']) {
+                if (col.startsWith(prefix)) {
+                    subRegion = col.substring(prefix.length);
+                    break;
                 }
-            } else {
-                const parts = col.split('_');
-                const region = parts[parts.length - 1];
-                if (region && !regions.includes(region)) {
-                    regions.push(region);
-                }
+            }
+            if (subRegion && !regions.includes(subRegion)) {
+                regions.push(subRegion);
             }
         });
         return regions.length > 0 ? regions : ['华东'];
@@ -1079,14 +1107,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Mapping sub-regions to Main Region Groups
     const MAIN_REGION_GROUPS = {
-        'Chine': ['华东', '华南', '华北', '山东', '江苏', '宁波', '四川', '河南', '湖北', '东北', '西北', '西南', '山西', '浙江', '辽宁', '吉林', '云南', '广东', '广西', '河北', '川渝', '重庆', '东莞', '苏北', '苏南', '锦州', '黑龙江', '东营', '华中', '山东鲁中', '鲁东', '临沂', '云南中东部地区', '内蒙古', '唐山', '天津', '新疆北疆', '新疆南疆', '新疆疆外', '昭通', '格尔木', '榆林', '济宁', '淄bo', '淄博', '甘肃', 'Fujian', '福建', '贵州', '鄂尔多斯北线', '鄂尔多斯南线', '银川', '陕西关中', '连云港', '鲁西南', '黄海西岸', '燕山石化', '弘润石化', '张家港', '山东中部', '山东 异构级', '广东 异构级', '福建 异构级', '广东 溶剂级', '京津 异构级', '武汉 异构级', '江苏 异构级', '江苏 溶剂级', '宁波 异构级', '张家港 溶剂级', '西南 异构级'],
-        'Europe': ['Europe', 'NWE', 'Northwest Europe', '西北欧', '西北欧鹿特丹'],
+        'Chine': ['华东', '华南', '华北', '山东', '江苏', '宁波', '四川', '河南', '湖北', '东北', '西北', '西南', '山西', '浙江', '辽宁', '吉林', '云南', '广东', '广西', '河北', '川渝', '重庆', '东莞', '苏北', '苏南', '锦州', '黑龙江', '东营', '华中', '山东魯中', '山东鲁中', '鲁东', '临沂', '裂解', '醚后', '万通石化', '上海石化', '东方华龙', '东明石化', '东辰石化', '中化泉州', '中海外能源', '中海精细', '丰利石化', '九江石化', '亚通石化', '京博石化', '北海炼厂', '华北石化', '华星石化', '华联石化', '呼和浩特石化', '大庆中蓝', '大庆炼化', '大港地区', '大港石化', '大连石化', '大连西太石化', '天弘化学', '宁夏宝丰', '山东垦利', '山东海科', '延安炼厂', '弘润石化', '扬州石化', '无棣鑫岳', '昆仑东营港', '昌邑石化', '武汉石化', '永鑫化工', '汇丰石化', '江苏新海', '沈阳蜡化', '沧州炼厂', '沧州西部', '济南炼厂', '海科瑞林', '淮安清江石化', '湖北金澳', '湛江东兴', '潍坊润星', '燕山石化', '石家庄炼化', '福建盛桐', '胜利油田', '茂名石化', '荆门石化', '西太地区', '辽河石化', '金陵石化', '鑫泰石化', '锦州石化', '青岛石化', '万州 工业', '万州 民用', '三亚 工业', '三亚 民用', '东莞 车用', '乌鲁木齐 工业', '乌鲁木齐 民用', '乌鲁木齐 车用', '佛山 工业', '佛山 民用', '佛山 车用', '兰州 工业', '兰州 民用', '兰州 车用', '南京 工业', '南京 民用', '南京 车用', '南宁 民用', '南昌 民用', '咸阳 民用', '哈尔滨 工业', '哈尔滨 民用', '嘉兴 工业', '嘉兴 民用', '太原 工业', '太原 民用', '威海 民用', '宁波 工业', '宁波 民用', '宜昌 工业', '宝鸡 民用', '广州 工业', '广州 民用', '廊坊 工业', '扬州 工业', '日照 工业', '杭州 工业', '杭州 民用', '柳州 民用', '桂林 工业', '武汉 工业', '武汉 民用', '武汉 车用', '江西 工业', '沈阳 工业', '沈阳 民用', '沧州 工业', '济南 民用', '济南 车用', '济宁 民用', '海口 工业', '淄博 工业', '淄博 民用', '深圳 工业', '深圳 民用', '温州 工业', '温州 民用', '湖州 工业', '湖州 民用', '滨州 车用', '潍坊 工业', '烟台 民用', '珠海 工业', '珠海 民用', '石家庄 工业', '石家庄 民用', '福州 工业', '福州 民用', '聊城 工业', '聊城 民用', '舟山 工业', '舟山 民用', 'Jingmen', '荆门 工业', '西安 工业', '西安 民用', '西安 车用', '贵阳 工业', '贵阳 民用', '辽阳 工业', '辽阳 民用', '郑州 工业', '郑州 民用', '郑州 车用', '重庆 工业', '重庆 民用', '重庆 车用', '金华 工业', '金华 民用', '铜川 民用', '锦州 工业', '锦州 民用', '长沙 工业', '长沙 民用', '长沙 车用', '青岛 车用', '西咸', '西宁', '西安', '吉林石化', '广州石化', '茂名石化', '扬子石化', '镇海炼化', '中沙天津', '中海壳牌', '中石化华东', '京博思达睿新材料', '兰州汇丰', '兰州石化', '古雷石化', '唐山旭阳', '大庆石化', '天津大沽', '安徽嘉玺', '山东利华益', '山东晟原', '抚顺石化', '河北盛腾', '浙江石化', '淄博峻辰', '渤化发展', '盛虹石化', '菏泽玉皇', '连云港石化', '锦西石化', '青岛炼化', '齐鲁石化', '京津', '张家港', '西南 异构级', '华东 醚后C4', '上海石化 醚后C4', '东方华龙 醚后C4', '东明石化 醚后C4', '东辰石化 醚后C4', '中化泉州 醚后C4', '中海外能源 醚后C4', '中海精细 醚后C4', '丰利石化 醚后C4', '九江石化 醚后C4', '亚通石化 醚后C4', '京博石化 醚后C4', '北海炼厂 醚后C4', '华北石化 醚后C4', '华星石化 醚后C4', '华联石化 醚后C4', '呼和浩特石化 醚后C4', '大庆中蓝 醚后C4', '大庆炼化 醚后C4', '大港地区 醚后C4', '大港石化 醚后C4', '大连石化 醚后C4', '大连西太石化 醚后C4', '天弘化学 醚后C4', '宁夏宝丰 醚后C4', '山东垦利 醚后C4', '山东海科 醚后C4', '延安炼厂 醚后C4', '弘润石化 醚后C4', '扬州石化 醚后C4', '无棣鑫岳 醚后C4', '昆仑东营港 醚后C4', '昌邑石化 醚后C4', '武汉石化 醚后C4', '永鑫化工 醚后C4', '汇丰石化 醚后C4', '江苏新海 醚后C4', '沈阳蜡化 醚后C4', '沧州炼厂 醚后C4', '沧州西部 醚后C4', '济南炼厂 醚后C4', '海科瑞林 醚后C4', '淮安清江石化 醚后C4', '湖北金澳 醚后C4', '湛江东兴 醚后C4', '潍坊润星 醚后C4', '石家庄炼化 醚后C4', '福建盛桐 醚后C4', '胜利油田 醚后C4', '茂名石化 醚后C4', '荆门石化 醚后C4', '西太地区 醚后C4', '辽河石化 醚后C4', '金陵石化 醚后C4', '鑫泰石化 醚后C4', '锦州石化 醚后C4', '青岛石化 醚后C4', '张家港 溶剂级', '吉林 电子级无水', '吉林 普级', '吉林 无水', '吉林 优级', '黑龙江 优级', '黑龙江 普级', '黑龙江 电子级无水', '黑龙江 无水', '苏北 无水', '苏北 普级', '苏南 普级', '河南 优级', '河南 无水', '河南 电子级无水', '河北 优级', '河北 无水', '山东 木薯无水', '山东 木薯普级', '山东 优级', '山东 小麦普级', '安徽 普级', '安徽 无水', '四川 玉米95', '云南 普级', '东莞 普级', '锦州 普级', '广东 木薯95', '广东 木薯无水', '广东 糖蜜95', '广西 木薯95', '广西 木薯无水', '广西 糖蜜95', '扬子炼化', '金陵石化', '华东 萘法', '广东 萘法', '河北 萘法', '黄海西岸', '鲁西南', '山东 固体', '山东 液体', '江苏 固体', '江苏 液体', '山西 固体', '河南 固体', '河南 液体', '河北 液体', '浙江 液体', '顺酐 华南 固体', '华南 固体', '华南 液体', '顺酐 华南 液体', '顺酐 山东 固体', '顺酐 山东 液体', '顺酐 江苏 固体', '顺酐 江苏 液体', '顺酐 山西 固体', '顺酐 河南 固体', '顺酐 河南 液体', '顺酐 浙江 液体', '顺酐 河北 液体', '顺酐 西北 固体', '西北 固体', '鲁东 液体', '东营 国标', '临汾 国标', '临沂 国标', '云南中东部地区 国标', '内蒙古 国标', '唐山 国标', '四川 国标', '天津 国标', '山东中部 国标', '山西 国标', '川渝 国标', '广东 进口', '广西 国标', '新疆北疆 国标', '新疆南疆 国标', '新疆疆外 国标', '昭通 国标', '晋城 国标', '格尔木 国标', '榆林 国标', '河北 国标', '济宁 国标', '淄博 国标', '甘肃 国标', '福建 进口', '贵州 国标', '鄂尔多斯北线 国标', '鄂尔多斯南线 国标', '重庆 国标', '银川 国标', '陕西关中 国标', '山东 加氢石脑油', '山东 直馏石脑油', '东营 加氢石脑油', '东营 直馏石脑油', '淄博 直馏石脑油', '滨州 加氢石脑油', '滨州 直馏石脑油', '潍坊 加氢石脑油', '东北 98', '华南 98', '安徽 98', '山东 60', '山东 68', '山东 98', '广东 68', '江苏 68', '江苏 98', '河南 60', '河南 68', '河南 98', '浙江 98', '甘宁 98', '皖北 68', '皖北 98', '皖南 68', '皖南 98', '西北 98', '兰州汇丰', '兰州石化', '华星石化', '华锦石化', '吉林石化', '大庆石化', '天津大沽', '山东利华益', '山东晟原', '广州石化', '抚顺石化', '河北盛腾', '浙江石化', '茂名石化', '菏泽玉皇', '锦州石化', '青岛炼化', '齐鲁石化', '京津 异构级', '宁波 异构级', '山东 异构级', '广东 异构级', '广东 溶剂级', '张家港 溶剂级', '武汉 异构级', '江苏 异构级', '江苏 溶剂级', '福建 异构级', '西南 异构级', '华中 固体', '华北 固体', '华东 固体', '华南 固体', '山东 固体', '江苏 固体', '浙江 固体', '四川 固体', '吉林 固体', '东北 固体', '西北 固体', '山西 固体', '川渝 固体', '河北 固体', '河南 固体', '北京 固体', '天津 固体', '中国 85-99', '山东 低纯', '山东 高纯', '顺酐 鲁东 液体', '华东 聚合级', '山东 聚合级', '吉林石化 电子级无水', '上海', '东北', '福建'],
+        'Europe': ['Europe', 'NWE', 'Northwest Europe', '西北欧', '西北欧鹿特丹', 'FD NWE', 'FOB Rotterdam', 'DDP Northwest Europe', 'FL FD NWE', 'FL FOB Rotterdam', 'MN FD NWE', 'FCA ARA', 'T2 FOB Rotterdam', 'T2 FD NWE', 'FD NWE Spot', 'FOB ARA', 'CIF ARA', 'Industrial Grade FCA NWE', 'Pharmaceutical Grade FCA NWE', 'Chem Grade CIF NWE', 'DDP Northwest Europe'],
         'Global': ['Global', 'International', 'Yahoo', 'Gulf', 'US Gulf Coast', '美国', '美国海湾', '日本', '韩国', '东南亚', '中国']
     };
 
     function getMainRegionForSubRegion(subRegion) {
+        if (!subRegion) return 'Chine';
+        const strSub = String(subRegion);
         for (const [mainReg, subs] of Object.entries(MAIN_REGION_GROUPS)) {
-            if (subs.includes(subRegion)) return mainReg;
+            if (subs.includes(strSub)) return mainReg;
+        }
+        if (strSub.includes('Europe') || strSub.includes('NWE') || strSub.includes('Rotterdam') || strSub.includes('ARA')) {
+            return 'Europe';
         }
         return 'Chine'; // Default fallback
     }
@@ -1199,6 +1232,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update active KPI columns based on current target config and region
     function updateKPIColumns() {
         const config = TARGET_CONFIGS[currentProduct];
+        if (!config) return;
         KPI_COLUMNS = {
             butyl: resolveColumnForRegion(config.precursors.butyl, currentRegion, false),
             butanol: resolveColumnForRegion(config.precursors.butanol, currentRegion, true),
@@ -1473,8 +1507,18 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = "";
 
         const config = TARGET_CONFIGS[currentProduct];
-        const defaultMatches = config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion, col !== config.precursors.butyl));
-        const relatedHeaders = priceHeaders.filter(h => isColumnRelated(h, currentProduct));
+        const defaultMatches = config.defaultChecked
+            .map(col => resolveColumnForRegion(col, currentRegion, col !== config.precursors.butyl))
+            .filter(col => col && priceHeaders.includes(col));
+        let relatedHeaders = priceHeaders.filter(h => isColumnRelated(h, currentProduct));
+
+        // Filter headers by region to prevent showing China feedstocks in Europe view and vice versa
+        const mainReg = getMainRegionForSubRegion(currentRegion);
+        if (mainReg === 'Europe' || mainReg === 'Global') {
+            relatedHeaders = relatedHeaders.filter(h => h.includes('_Europe_') || h.includes('_Global_'));
+        } else {
+            relatedHeaders = relatedHeaders.filter(h => !h.includes('_Europe_') && !h.includes('_Global_'));
+        }
 
         selectedSeries = [...defaultMatches];
 
@@ -1874,15 +1918,26 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             let sName = col.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' ');
+            if (col.includes('_Europe_')) {
+                const parts = col.split('_Europe_');
+                const base = parts[0].replace(/_/g, ' ').replace('Octanol', '2-Ethylhexanol');
+                const sub = parts[1].replace(/_/g, ' ');
+                if (!isMainTarget) {
+                    sName = `${base} (${sub})`;
+                } else {
+                    sName = `${base} ${sub}`;
+                }
+            }
             if (currentProduct === 'Isopropyl_Acetate_Proxy' && col.includes('n_Propyl_Acetate')) {
                 sName = sName.replace('n Propyl Acetate', 'Isopropyl Acetate (Proxy)');
             }
             series.push({
                 name: sName,
                 color: color,
+                type: 'line',
                 data: slicedData.map(row => ({
                     x: new Date(row.Date).getTime(),
-                    y: convertValue(row[col])
+                    y: convertValue(row[col], row.Date)
                 }))
             });
         });
@@ -1924,6 +1979,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 series.push({
                     name: `${TARGET_CONFIGS[currentProduct].title} Forecast (14d)`,
                     color: '#e84393', // Vibrant Neon Pink/Magenta to make it stand out
+                    type: 'line',
                     data: forecastDataPoints
                 });
 
@@ -1951,6 +2007,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     series.push({
                         name: 'Simulated Scenario',
                         color: '#f39c12', // Warm amber/orange
+                        type: 'line',
                         data: simDataPoints
                     });
                 }
@@ -2655,7 +2712,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headerText = headerText.replace('n Propyl Acetate', 'Isopropyl Acetate (Proxy)');
             }
             if (col !== 'Date') {
-                const unit = (col.includes('Brent')) ? 'bbl' : 't';
+                const unit = 't';
                 headerText += ` (${getCurrencySymbol()}/${unit})`;
             }
             th.textContent = headerText;
@@ -2676,7 +2733,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     const val = row[col];
                     td.textContent = (val !== null && val !== undefined) 
-                        ? Number(convertValue(val)).toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) 
+                        ? Number(convertValue(val, row.Date)).toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) 
                         : '-';
                 }
                 tr.appendChild(td);
@@ -2848,7 +2905,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Reset selections based on newly selected target & region
-        const defaultMatches = config.defaultChecked.map(col => resolveColumnForRegion(col, currentRegion, col !== config.precursors.butyl));
+        const defaultMatches = config.defaultChecked
+            .map(col => resolveColumnForRegion(col, currentRegion, col !== config.precursors.butyl))
+            .filter(col => col && priceHeaders.includes(col));
         selectedSeries = [...defaultMatches];
 
         // Recompute KPIs, rebuild selectors, redraw chart & table, redraw Lead-Lag

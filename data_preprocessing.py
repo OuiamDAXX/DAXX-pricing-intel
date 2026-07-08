@@ -144,8 +144,179 @@ if target_candidates:
 else:
     print("\n[NOTE] No domestic Butyl Acetate target series found for correlation preview.")
 
-# 9.5 Integrate Brent manual price sheet (Disabled as requested to delete Brent data)
-# Brent price integration has been removed.
+# 9.5 Integrate European Platts prices from Energy_SymbolPrice
+euro_file_path = os.path.normpath(os.path.join(BASE_DIR, "Energy_SymbolPrice_2026-07-08T083029Z.xlsx"))
+if os.path.exists(euro_file_path):
+    print("\n9.5 Integrating Europe Platts prices from Energy_SymbolPrice...")
+    try:
+        # 1a. Fetch daily historical EUR/USD exchange rates from Frankfurter API
+        df_rates_eur_usd = pd.Series(index=df_pivot.index, dtype=float)
+        try:
+            url_eur_usd = "https://api.frankfurter.app/2021-01-01..?from=EUR&to=USD"
+            r = requests.get(url_eur_usd, timeout=10)
+            if r.status_code == 200:
+                data = r.json()
+                rates_data = data.get("rates", {})
+                print(f"   Fetched {len(rates_data)} historical daily EUR/USD exchange rates.")
+                parsed_rates = {}
+                for d_str, rate_dict in rates_data.items():
+                    parsed_rates[pd.to_datetime(d_str)] = float(rate_dict.get("USD", 1.08))
+                s_rates = pd.Series(parsed_rates)
+                df_rates_eur_usd = s_rates.reindex(df_pivot.index).ffill().bfill()
+                print(f"   EUR/USD exchange rates aligned. Recent rate: {df_rates_eur_usd.iloc[-1]:.4f}")
+            else:
+                print(f"   [WARNING] Frankfurter EUR/USD API returned status code {r.status_code}. Using static fallback.")
+                df_rates_eur_usd = df_rates_eur_usd.fillna(1.08)
+        except Exception as ex:
+            print(f"   [WARNING] Failed to fetch historical EUR/USD rates: {ex}. Using static fallback (1.08).")
+            df_rates_eur_usd = df_rates_eur_usd.fillna(1.08)
+
+        # 1b. Fetch daily historical USD/CNY (Yuan) exchange rates from Frankfurter API
+        df_rates_usd_cny = pd.Series(index=df_pivot.index, dtype=float)
+        try:
+            url_usd_cny = "https://api.frankfurter.app/2021-01-01..?from=USD&to=CNY"
+            r = requests.get(url_usd_cny, timeout=10)
+            if r.status_code == 200:
+                data = r.json()
+                rates_data = data.get("rates", {})
+                print(f"   Fetched {len(rates_data)} historical daily USD/CNY exchange rates.")
+                parsed_rates = {}
+                for d_str, rate_dict in rates_data.items():
+                    parsed_rates[pd.to_datetime(d_str)] = float(rate_dict.get("CNY", 7.25))
+                s_rates = pd.Series(parsed_rates)
+                df_rates_usd_cny = s_rates.reindex(df_pivot.index).ffill().bfill()
+                print(f"   USD/CNY exchange rates aligned. Recent rate: {df_rates_usd_cny.iloc[-1]:.4f}")
+            else:
+                print(f"   [WARNING] Frankfurter USD/CNY API returned status code {r.status_code}. Using static fallback.")
+                df_rates_usd_cny = df_rates_usd_cny.fillna(7.25)
+        except Exception as ex:
+            print(f"   [WARNING] Failed to fetch historical USD/CNY rates: {ex}. Using static fallback (7.25).")
+            df_rates_usd_cny = df_rates_usd_cny.fillna(7.25)
+            
+        # 2. Read Europe Excel
+        df_eu = pd.read_excel(euro_file_path)
+        col_names = df_eu.columns
+        
+        # Mapping definitions for Platts Europe
+        col_mapping = {
+            "Butyl Acetate FD NWE Eur/mt Weekly": ("Butyl_Acetate_Europe_FD NWE", "EUR"),
+            "Butyl Acetate FOB Rotterdam Weekly": ("Butyl_Acetate_Europe_FOB Rotterdam", "USD"),
+            "Ethyl Acetate FD NWE Eur/mt Weekly": ("Ethyl_Acetate_Europe_FD NWE", "EUR"),
+            "Ethyl Acetate FOB Rotterdam Weekly": ("Ethyl_Acetate_Europe_FOB Rotterdam", "USD"),
+            "Glacial Acrylic Acid DDP Northwest Europe": ("Acrylic_Acid_Europe_DDP Northwest Europe", "EUR"),
+            "PA FL FD NWE Eur/mt Weekly": ("Phthalic_Anhydride_Europe_FL FD NWE", "EUR"),
+            "PA FL FOB Rotterdam Weekly": ("Phthalic_Anhydride_Europe_FL FOB Rotterdam", "USD"),
+            "PA MN FD NWE Eur/mt Weekly": ("Phthalic_Anhydride_Europe_MN FD NWE", "EUR"),
+            "Methyl Methacrylate DDP Northwest Europe": ("MMA_Europe_DDP Northwest Europe", "EUR"),
+            "Butyl Acrylate FCA ARA": ("Butyl_Acrylate_Europe_FCA ARA", "EUR"),
+            "VAM FD NWE Eur/mt Weekly": ("VAM_Europe_FD NWE", "EUR"),
+            "2-EthylHexyl Acrylate FCA ARA": ("2_EHA_Europe_FCA ARA", "EUR"),
+            "Acetone T2 FOB Rotterdam Weekly": ("Acetone_Europe_T2 FOB Rotterdam", "USD"),
+            "Acetone T2 FD NWE Eur/mt Weekly": ("Acetone_Europe_T2 FD NWE", "EUR"),
+            "IPA FOB Rotterdam Weekly": ("Isopropanol_Europe_FOB Rotterdam", "USD"),
+            "IPA FD NWE Eur/mt Weekly": ("Isopropanol_Europe_FD NWE", "EUR"),
+            "PTA FD NWE Spot Eur/mt": ("PTA_Europe_FD NWE Spot", "EUR"),
+            "N-Butanol FD NWE Eur/mt Weekly": ("n_Butanol_Europe_FD NWE", "EUR"),
+            "N-Butanol FOB Rotterdam Weekly": ("n_Butanol_Europe_FOB Rotterdam", "USD"),
+            "Isobutanol FD NWE Eur/mt Weekly": ("Isobutanol_Europe_FD NWE", "EUR"),
+            "Isobutanol FOB Rotterdam Weekly": ("Isobutanol_Europe_FOB Rotterdam", "USD"),
+            "MEK FD NWE Eur/mt Weekly": ("MEK_Europe_FD NWE", "EUR"),
+            "MEK FOB Rotterdam Weekly": ("MEK_Europe_FOB Rotterdam", "USD"),
+            "Styrene FOB ARA Mo01": ("Styrene_Europe_FOB ARA", "USD"),
+            "Toluene CIF ARA Mo01": ("Toluene_Europe_CIF ARA", "USD"),
+            "Mixed Xylene CIF ARA Mo01": ("Xylene_Europe_CIF ARA", "USD"),
+            "MEG CIF ARA T2 Weekly": ("MEG_Europe_CIF ARA", "USD"),
+            "DEG FCA ARA Eur/mt Weekly": ("DEG_Europe_FCA ARA", "EUR"),
+            "Monopropylene Glycol Industrial Grade FCA NWE Wkly": ("PG_Europe_Industrial Grade FCA NWE", "EUR"),
+            "Monopropylene Glycol US/European Pharmaceutical Gr": ("PG_Europe_Pharmaceutical Grade FCA NWE", "EUR"),
+            "Acetic Acid FD NWE Eur/mt Weekly": ("Acetic_Acid_Europe_FD NWE", "EUR"),
+            "Propylene Chem Grade CIF NWE Eur/mt": ("Propylene_Europe_Chem Grade CIF NWE", "EUR"),
+            "Methanol T2 FOB Rotterdam Eur/mt": ("Methanol_Europe_T2 FOB Rotterdam", "EUR"),
+            "Propylene Oxide DDP Northwest Europe": ("Propylene_Oxide_Europe_DDP Northwest Europe", "EUR"),
+            "Cyclohexane DDP Northwest Europe Eur/mt Wkly": ("Cyclohexane_Europe_DDP Northwest Europe", "EUR"),
+            "Benzene CIF ARA": ("Benzene_Europe_CIF ARA", "USD"),
+            "Ethylene Oxide DDP Northwest Europe 3-30 Days": ("EO_Europe_DDP Northwest Europe", "EUR"),
+            "Dated Brent": ("Brent_Domestic_Global", "BRENT")
+        }
+        
+        # Map Excel column index to targets
+        mapped_cols = {}
+        for col_idx, col_name in enumerate(col_names):
+            desc = str(df_eu.iloc[0, col_idx]).strip()
+            # Remove line breaks and clean whitespace
+            desc_cleaned = " ".join(desc.split())
+            for key, val in col_mapping.items():
+                if key.lower() in desc_cleaned.lower():
+                    mapped_cols[col_name] = val
+                    break
+        
+        # Clean and parse rows (Dates are in first column, starting row 4)
+        df_clean = df_eu.iloc[4:].copy()
+        df_clean = df_clean.rename(columns={col_names[0]: 'Date'})
+        df_clean['Date'] = pd.to_datetime(df_clean['Date'], errors='coerce')
+        df_clean = df_clean.dropna(subset=['Date'])
+        df_clean = df_clean.set_index('Date')
+        
+        # Convert series to numeric and translate currency to CNY using daily rates
+        df_converted = pd.DataFrame(index=df_pivot.index)
+        
+        for col_name, (target_name, currency_type) in mapped_cols.items():
+            series = pd.to_numeric(df_clean[col_name], errors='coerce')
+            
+            # Reindex series to match df_pivot dates before applying multiplication
+            series_aligned = series.reindex(df_pivot.index).ffill().bfill()
+            
+            if currency_type == "EUR":
+                # Convert day-by-day using historical daily rates: EUR -> USD -> CNY
+                df_converted[target_name] = series_aligned * df_rates_eur_usd * df_rates_usd_cny
+            elif currency_type == "USD":
+                # Convert day-by-day: USD -> CNY
+                df_converted[target_name] = series_aligned * df_rates_usd_cny
+            elif currency_type == "BRENT":
+                # Convert Brent crude price from USD/bbl to USD/mt using * 7.33, then to CNY/mt using daily USD/CNY rate
+                df_converted[target_name] = series_aligned * 7.33 * df_rates_usd_cny
+        
+        # Merge into pivot DataFrame
+        for col in df_converted.columns:
+            df_pivot[col] = df_converted[col]
+            print(f"   Merged Platts series: {col}")
+            
+        # Create European proxies for feedstocks not present in the Platts Excel sheet
+        # 1. Octanol (2-Ethylhexanol) Proxy
+        oct_cols = [c for c in df_pivot.columns if 'Octanol_Domestic' in c]
+        if oct_cols:
+            base_col = next((c for c in oct_cols if '华东' in c), oct_cols[0])
+            df_pivot['Octanol_Europe_Proxy'] = df_pivot[base_col]
+            print(f"   Generated proxy: Octanol_Europe_Proxy using {base_col}")
+            
+        # 2. Ethanol Proxy
+        eth_cols = [c for c in df_pivot.columns if 'Ethanol_Domestic' in c]
+        if eth_cols:
+            base_col = next((c for c in eth_cols if '华东' in c), eth_cols[0])
+            df_pivot['Ethanol_Europe_Proxy'] = df_pivot[base_col]
+            print(f"   Generated proxy: Ethanol_Europe_Proxy using {base_col}")
+            
+        # 3. o-Xylene Proxy
+        xyl_cols = [c for c in df_pivot.columns if 'o_Xylene_Domestic' in c]
+        if xyl_cols:
+            base_col = next((c for c in xyl_cols if '华东' in c), xyl_cols[0])
+            df_pivot['o_Xylene_Europe_Proxy'] = df_pivot[base_col]
+            print(f"   Generated proxy: o_Xylene_Europe_Proxy using {base_col}")
+            
+        # 4. Naphtha Proxy
+        nap_cols = [c for c in df_pivot.columns if 'Naphtha_Domestic' in c]
+        if nap_cols:
+            df_pivot['Naphtha_Europe_Proxy'] = df_pivot[nap_cols[0]]
+            print(f"   Generated proxy: Naphtha_Europe_Proxy using {nap_cols[0]}")
+
+        # Export the daily historical exchange rate to the final aligned dataset
+        df_pivot['USD_CNY_Rate'] = df_rates_usd_cny
+        print("   Merged daily USD_CNY_Rate column to aligned dataset.")
+    except Exception as e:
+        print(f"   [ERROR] Failed to load/merge Platts Europe prices: {e}")
+else:
+    print("\n[WARNING] Energy_SymbolPrice file not found. Skipping Platts Europe integration.")
+
 
 
 # 10. Export files
