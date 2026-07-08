@@ -1873,8 +1873,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 compColorIdx++;
             }
             
+            let sName = col.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' ');
+            if (currentProduct === 'Isopropyl_Acetate_Proxy' && col.includes('n_Propyl_Acetate')) {
+                sName = sName.replace('n Propyl Acetate', 'Isopropyl Acetate (Proxy)');
+            }
             series.push({
-                name: col.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' '),
+                name: sName,
                 color: color,
                 data: slicedData.map(row => ({
                     x: new Date(row.Date).getTime(),
@@ -2624,6 +2628,9 @@ document.addEventListener("DOMContentLoaded", () => {
         displayHeaders.forEach(col => {
             const th = document.createElement('th');
             let headerText = col.replace('_Domestic', '').replace(/_/g, ' ');
+            if (currentProduct === 'Isopropyl_Acetate_Proxy' && col.includes('n_Propyl_Acetate')) {
+                headerText = headerText.replace('n Propyl Acetate', 'Isopropyl Acetate (Proxy)');
+            }
             if (col !== 'Date') {
                 const unit = (col.includes('Brent')) ? 'bbl' : 't';
                 headerText += ` (${getCurrencySymbol()}/${unit})`;
