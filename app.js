@@ -2613,13 +2613,13 @@ document.addEventListener("DOMContentLoaded", () => {
         tableHeaders.innerHTML = "";
         tableBody.innerHTML = "";
 
+        const displayHeaders = ['Date', ...selectedSeries.slice(0, 5)];
+        
         if (filteredData.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary)">No results found</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="${displayHeaders.length}" style="text-align: center; color: var(--text-secondary)">No results found</td></tr>`;
             document.getElementById('pagination-info-el').textContent = "Page 0 of 0";
             return;
         }
-
-        const displayHeaders = ['Date', ...selectedSeries.slice(0, 4)];
         
         displayHeaders.forEach(col => {
             const th = document.createElement('th');
