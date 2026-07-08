@@ -144,37 +144,9 @@ if target_candidates:
 else:
     print("\n[NOTE] No domestic Butyl Acetate target series found for correlation preview.")
 
-# 9.5 Integrate Brent manual price sheet
-brent_excel_path = os.path.normpath(os.path.join(BASE_DIR, "Brent_price.xlsx"))
-if os.path.exists(brent_excel_path):
-    print("\n9.5 Integrating Brent manual price sheet from Brent_price.xlsx...")
-    try:
-        xl = pd.ExcelFile(brent_excel_path)
-        sheet_name = xl.sheet_names[0]
-        df_brent = pd.read_excel(brent_excel_path, sheet_name=sheet_name, skiprows=4)
-        df_brent.columns = ['Date', 'Close']
-        df_brent['Date'] = pd.to_datetime(df_brent['Date'], errors='coerce')
-        df_brent = df_brent.dropna(subset=['Date', 'Close'])
-        df_brent = df_brent.set_index('Date')
-        
-        # Convert Brent price from USD/bbl to CNY/bbl
-        # 1 USD = 7.25 CNY (default exchange rate matching app.js)
-        # We store it in CNY/bbl. The app will divide by 7.25 in USD mode to restore the original USD/bbl price.
-        exchange_rate = 7.25
-        df_brent['Brent_Domestic_Global'] = df_brent['Close'] * exchange_rate
-        
-        # Align with df_pivot dates
-        df_brent_aligned = df_brent[['Brent_Domestic_Global']].reindex(df_pivot.index)
-        # Interpolate / forward fill missing dates (e.g. weekends)
-        df_brent_aligned = df_brent_aligned.ffill().bfill()
-        
-        # Merge into df_pivot
-        df_pivot['Brent_Domestic_Global'] = df_brent_aligned['Brent_Domestic_Global']
-        print("   Merged Brent_Domestic_Global into aligned dataset.")
-    except Exception as e:
-        print(f"   [ERROR] Failed to load/merge Brent price: {e}")
-else:
-    print("\n[WARNING] Brent_price.xlsx not found. Skipping Brent integration.")
+# 9.5 Integrate Brent manual price sheet (Disabled as requested to delete Brent data)
+# Brent price integration has been removed.
+
 
 # 10. Export files
 print("\n10. Exporting clean datasets to disk...")

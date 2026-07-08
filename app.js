@@ -2593,6 +2593,15 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }
 
+        if (currentProduct === 'PMA') {
+            html += `
+            <div class="flow-note-card" style="margin-top: 15px; padding: 10px 14px; background: rgba(99, 102, 241, 0.08); border-left: 3px solid var(--color-indigo); border-radius: 4px; font-size: 11.5px; color: var(--text-secondary); line-height: 1.4;">
+                <i class="fa-solid fa-circle-info" style="color: var(--color-indigo); margin-right: 6px;"></i>
+                <strong>Methodology Note:</strong> Methoxypropanol (PM) is excluded from the cost model to avoid price colinearity. The spread is calculated using its primary precursors (Propylene Oxide & Methanol) instead.
+            </div>
+            `;
+        }
+
         container.innerHTML = html;
 
         // Add programatic click listener to toggle compare series on click
