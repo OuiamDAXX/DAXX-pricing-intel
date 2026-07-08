@@ -240,7 +240,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 'n_Propyl_Acetate',
                 'n-Propanol',
                 'Acetic_Acid',
-                'Methanol'
+                'Methanol',
+                'Propylene'
             ]
         },
         'Isopropyl_Acetate_Proxy': {
@@ -261,7 +262,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 'n_Propyl_Acetate',
                 'Isopropanol',
                 'Acetic_Acid',
-                'Methanol'
+                'Methanol',
+                'Propylene'
             ]
         },
         'Acrylic_Acid': {
