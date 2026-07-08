@@ -2013,9 +2013,11 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = "";
 
         const config = TARGET_CONFIGS[currentProduct];
-        const allowedBaseProds = config ? config.defaultChecked.filter(base => 
-            selectedSeries.some(sel => sel.includes(base))
-        ) : [];
+        const allowedBaseProds = config ? config.defaultChecked.filter(base => {
+            if (base === 'Propylene' && !selectedSeries.some(sel => sel.includes('Propylene') && !sel.includes('Propylene_Oxide'))) return false;
+            if (base === 'Ethylene' && !selectedSeries.some(sel => sel.includes('Ethylene') && !sel.includes('Ethylene_Glycol'))) return false;
+            return selectedSeries.some(sel => sel.includes(base));
+        }) : [];
 
         const filtered = [];
         allowedBaseProds.forEach(base => {
@@ -2023,14 +2025,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const targetPrefix = config.defaultChecked[0];
             if (base === targetPrefix || currentTarget.includes(base)) return;
 
-            const targetRows = data.filter(item => 
-                item.Target === currentTarget && 
-                item.Feature && 
-                item.Feature.includes(base)
-            );
+            const targetRows = data.filter(item => {
+                if (item.Target !== currentTarget || !item.Feature) return false;
+                if (base === 'Propylene' && item.Feature.includes('Propylene_Oxide')) return false;
+                if (base === 'Ethylene' && item.Feature.includes('Ethylene_Glycol')) return false;
+                return item.Feature.includes(base);
+            });
             if (targetRows.length === 0) return;
 
-            const exactCheckedCol = selectedSeries.find(sel => sel.includes(base));
+            const exactCheckedCol = selectedSeries.find(sel => {
+                if (base === 'Propylene' && sel.includes('Propylene_Oxide')) return false;
+                if (base === 'Ethylene' && sel.includes('Ethylene_Glycol')) return false;
+                return sel.includes(base);
+            });
             const exactMatch = targetRows.find(row => row.Feature === exactCheckedCol);
 
             if (exactMatch) {
@@ -2115,23 +2122,30 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = "";
 
         const config = TARGET_CONFIGS[currentProduct];
-        const allowedBaseProds = config ? config.defaultChecked.filter(base => 
-            selectedSeries.some(sel => sel.includes(base))
-        ) : [];
+        const allowedBaseProds = config ? config.defaultChecked.filter(base => {
+            if (base === 'Propylene' && !selectedSeries.some(sel => sel.includes('Propylene') && !sel.includes('Propylene_Oxide'))) return false;
+            if (base === 'Ethylene' && !selectedSeries.some(sel => sel.includes('Ethylene') && !sel.includes('Ethylene_Glycol'))) return false;
+            return selectedSeries.some(sel => sel.includes(base));
+        }) : [];
 
         const filtered = [];
         allowedBaseProds.forEach(base => {
             const targetPrefix = config.defaultChecked[0];
             if (base === targetPrefix || currentTarget.includes(base)) return;
 
-            const targetRows = data.filter(item => 
-                item.Target === currentTarget && 
-                item.Feature && 
-                item.Feature.includes(base)
-            );
+            const targetRows = data.filter(item => {
+                if (item.Target !== currentTarget || !item.Feature) return false;
+                if (base === 'Propylene' && item.Feature.includes('Propylene_Oxide')) return false;
+                if (base === 'Ethylene' && item.Feature.includes('Ethylene_Glycol')) return false;
+                return item.Feature.includes(base);
+            });
             if (targetRows.length === 0) return;
 
-            const exactCheckedCol = selectedSeries.find(sel => sel.includes(base));
+            const exactCheckedCol = selectedSeries.find(sel => {
+                if (base === 'Propylene' && sel.includes('Propylene_Oxide')) return false;
+                if (base === 'Ethylene' && sel.includes('Ethylene_Glycol')) return false;
+                return sel.includes(base);
+            });
             const exactMatch = targetRows.find(row => row.Feature === exactCheckedCol);
 
             if (exactMatch) {
