@@ -14796,9 +14796,9 @@
                 }
             }
         },
-        "PX": {
-            "镇海炼化": {
-                "target_column": "PX_Domestic_镇海炼化",
+        "Xylene": {
+            "山东": {
+                "target_column": "Xylene_Domestic_山东 异构级",
                 "analysis_mode": "margin",
                 "current_price": 8630.0,
                 "rsi": 28.1,

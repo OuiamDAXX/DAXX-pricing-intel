@@ -1298,9 +1298,9 @@
             "savings_pct": -0.26
         }
     },
-    "PX": {
-        "天津石化": {
-            "target_column": "PX_Domestic_天津石化",
+    "Xylene": {
+        "山东": {
+            "target_column": "Xylene_Domestic_山东 异构级",
             "analysis_mode": "margin",
             "test_days": 180,
             "mape_14d": 5.19,

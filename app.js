@@ -162,7 +162,18 @@ document.addEventListener("DOMContentLoaded", () => {
         'Yahoo': 'Yahoo Finance',
         'NWE': 'Northwest Europe',
         'Gulf': 'US Gulf Coast',
-        'Global': 'Global / International'
+        'Global': 'Global / International',
+        '山东 异构级': 'Shandong (Isomer)',
+        '广东 异构级': 'Guangdong (Isomer)',
+        '福建 异构级': 'Fujian (Isomer)',
+        '广东 溶剂级': 'Guangdong (Solvent)',
+        '京津 异构级': 'Beijing-Tianjin (Isomer)',
+        '武汉 异构级': 'Wuhan (Isomer)',
+        '江苏 异构级': 'Jiangsu (Isomer)',
+        '江苏 溶剂级': 'Jiangsu (Solvent)',
+        '宁波 异构级': 'Ningbo (Isomer)',
+        '张家港 溶剂级': 'Zhangjiagang (Solvent)',
+        '西南 异构级': 'Southwest (Isomer)'
     };
 
     // Product configurations using base product keys
@@ -701,18 +712,18 @@ document.addEventListener("DOMContentLoaded", () => {
             title: "Mixed Xylene",
             precursors: {
                 butyl: 'Xylene',
-                butanol: 'Toluene',
-                acetic: 'Reformed_Naphtha'
+                butanol: 'Naphtha',
+                acetic: 'Brent'
             },
             labels: {
                 butyl: "Mixed Xylene (Target)",
-                butanol: "Toluene (Feedstock)",
-                acetic: "Reformed Naphtha (Upstream)"
+                butanol: "Naphtha (Feedstock)",
+                acetic: "Brent Crude (Upstream)"
             },
             defaultChecked: [
                 'Xylene',
-                'Toluene',
-                'Reformed_Naphtha'
+                'Naphtha',
+                'Brent'
             ]
         },
         'MEG': {
@@ -931,7 +942,7 @@ document.addEventListener("DOMContentLoaded", () => {
         'Cyclohexane': 'Cyclohexane_Domestic_山东',
         'PM': 'PM_Domestic_华东',
         'm_Xylene': 'm_Xylene_Domestic_燕山石化',
-        'Xylene': 'Xylene_Domestic_山东 异构级',
+        'Xylene': 'Xylene_Domestic_山东',
         'Ethylbenzene': 'Ethylbenzene_Domestic_吉林石化',
         'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东',
         'Toluene': 'Toluene_Domestic_山东',
@@ -987,7 +998,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (product === 'Acetone_V1' || product === 'Acetone_V2') {
             return priceHeaders.find(h => h.includes('Acetone_Domestic') && h.includes(region)) || 'Acetone_Domestic_华东';
         }
+        if (product === 'Xylene') {
+            return priceHeaders.find(h => h.includes('Xylene_Domestic') && !h.includes('o_Xylene') && !h.includes('m_Xylene') && h.includes(region)) || 'Xylene_Domestic_山东';
+        }
         return priceHeaders.find(h => h.includes(product) && h.includes(region)) || `${product}_Domestic_${region}`;
+
     }
 
     // Extract regions available in CSV for a given product
@@ -1004,13 +1019,28 @@ document.addEventListener("DOMContentLoaded", () => {
             searchPattern = product + '_Domestic';
         }
 
-        const matchedCols = priceHeaders.filter(h => h.includes(searchPattern));
+        const matchedCols = priceHeaders.filter(h => {
+            if (product === 'Xylene') {
+                return h.includes(searchPattern) && !h.includes('o_Xylene') && !h.includes('m_Xylene');
+            }
+            return h.includes(searchPattern);
+        });
+
         const regions = [];
         matchedCols.forEach(col => {
-            const parts = col.split('_');
-            const region = parts[parts.length - 1];
-            if (region && !regions.includes(region)) {
-                regions.push(region);
+            // e.g. "Xylene_Domestic_山东 异构级" should extract "山东 异构级"
+            const prefix = searchPattern + '_';
+            if (col.startsWith(prefix)) {
+                const region = col.substring(prefix.length);
+                if (region && !regions.includes(region)) {
+                    regions.push(region);
+                }
+            } else {
+                const parts = col.split('_');
+                const region = parts[parts.length - 1];
+                if (region && !regions.includes(region)) {
+                    regions.push(region);
+                }
             }
         });
         return regions.length > 0 ? regions : ['华东'];
@@ -1047,7 +1077,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Mapping sub-regions to Main Region Groups
     const MAIN_REGION_GROUPS = {
-        'Chine': ['华东', '华南', '华北', '山东', '江苏', '宁波', '四川', '河南', '湖北', '东北', '西北', '西南', '山西', '浙江', '辽宁', '吉林', '云南', '广东', '广西', '河北', '川渝', '重庆', '东莞', '苏北', '苏南', '锦州', '黑龙江', '东营', '华中', '山东鲁中', '鲁东', '临沂', '云南中东部地区', '内蒙古', '唐山', '天津', '新疆北疆', '新疆南疆', '新疆疆外', '昭通', '格尔木', '榆林', '济宁', '淄bo', '淄博', '甘肃', 'Fujian', '福建', '贵州', '鄂尔多斯北线', '鄂尔多斯南线', '银川', '陕西关中', '连云港', '鲁西南', '黄海西岸', '燕山石化', '弘润石化', '张家港', '山东中部'],
+        'Chine': ['华东', '华南', '华北', '山东', '江苏', '宁波', '四川', '河南', '湖北', '东北', '西北', '西南', '山西', '浙江', '辽宁', '吉林', '云南', '广东', '广西', '河北', '川渝', '重庆', '东莞', '苏北', '苏南', '锦州', '黑龙江', '东营', '华中', '山东鲁中', '鲁东', '临沂', '云南中东部地区', '内蒙古', '唐山', '天津', '新疆北疆', '新疆南疆', '新疆疆外', '昭通', '格尔木', '榆林', '济宁', '淄bo', '淄博', '甘肃', 'Fujian', '福建', '贵州', '鄂尔多斯北线', '鄂尔多斯南线', '银川', '陕西关中', '连云港', '鲁西南', '黄海西岸', '燕山石化', '弘润石化', '张家港', '山东中部', '山东 异构级', '广东 异构级', '福建 异构级', '广东 溶剂级', '京津 异构级', '武汉 异构级', '江苏 异构级', '江苏 溶剂级', '宁波 异构级', '张家港 溶剂级', '西南 异构级'],
         'Europe': ['Europe', 'NWE', 'Northwest Europe', '西北欧', '西北欧鹿特丹'],
         'Global': ['Global', 'International', 'Yahoo', 'Gulf', 'US Gulf Coast', '美国', '美国海湾', '日本', '韩国', '东南亚', '中国']
     };
@@ -1303,10 +1333,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return header.includes('Toluene') || 
                    header.includes('Benzene') || 
                    header.includes('Methanol');
-        } else if (product === 'PX') {
-            return header.includes('PX') || 
-                   header.includes('Toluene') || 
-                   header.includes('Methanol');
         } else if (product === 'MEG' || product === 'DEG') {
             return header.includes('MEG') || 
                    header.includes('DEG') || 
@@ -1320,9 +1346,8 @@ document.addEventListener("DOMContentLoaded", () => {
                    header.includes('Naphtha');
         } else if (product === 'Xylene') {
             return header.includes('Xylene_Domestic') || 
-                   header.includes('Toluene') || 
-                   header.includes('Reformed_Naphtha') || 
-                   header.includes('Naphtha');
+                   header.includes('Naphtha') || 
+                   header.includes('Brent');
         } else if (product === 'Brent') {
             return header.includes('Brent');
         }
@@ -1381,7 +1406,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         updateFinancialSignals();
-        
+        updateChemicalTree();
         checkDataAvailability();
     }
 
@@ -1594,7 +1619,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 'butanol': 0.70   // propylene oxide (PO)
             },
             'Xylene': {
-                'butanol': 0.85   // toluene (disproportionation)
+                'butanol': 1.08   // Naphtha pesada
             }
         };
 
@@ -2801,6 +2826,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderTable();
         displayLeadLag(rawLeadLagData);
         updateFinancialSignals();
+        updateChemicalTree();
     }
 
     function clearFinancialSignals() {
@@ -3272,7 +3298,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'MEG': { 'butanol': 0.57 },
             'DEG': { 'butanol': 0.30 },
             'PG':  { 'butanol': 0.70 },
-            'Xylene': { 'butanol': 0.85 }
+            'Xylene': { 'butanol': 1.08 }
         };
 
         const formula = consumptionCoeffs[currentProduct] || {};
