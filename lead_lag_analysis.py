@@ -33,170 +33,37 @@ print(f"   Loaded aligned dataset with {len(df)} days and {len(df.columns)} pric
 
 # 1. Define Target Candidates
 targets_to_process = []
+target_prefixes = [
+    'Butyl_Acetate_Domestic',
+    'Ethyl_Acetate_Domestic',
+    'n_Propyl_Acetate_Domestic',
+    'Acrylic_Acid_Domestic',
+    'Phthalic_Anhydride_Domestic',
+    'Maleic_Anhydride_Domestic',
+    'MMA_Domestic',
+    'Butyl_Acrylate_Domestic',
+    'VAM_Domestic',
+    '2_EHA_Domestic',
+    'Ethyl_Acrylate_Domestic',
+    'Acetone_Domestic',
+    'Dibasic_Ester_Domestic',
+    'Dicarboxylic_Acid_Domestic',
+    'Isopropanol_Domestic',
+    'PMA_Domestic',
+    'PM_Domestic',
+    'Isophthalic_Acid_Domestic',
+    'PTA_Domestic',
+    'n-Butanol_Domestic',
+    'Isobutanol_Domestic',
+    'MEK_Domestic',
+    'Styrene_Domestic'
+]
 
-# Target 1: Butyl Acetate
-butyl_targets = [col for col in df.columns if 'Butyl_Acetate_Domestic_华东' in col]
-if not butyl_targets:
-    butyl_targets = [col for col in df.columns if 'Butyl_Acetate_Domestic' in col]
-if butyl_targets:
-    targets_to_process.append(butyl_targets[0])
+for col in df.columns:
+    if any(p in col for p in target_prefixes):
+        targets_to_process.append(col)
 
-# Target 2: Ethyl Acetate
-ethyl_targets = [col for col in df.columns if 'Ethyl_Acetate_Domestic_华东' in col]
-if not ethyl_targets:
-    ethyl_targets = [col for col in df.columns if 'Ethyl_Acetate_Domestic' in col]
-if ethyl_targets:
-    targets_to_process.append(ethyl_targets[0])
-
-# Target 3: Isopropyl Acetate (Proxy: n-Propyl Acetate)
-isopropyl_targets = [col for col in df.columns if 'n_Propyl_Acetate_Domestic_华东' in col]
-if not isopropyl_targets:
-    isopropyl_targets = [col for col in df.columns if 'n_Propyl_Acetate_Domestic' in col]
-if isopropyl_targets:
-    targets_to_process.append(isopropyl_targets[0])
-
-# Target 4: Acrylic Acid
-acrylic_targets = [col for col in df.columns if 'Acrylic_Acid_Domestic_华东' in col]
-if not acrylic_targets:
-    acrylic_targets = [col for col in df.columns if 'Acrylic_Acid_Domestic' in col]
-if acrylic_targets:
-    targets_to_process.append(acrylic_targets[0])
-
-# Target 5: Phthalic Anhydride
-phthalic_targets = [col for col in df.columns if 'Phthalic_Anhydride_Domestic_华东' in col]
-if not phthalic_targets:
-    phthalic_targets = [col for col in df.columns if 'Phthalic_Anhydride_Domestic' in col]
-if phthalic_targets:
-    targets_to_process.append(phthalic_targets[0])
-
-# Target 6: Maleic Anhydride
-maleic_targets = [col for col in df.columns if 'Maleic_Anhydride_Domestic_华东' in col]
-if not maleic_targets:
-    maleic_targets = [col for col in df.columns if 'Maleic_Anhydride_Domestic' in col]
-if maleic_targets:
-    targets_to_process.append(maleic_targets[0])
-
-# Target 7: MMA
-mma_targets = [col for col in df.columns if 'MMA_Domestic_华东' in col]
-if not mma_targets:
-    mma_targets = [col for col in df.columns if 'MMA_Domestic' in col]
-if mma_targets:
-    targets_to_process.append(mma_targets[0])
-
-# Target 8: Butyl Acrylate
-butyl_acrylate_targets = [col for col in df.columns if 'Butyl_Acrylate_Domestic_华东' in col]
-if not butyl_acrylate_targets:
-    butyl_acrylate_targets = [col for col in df.columns if 'Butyl_Acrylate_Domestic' in col]
-if butyl_acrylate_targets:
-    targets_to_process.append(butyl_acrylate_targets[0])
-
-# Target 9: VAM
-vam_targets = [col for col in df.columns if 'VAM_Domestic_华东' in col]
-if not vam_targets:
-    vam_targets = [col for col in df.columns if 'VAM_Domestic' in col]
-if vam_targets:
-    targets_to_process.append(vam_targets[0])
-
-# Target 10: 2-EHA
-eha_targets = [col for col in df.columns if '2_EHA_Domestic_华东' in col]
-if not eha_targets:
-    eha_targets = [col for col in df.columns if '2_EHA_Domestic' in col]
-if eha_targets:
-    targets_to_process.append(eha_targets[0])
-
-# Target 11: Ethyl Acrylate
-ea_targets = [col for col in df.columns if 'Ethyl_Acrylate_Domestic_华东' in col]
-if not ea_targets:
-    ea_targets = [col for col in df.columns if 'Ethyl_Acrylate_Domestic' in col]
-if ea_targets:
-    targets_to_process.append(ea_targets[0])
-
-# Target 12 & 13: Acetone (V1 & V2)
-acetone_targets = [col for col in df.columns if 'Acetone_Domestic_华东' in col]
-if not acetone_targets:
-    acetone_targets = [col for col in df.columns if 'Acetone_Domestic' in col]
-if acetone_targets:
-    targets_to_process.append(acetone_targets[0])
-
-# Target 14: Dibasic Ester
-dbe_targets = [col for col in df.columns if 'Dibasic_Ester_Domestic_华东' in col]
-if not dbe_targets:
-    dbe_targets = [col for col in df.columns if 'Dibasic_Ester_Domestic' in col]
-if dbe_targets:
-    targets_to_process.append(dbe_targets[0])
-
-
-# Target 15: Dicarboxylic Acid
-acid_targets = [col for col in df.columns if 'Dicarboxylic_Acid_Domestic_华东' in col]
-if not acid_targets:
-    acid_targets = [col for col in df.columns if 'Dicarboxylic_Acid_Domestic' in col]
-if acid_targets:
-    targets_to_process.append(acid_targets[0])
-
-# Target 16: Isopropanol (IPA)
-ipa_targets = [col for col in df.columns if 'Isopropanol_Domestic_华东' in col]
-if not ipa_targets:
-    ipa_targets = [col for col in df.columns if 'Isopropanol_Domestic' in col]
-if ipa_targets:
-    targets_to_process.append(ipa_targets[0])
-
-# Target 17: Methoxy propyl acetate (MPA)
-mpa_targets = [col for col in df.columns if 'PMA_Domestic_华东' in col]
-if not mpa_targets:
-    mpa_targets = [col for col in df.columns if 'PMA_Domestic' in col]
-if mpa_targets:
-    targets_to_process.append(mpa_targets[0])
-
-# Target 18: Methoxy propanol (PM)
-pm_targets = [col for col in df.columns if 'PM_Domestic_华东' in col]
-if not pm_targets:
-    pm_targets = [col for col in df.columns if 'PM_Domestic' in col]
-if pm_targets:
-    targets_to_process.append(pm_targets[0])
-
-# Target 19: Isophthalic Acid (PIA)
-pia_targets = [col for col in df.columns if 'Isophthalic_Acid_Domestic_华东' in col]
-if not pia_targets:
-    pia_targets = [col for col in df.columns if 'Isophthalic_Acid_Domestic' in col]
-if pia_targets:
-    targets_to_process.append(pia_targets[0])
-
-# Target 20: Purified Terephthalic Acid (PTA)
-pta_targets = [col for col in df.columns if 'PTA_Domestic_华东' in col]
-if not pta_targets:
-    pta_targets = [col for col in df.columns if 'PTA_Domestic' in col]
-if pta_targets:
-    targets_to_process.append(pta_targets[0])
-
-# Target 21: n-Butanol
-butanol_targets = [col for col in df.columns if 'n-Butanol_Domestic_华东' in col]
-if not butanol_targets:
-    butanol_targets = [col for col in df.columns if 'n-Butanol_Domestic' in col]
-if butanol_targets:
-    targets_to_process.append(butanol_targets[0])
-
-# Target 22: Isobutanol
-isobutanol_targets = [col for col in df.columns if 'Isobutanol_Domestic_华东' in col]
-if not isobutanol_targets:
-    isobutanol_targets = [col for col in df.columns if 'Isobutanol_Domestic' in col]
-if isobutanol_targets:
-    targets_to_process.append(isobutanol_targets[0])
-
-# Target 23: MEK
-mek_targets = [col for col in df.columns if 'MEK_Domestic_华东' in col]
-if not mek_targets:
-    mek_targets = [col for col in df.columns if 'MEK_Domestic' in col]
-if mek_targets:
-    targets_to_process.append(mek_targets[0])
-
-# Target 24: Styrene
-styrene_targets = [col for col in df.columns if 'Styrene_Domestic_华东' in col]
-if not styrene_targets:
-    styrene_targets = [col for col in df.columns if 'Styrene_Domestic' in col]
-if styrene_targets:
-    targets_to_process.append(styrene_targets[0])
-
-print(f"   Targets to process: {targets_to_process}")
+print(f"   Targets to process ({len(targets_to_process)}): {targets_to_process}")
 
 # 2. Process each target
 lead_lag_results = []
@@ -240,6 +107,7 @@ for target in targets_to_process:
         }
     elif 'Maleic_Anhydride' in target:
         keywords = {
+            'n-Butanol': ['n-Butanol_Domestic'],
             'n_Butane': ['n_Butane_Domestic'],
             'Methanol': ['Methanol_Domestic']
         }
