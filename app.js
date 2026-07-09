@@ -1523,9 +1523,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // Filter headers by region to prevent showing China feedstocks in Europe view and vice versa
         const mainReg = getMainRegionForSubRegion(currentRegion);
         if (mainReg === 'Europe' || mainReg === 'Global') {
-            relatedHeaders = relatedHeaders.filter(h => h.includes('_Europe_') || h.includes('_Global_'));
+            relatedHeaders = relatedHeaders.filter(h => h.includes('_Europe_') || h.includes('_Global_') || h.includes('_Global') || h.includes('Europe') || h.includes('Global'));
         } else {
-            relatedHeaders = relatedHeaders.filter(h => !h.includes('_Europe_') && !h.includes('_Global_'));
+            relatedHeaders = relatedHeaders.filter(h => !h.includes('_Europe_') && !h.includes('_Global_') && !h.includes('_Global') && !h.includes('Europe') && !h.includes('Global'));
         }
 
         selectedSeries = [...defaultMatches];
@@ -1705,7 +1705,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function checkDataAvailability() {
-        const hasRealData = priceHeaders.includes(currentTarget);
+        const hasRealData = priceHeaders.includes(currentTarget) || priceHeaders.some(h => {
+            if (!isColumnRelated(h, currentProduct)) return false;
+            return getMainRegionForSubRegion(h) === getMainRegionForSubRegion(currentRegion);
+        });
         const loader = document.getElementById('chart-loader');
         const chartDiv = document.getElementById('main-chart');
         
