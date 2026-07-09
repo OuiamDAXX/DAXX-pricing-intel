@@ -1043,16 +1043,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function resolveTargetColumn(product, region) {
+        const mainReg = getMainRegionForSubRegion(region);
+        const prefix = mainReg === 'Europe' ? 'Europe' : (mainReg === 'Global' ? 'Global' : 'Domestic');
+        const fallbackReg = mainReg === 'Europe' ? 'DDP Northwest Europe' : (mainReg === 'Global' ? 'Global' : '华东');
+
         if (product === 'Isopropyl_Acetate_Proxy') {
-            return priceHeaders.find(h => h.includes('n_Propyl_Acetate') && h.includes(region)) || 'n_Propyl_Acetate_Domestic_华东';
+            return priceHeaders.find(h => h.includes('n_Propyl_Acetate') && h.includes(region)) || `n_Propyl_Acetate_${prefix}_${fallbackReg}`;
         }
         if (product === 'Acetone_V1' || product === 'Acetone_V2') {
-            return priceHeaders.find(h => h.includes('Acetone') && h.includes(region)) || 'Acetone_Domestic_华东';
+            return priceHeaders.find(h => h.includes('Acetone') && h.includes(region)) || `Acetone_${prefix}_${fallbackReg}`;
         }
         if (product === 'Xylene') {
-            return priceHeaders.find(h => h.includes('Xylene') && !h.includes('o_Xylene') && !h.includes('m_Xylene') && h.includes(region)) || 'Xylene_Domestic_山东';
+            return priceHeaders.find(h => h.includes('Xylene') && !h.includes('o_Xylene') && !h.includes('m_Xylene') && h.includes(region)) || `Xylene_${prefix}_${fallbackReg}`;
         }
-        return priceHeaders.find(h => h.includes(product) && h.includes(region)) || `${product}_Domestic_${region}`;
+        return priceHeaders.find(h => h.includes(product) && h.includes(region)) || `${product}_${prefix}_${region}`;
     }
 
     // Extract regions available in CSV for a given product
@@ -2717,7 +2721,12 @@ document.addEventListener("DOMContentLoaded", () => {
         tableHeaders.innerHTML = "";
         tableBody.innerHTML = "";
 
-        const displayHeaders = ['Date', ...selectedSeries.slice(0, 5)];
+        let displayHeaders = ['Date'];
+        if (currentTarget && !selectedSeries.includes(currentTarget)) {
+            displayHeaders.push(currentTarget);
+        }
+        displayHeaders = displayHeaders.concat(selectedSeries.slice(0, 5));
+        displayHeaders = [...new Set(displayHeaders)];
         
         if (filteredData.length === 0) {
             tableBody.innerHTML = `<tr><td colspan="${displayHeaders.length}" style="text-align: center; color: var(--text-secondary)">No results found</td></tr>`;
@@ -2727,7 +2736,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         displayHeaders.forEach(col => {
             const th = document.createElement('th');
-            let headerText = col.replace('_Domestic', '').replace(/_/g, ' ');
+            let headerText = col.replace('_Domestic', '').replace('_Europe', '').replace('_Global', '').replace(/_/g, ' ');
             if (currentProduct === 'Isopropyl_Acetate_Proxy' && col.includes('n_Propyl_Acetate')) {
                 headerText = headerText.replace('n Propyl Acetate', 'Isopropyl Acetate (Proxy)');
             }
