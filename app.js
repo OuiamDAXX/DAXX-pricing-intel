@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         'MMA': {
-            title: "Methyl Methacrylate",
+            title: "Methyl Methacrylate (MMA)",
             precursors: {
                 butyl: 'MMA',
                 butanol: 'Acetone',
