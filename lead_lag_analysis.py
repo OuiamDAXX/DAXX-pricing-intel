@@ -35,28 +35,45 @@ print(f"   Loaded aligned dataset with {len(df)} days and {len(df.columns)} pric
 targets_to_process = []
 target_prefixes = [
     'Butyl_Acetate_Domestic',
+    'Butyl_Acetate_Europe',
     'Ethyl_Acetate_Domestic',
+    'Ethyl_Acetate_Europe',
     'n_Propyl_Acetate_Domestic',
     'Acrylic_Acid_Domestic',
+    'Acrylic_Acid_Europe',
     'Phthalic_Anhydride_Domestic',
+    'Phthalic_Anhydride_Europe',
     'Maleic_Anhydride_Domestic',
     'MMA_Domestic',
+    'MMA_Europe',
     'Butyl_Acrylate_Domestic',
+    'Butyl_Acrylate_Europe',
     'VAM_Domestic',
+    'VAM_Europe',
     '2_EHA_Domestic',
+    '2_EHA_Europe',
     'Ethyl_Acrylate_Domestic',
     'Acetone_Domestic',
+    'Acetone_Europe',
     'Dibasic_Ester_Domestic',
     'Dicarboxylic_Acid_Domestic',
     'Isopropanol_Domestic',
+    'Isopropanol_Europe',
     'PMA_Domestic',
     'PM_Domestic',
     'Isophthalic_Acid_Domestic',
     'PTA_Domestic',
+    'PTA_Europe',
     'n-Butanol_Domestic',
+    'n_Butanol_Europe',
     'Isobutanol_Domestic',
+    'Isobutanol_Europe',
     'MEK_Domestic',
-    'Styrene_Domestic'
+    'MEK_Europe',
+    'Styrene_Domestic',
+    'Styrene_Europe',
+    'Toluene_Domestic',
+    'Toluene_Europe'
 ]
 
 for col in df.columns:
@@ -189,34 +206,36 @@ for target in targets_to_process:
         }
     elif 'PTA' in target:
         keywords = {
-            'p_Xylene': ['PX_Domestic'],
-            'Reformed_Naphtha': ['Reformed_Naphtha_Domestic']
+            'Xylene': ['Xylene_Domestic', 'Xylene_Europe'],
+            'o_Xylene': ['o_Xylene_Domestic', 'o_Xylene_Europe'],
+            'Brent': ['Brent_Domestic_Global']
         }
-    elif 'n-Butanol' in target:
+    elif 'n-Butanol' in target or 'n_Butanol' in target:
         keywords = {
-            'Propylene': ['Propylene_Domestic'],
-            'Naphtha': ['Naphtha_Domestic']
+            'Propylene': ['Propylene_Domestic', 'Propylene_Europe'],
+            'Brent': ['Brent_Domestic_Global']
         }
-    elif 'Isobutanol' in target:
+    elif 'Isobutanol' in target or 'Isobutanol_Europe' in target:
         keywords = {
-            'Propylene': ['Propylene_Domestic'],
-            'Naphtha': ['Naphtha_Domestic']
+            'Propylene': ['Propylene_Domestic', 'Propylene_Europe'],
+            'Brent': ['Brent_Domestic_Global']
         }
     elif 'MEK' in target:
         keywords = {
+            'Brent': ['Brent_Domestic_Global'],
             '2_Butene': ['2_Butene_Domestic'],
-            'Naphtha': ['Naphtha_Domestic'],
             'n_Butane': ['n_Butane_Domestic'],
-            '2_Butanol': ['2_Butanol_Domestic'],
-            '1_Butene_2_Butene': ['1_Butene_2_Butene_Domestic'],
-            'H2O': ['H2O_Domestic']
+            '2_Butanol': ['2_Butanol_Domestic']
         }
     elif 'Styrene' in target:
         keywords = {
             'Ethylbenzene': ['Ethylbenzene_Domestic'],
-            'Propylene': ['Propylene_Domestic'],
-            'Reformed_Naphtha': ['Reformed_Naphtha_Domestic'],
-            'Naphtha': ['Naphtha_Domestic']
+            'Propylene': ['Propylene_Domestic', 'Propylene_Europe'],
+            'Brent': ['Brent_Domestic_Global']
+        }
+    elif 'Toluene' in target:
+        keywords = {
+            'Brent': ['Brent_Domestic_Global']
         }
     else:
         continue
