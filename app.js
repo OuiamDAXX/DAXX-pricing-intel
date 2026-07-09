@@ -342,19 +342,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'MMA',
                 butanol: 'Acetone',
                 acetic: 'Propylene',
-                methanol: 'Methanol'
+                methanol: 'Methanol',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "MMA (Target)",
                 butanol: "Acetone (Feedstock)",
                 acetic: "Propylene (Feedstock)",
-                methanol: "Methanol (Upstream)"
+                methanol: "Methanol (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'MMA',
                 'Acetone',
                 'Propylene',
-                'Methanol'
+                'Methanol',
+                'Gas_Europe_TTF'
             ]
         },
         'Butyl_Acrylate': {
@@ -1237,7 +1240,8 @@ document.addEventListener("DOMContentLoaded", () => {
             butyl: resolveColumnForRegion(config.precursors.butyl, currentRegion, false),
             butanol: resolveColumnForRegion(config.precursors.butanol, currentRegion, true),
             acetic: resolveColumnForRegion(config.precursors.acetic, currentRegion, true),
-            methanol: resolveColumnForRegion(config.precursors.methanol, currentRegion, true)
+            methanol: resolveColumnForRegion(config.precursors.methanol, currentRegion, true),
+            gas: resolveColumnForRegion(config.precursors.gas, currentRegion, true)
         };
     }
 
