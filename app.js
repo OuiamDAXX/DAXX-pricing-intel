@@ -1968,7 +1968,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 5. Add forecast line if available
         if (financialForecastsData && financialForecastsData.products && financialForecastsData.products[currentProduct]) {
             const productData = financialForecastsData.products[currentProduct];
-            const forecasts = productData[currentRegion] || Object.values(productData)[0];
+            const forecasts = productData[currentRegion] || null;
             if (forecasts && forecasts.predictions && forecasts.prediction_dates) {
                 const targetCol = resolveTargetColumn(currentProduct, currentRegion);
                 let lastRealVal = null;
@@ -3017,7 +3017,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const forecasts = productData[currentRegion] || Object.values(productData)[0];
+        const forecasts = productData[currentRegion] || null;
         if (!forecasts) {
             clearFinancialSignals();
             return;
@@ -3169,7 +3169,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         if (backtestResultsData && backtestResultsData[currentProduct]) {
             const productBacktest = backtestResultsData[currentProduct];
-            const backtest = productBacktest[currentRegion] || Object.values(productBacktest)[0];
+            const backtest = productBacktest[currentRegion] || null;
             if (backtest) {
                 if (backtestMetricPrecision) {
                     backtestMetricPrecision.textContent = `${backtest.precision_pct}%`;
@@ -3241,7 +3241,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let forecasts = null;
             if (financialForecastsData && financialForecastsData.products && financialForecastsData.products[currentProduct]) {
                 const productData = financialForecastsData.products[currentProduct];
-                forecasts = productData[currentRegion] || Object.values(productData)[0];
+                forecasts = productData[currentRegion] || null;
             }
 
             if (cardId === 'whatif-simulator-card') {
@@ -3250,6 +3250,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 shouldShow = (forecasts && forecasts.seasonality_monthly);
             } else if (cardId === 'budget-calculator-card') {
                 shouldShow = (forecasts && forecasts.current_price);
+            } else if (cardId === 'financial-signals-card' || cardId === 'ai-insights-card') {
+                shouldShow = (forecasts && forecasts.predictions && forecasts.predictions.length > 0);
             }
 
             if (shouldShow) {
@@ -3588,7 +3590,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let savingsPct = 5.4;
             if (backtestResultsData && backtestResultsData[currentProduct]) {
                 const productBacktest = backtestResultsData[currentProduct];
-                const backtest = productBacktest[currentRegion] || Object.values(productBacktest)[0];
+                const backtest = productBacktest[currentRegion] || null;
                 if (backtest && backtest.savings_pct) {
                     savingsPct = backtest.savings_pct;
                 }
