@@ -236,7 +236,8 @@ if os.path.exists(euro_file_path):
             "Cyclohexane DDP Northwest Europe Eur/mt Wkly": ("Cyclohexane_Europe_DDP Northwest Europe", "EUR"),
             "Benzene CIF ARA": ("Benzene_Europe_CIF ARA", "USD"),
             "Ethylene Oxide DDP Northwest Europe 3-30 Days": ("EO_Europe_DDP Northwest Europe", "EUR"),
-            "Dated Brent": ("Brent_Domestic_Global", "BRENT")
+            "Dated Brent": ("Brent_Domestic_Global", "BRENT"),
+            "Dutch TTF Eur/MWh Day Ahead": ("Gas_Europe_TTF", "EUR")
         }
         
         # Map Excel column index to targets

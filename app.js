@@ -1243,6 +1243,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Check if a header is related to the active product
     function isColumnRelated(header, product) {
+        if (header && header.includes('Gas_Europe_TTF')) return true;
         if (product === 'Butyl_Acetate') {
             return header.includes('Butyl_Acetate') || 
                    header.includes('n-Butanol') || 
@@ -1917,10 +1918,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 compColorIdx++;
             }
             
-            let sName = col.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' ');
+            let sName = col.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace('Gas_Europe_TTF', 'Natural Gas (TTF)').replace(/_/g, ' ');
             if (col.includes('_Europe_')) {
                 const parts = col.split('_Europe_');
-                const base = parts[0].replace(/_/g, ' ').replace('Octanol', '2-Ethylhexanol');
+                const base = parts[0].replace(/_/g, ' ').replace('Octanol', '2-Ethylhexanol').replace('Gas', 'Natural Gas');
                 const sub = parts[1].replace(/_/g, ' ');
                 if (!isMainTarget) {
                     sName = `${base} (${sub})`;
