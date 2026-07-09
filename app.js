@@ -494,19 +494,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'Dibasic_Ester',
                 butanol: 'Dicarboxylic_Acid',
                 acetic: 'Methanol',
-                methanol: 'Cyclohexane'
+                methanol: 'Cyclohexane',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "Dibasic Ester (Target)",
                 butanol: "Dicarboxylic Acid (Feedstock)",
                 acetic: "Methanol (Feedstock)",
-                methanol: "Cyclohexane (Upstream)"
+                methanol: "Cyclohexane (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'Dibasic_Ester',
                 'Dicarboxylic_Acid',
                 'Methanol',
-                'Cyclohexane'
+                'Cyclohexane',
+                'Gas_Europe_TTF'
             ]
         },
         'Isopropanol': {
@@ -2383,7 +2386,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'Dibasic_Ester': {
                 upstreamA: 'Cyclohexane',
                 feedstockA: 'Dicarboxylic_Acid',
-                upstreamB: '',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : '',
                 feedstockB: 'Methanol',
                 target: 'Dibasic_Ester'
             },
