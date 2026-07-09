@@ -2327,7 +2327,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'MMA': {
                 upstreamA: 'Propylene',
                 feedstockA: 'Acetone',
-                upstreamB: '',
+                upstreamB: (currentRegion.includes('Europe') || currentRegion.includes('NWE') || currentRegion.includes('Rotterdam') || currentRegion.includes('ARA') || currentRegion.includes('FCA') || currentRegion.includes('FOB') || currentRegion.includes('CIF')) ? 'Gas_Europe_TTF' : '',
                 feedstockB: 'Methanol',
                 target: 'MMA'
             },
@@ -2494,6 +2494,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (key === 'Naphtha_Butane') return 'Naphtha / Butane';
             if (key === '1_Butene_2_Butene') return '1-But. / 2-Buteno';
             if (key === 'Reformed_Naphtha') return 'Reformed Naphtha / Ethane';
+            if (key === 'Gas_Europe_TTF' || key === 'Gas') return 'Natural Gas (TTF)';
             return key.replace(/_Domestic/i, '').replace(/_Proxy/i, '').replace(/_/g, ' ').replace(/-/g, ' ');
         };
 
