@@ -1460,6 +1460,26 @@ body.light-theme .check-tag.active.accent {
     color: var(--text-primary, #f8fafc);
 }
 
+.rate-indicator {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+.rate-indicator strong {
+    color: var(--color-cyan);
+}
+
 /* ==========================================================================
    KPI TREND BADGES
    ========================================================================== */

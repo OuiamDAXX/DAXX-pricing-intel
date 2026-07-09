@@ -312,7 +312,8 @@ if os.path.exists(euro_file_path):
 
         # Export the daily historical exchange rate to the final aligned dataset
         df_pivot['USD_CNY_Rate'] = df_rates_usd_cny
-        print("   Merged daily USD_CNY_Rate column to aligned dataset.")
+        df_pivot['EUR_USD_Rate'] = df_rates_eur_usd
+        print("   Merged daily USD_CNY_Rate and EUR_USD_Rate columns to aligned dataset.")
     except Exception as e:
         print(f"   [ERROR] Failed to load/merge Platts Europe prices: {e}")
 else:

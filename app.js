@@ -45,10 +45,39 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.result === 'success' && data.rates) {
                 exchangeRates.USD = data.rates.USD || 1;
                 exchangeRates.CNY = data.rates.CNY || 7.25;
+                exchangeRates.EUR = data.rates.EUR || 0.92;
                 console.log('Fetched live exchange rates:', exchangeRates);
+                updateHeaderExchangeRates();
             }
         } catch (e) {
             console.error('Failed to fetch live exchange rates, using defaults:', e);
+        }
+    }
+
+    function updateHeaderExchangeRates() {
+        const headerRateVal = document.getElementById('header-rate-val');
+        const headerEurUsdVal = document.getElementById('header-eur-usd-val');
+        const rateIndicatorBox = document.getElementById('rate-indicator-box');
+        
+        let usdCny = exchangeRates.CNY || 7.25;
+        if (rawPricesData && rawPricesData.length > 0) {
+            const lastRowWithRate = rawPricesData.slice().reverse().find(r => r.USD_CNY_Rate);
+            if (lastRowWithRate && lastRowWithRate.USD_CNY_Rate) {
+                usdCny = parseFloat(lastRowWithRate.USD_CNY_Rate) || usdCny;
+            }
+        }
+        
+        if (headerRateVal) {
+            headerRateVal.textContent = usdCny.toFixed(4);
+        }
+        
+        if (headerEurUsdVal && exchangeRates.EUR) {
+            const eurUsd = 1 / exchangeRates.EUR;
+            headerEurUsdVal.textContent = eurUsd.toFixed(4);
+        }
+        
+        if (rateIndicatorBox) {
+            rateIndicatorBox.style.display = 'flex';
         }
     }
 
@@ -1474,6 +1503,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!data || data.length === 0) return;
         
         rawPricesData = data;
+        updateHeaderExchangeRates();
         priceHeaders = Object.keys(data[0]).filter(header => header !== 'Date');
         rawPricesData.sort((a, b) => new Date(a.Date) - new Date(b.Date));
         alignedDates = rawPricesData.map(row => row.Date);
@@ -2784,6 +2814,9 @@ document.addEventListener("DOMContentLoaded", () => {
             displayHeaders.push(currentTarget);
         }
         displayHeaders = displayHeaders.concat(selectedSeries.slice(0, 5));
+        // Add USD_CNY_Rate and EUR_USD_Rate to the columns displayed in the table
+        displayHeaders.push('USD_CNY_Rate');
+        displayHeaders.push('EUR_USD_Rate');
         displayHeaders = [...new Set(displayHeaders)];
         
         if (filteredData.length === 0) {
@@ -2798,7 +2831,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (currentProduct === 'Isopropyl_Acetate_Proxy' && col.includes('n_Propyl_Acetate')) {
                 headerText = headerText.replace('n Propyl Acetate', 'Isopropyl Acetate (Proxy)');
             }
-            if (col !== 'Date') {
+            if (col === 'USD_CNY_Rate') {
+                headerText = 'USD/CNY Rate';
+            } else if (col === 'EUR_USD_Rate') {
+                headerText = 'EUR/USD Rate';
+            } else if (col !== 'Date') {
                 const unit = 't';
                 headerText += ` (${getCurrencySymbol()}/${unit})`;
             }
@@ -2817,6 +2854,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (col === 'Date') {
                     td.className = 'date-col';
                     td.textContent = row[col];
+                } else if (col === 'USD_CNY_Rate' || col === 'EUR_USD_Rate') {
+                    const val = row[col];
+                    td.textContent = (val !== null && val !== undefined) 
+                        ? Number(val).toFixed(4) 
+                        : '-';
                 } else {
                     const val = row[col];
                     td.textContent = (val !== null && val !== undefined) 
