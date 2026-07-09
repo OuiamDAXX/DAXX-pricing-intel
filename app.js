@@ -185,8 +185,62 @@ document.addEventListener("DOMContentLoaded", () => {
         '江苏 溶剂级': 'Jiangsu (Solvent)',
         '宁波 异构级': 'Ningbo (Isomer)',
         '张家港 溶剂级': 'Zhangjiagang (Solvent)',
-        '西南 异构级': 'Southwest (Isomer)'
+        '西南 异构级': 'Southwest (Isomer)',
+        '中国': 'China',
+        '吉林石化': 'Jilin Petrochemical',
+        '广州石化': 'Guangzhou Petrochemical',
+        '茂名石化': 'Maoming Petrochemical',
+        '上海石化': 'Shanghai Petrochemical',
+        '天津石化': 'Tianjin Petrochemical',
+        '扬子炼化': 'Yangzi Refining',
+        '扬子石化': 'Yangzi Petrochemical',
+        '金陵石化': 'Jinling Petrochemical',
+        '镇海炼化': 'Zhenhai Refining',
+        '中沙天津': 'Sinopec Sabic Tianjin',
+        '中海壳牌': 'CNOOC Shell',
+        '中石化华东': 'Sinopec East China',
+        '京博思达睿新材料': 'Jingbo Star New Materials',
+        '兰州汇丰': 'Lanzhou Huifeng',
+        '华星石化': 'Huaxing Petrochemical',
+        '古雷石化': 'Gulei Petrochemical',
+        '唐山旭阳': 'Tangshan Xuyang',
+        '大庆石化': 'Daqing Petrochemical',
+        '天津大沽': 'Tianjin Dagu',
+        '安徽嘉玺': 'Anhui Jiaxi',
+        '山东利华益': 'Shandong Lihuayi',
+        '山东晟原': 'Shandong Shengyuan',
+        '抚顺石化': 'Fushun Petrochemical',
+        '河北盛腾': 'Hebei Shengteng',
+        '浙江石化': 'Zhejiang Petrochemical',
+        '淄博峻辰': 'Zibo Junchen',
+        '渤化发展': 'Bohua Development',
+        '燕山石化': 'Yanshan Petrochemical',
+        '盛虹石化': 'Shenghong Petrochemical',
+        '连云港石化': 'Lianyungang Petrochemical',
+        '锦西石化': 'Jinxi Petrochemical',
+        '青岛炼化': 'Qingdao Refining',
+        '齐鲁石化': 'Qilu Petrochemical',
+        '万通石化': 'Wantong Petrochemical',
+        '双峰石化': 'Shuangfeng Petrochemical',
+        '浙江宁波': 'Zhejiang Ningbo',
+        '临汾': 'Linfen',
+        '晋城': 'Jincheng',
+        '山东中部': 'Central Shandong'
     };
+
+    // Helper to translate Chinese regions and refinery names in a string
+    function translateTextRegions(text) {
+        if (!text) return "";
+        let result = text;
+        const keys = Object.keys(REGION_MAP).sort((a, b) => b.length - a.length);
+        for (const key of keys) {
+            if (result.includes(key)) {
+                // Using split/join is a safe alternative to replaceAll in older browsers
+                result = result.split(key).join(REGION_MAP[key]);
+            }
+        }
+        return result;
+    }
 
     // Product configurations using base product keys
     const TARGET_CONFIGS = {
@@ -559,19 +613,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'PM',
                 butanol: 'Propylene_Oxide',
                 acetic: 'Methanol',
-                methanol: 'Propylene'
+                methanol: 'Propylene',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "PM (Target)",
                 butanol: "Propylene Oxide (Feedstock)",
                 acetic: "Methanol (Feedstock)",
-                methanol: "Propylene (Upstream)"
+                methanol: "Propylene (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'PM',
                 'Propylene_Oxide',
                 'Methanol',
-                'Propylene'
+                'Propylene',
+                'Gas_Europe_TTF'
             ]
         },
         'Isophthalic_Acid': {
@@ -1568,7 +1625,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             label.appendChild(checkbox);
             
-            let displayName = header
+            let displayName = translateTextRegions(header)
                 .replace('_Domestic', '')
                 .replace('Octanol', '2-Ethylhexanol')
                 .replace(/_/g, ' ');
@@ -1740,7 +1797,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 message = "Historical price data for Europe is currently being prepared. Predictive Ridge models and pricing benchmarks for European hubs (NWE/Rotterdam) will be integrated in the next release.";
             } else {
                 title = "Data Temporarily Unavailable";
-                message = `No active price series found for ${currentProduct.replace(/_/g, ' ')} in region ${currentRegion}. Please select a different region or check back later.`;
+                message = `No active price series found for ${currentProduct.replace(/_/g, ' ')} in region ${translateTextRegions(currentRegion)}. Please select a different region or check back later.`;
             }
 
             loader.innerHTML = `
@@ -1940,11 +1997,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 compColorIdx++;
             }
             
-            let sName = col.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace('Gas_Europe_TTF', 'Natural Gas (TTF)').replace(/_/g, ' ');
+            let sName = translateTextRegions(col).replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace('Gas_Europe_TTF', 'Natural Gas (TTF)').replace(/_/g, ' ');
             if (col.includes('_Europe_')) {
                 const parts = col.split('_Europe_');
                 const base = parts[0].replace(/_/g, ' ').replace('Octanol', '2-Ethylhexanol').replace('Gas', 'Natural Gas');
-                const sub = parts[1].replace(/_/g, ' ');
+                const sub = translateTextRegions(parts[1]).replace(/_/g, ' ');
                 if (!isMainTarget) {
                     sName = `${base} (${sub})`;
                 } else {
@@ -2160,7 +2217,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const absPercent = Math.min(100, Math.round(Math.abs(maxCorr) * 100));
             const barColor = maxCorr >= 0 ? 'var(--color-cyan)' : 'var(--color-rose)';
-            const cleanFeature = featureName.replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' ');
+            const cleanFeature = translateTextRegions(featureName).replace('_Domestic', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' ');
 
             itemDiv.innerHTML = `
                 <div class="lead-lag-item-header">
@@ -2248,7 +2305,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let html = '';
 
         topIndicators.forEach((item) => {
-            const feature = item.Feature.replace('_Domestic', '').replace(/_/g, ' ');
+            const feature = translateTextRegions(item.Feature).replace('_Domestic', '').replace(/_/g, ' ');
             const corr = parseFloat(item.Max_Correlation);
             const lag = parseInt(item.Optimal_Lag_Days);
             const absCorr = Math.abs(corr);
@@ -2415,7 +2472,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'PM': {
                 upstreamA: 'Propylene',
                 feedstockA: 'Propylene_Oxide',
-                upstreamB: '',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : '',
                 feedstockB: 'Methanol',
                 target: 'PM'
             },
@@ -2513,7 +2570,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (key === '1_Butene_2_Butene') return '1-But. / 2-Buteno';
             if (key === 'Reformed_Naphtha') return 'Reformed Naphtha / Ethane';
             if (key === 'Gas_Europe_TTF' || key === 'Gas') return 'Natural Gas (TTF)';
-            return key.replace(/_Domestic/i, '').replace(/_Proxy/i, '').replace(/_/g, ' ').replace(/-/g, ' ');
+            const cleaned = key.replace(/_Domestic/i, '').replace(/_Proxy/i, '').replace(/_/g, ' ').replace(/-/g, ' ');
+            return translateTextRegions(cleaned);
         };
 
         const isSelected = (baseProd) => {
@@ -2736,7 +2794,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         displayHeaders.forEach(col => {
             const th = document.createElement('th');
-            let headerText = col.replace('_Domestic', '').replace('_Europe', '').replace('_Global', '').replace(/_/g, ' ');
+            let headerText = translateTextRegions(col).replace('_Domestic', '').replace('_Europe', '').replace('_Global', '').replace(/_/g, ' ');
             if (currentProduct === 'Isopropyl_Acetate_Proxy' && col.includes('n_Propyl_Acetate')) {
                 headerText = headerText.replace('n Propyl Acetate', 'Isopropyl Acetate (Proxy)');
             }
