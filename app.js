@@ -1025,12 +1025,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // 3. Fallback: exact baseProd but any region
-        const fallbackExact = priceHeaders.find(h => h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_'));
+        // 3. Fallback: exact baseProd but restricted to active region group to avoid mixing China/Europe
+        const fallbackExact = priceHeaders.find(h => {
+            if (!(h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_'))) return false;
+            const hReg = getMainRegionForSubRegion(h);
+            return hReg === mainReg || hReg === 'Global' || (mainReg === 'Global' && hReg === 'Europe') || (mainReg === 'Europe' && hReg === 'Global');
+        });
         if (fallbackExact) return fallbackExact;
         
-        // 4. Fallback: any partial match
-        const fallbackPartial = priceHeaders.find(h => h.includes(baseProd) || h.includes(cleanBase));
+        // 4. Fallback: any partial match restricted to active region group
+        const fallbackPartial = priceHeaders.find(h => {
+            if (!(h.includes(baseProd) || h.includes(cleanBase))) return false;
+            const hReg = getMainRegionForSubRegion(h);
+            return hReg === mainReg || hReg === 'Global' || (mainReg === 'Global' && hReg === 'Europe') || (mainReg === 'Europe' && hReg === 'Global');
+        });
         return fallbackPartial || null;
     }
 
