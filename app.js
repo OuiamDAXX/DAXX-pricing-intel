@@ -2327,7 +2327,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'MMA': {
                 upstreamA: 'Propylene',
                 feedstockA: 'Acetone',
-                upstreamB: (currentRegion.includes('Europe') || currentRegion.includes('NWE') || currentRegion.includes('Rotterdam') || currentRegion.includes('ARA') || currentRegion.includes('FCA') || currentRegion.includes('FOB') || currentRegion.includes('CIF')) ? 'Gas_Europe_TTF' : '',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : '',
                 feedstockB: 'Methanol',
                 target: 'MMA'
             },
