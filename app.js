@@ -648,8 +648,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 'PMA',
                 'Propylene_Oxide',
                 'Acetic_Acid',
-                'Methanol',
-                'Gas_Europe_TTF'
+                'Methanol'
             ]
         },
         'PM': {
@@ -2563,7 +2562,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'PMA': {
                 upstreamA: 'Propylene_Oxide',
                 feedstockA: 'PM',
-                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
+                upstreamB: 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'PMA'
             },
