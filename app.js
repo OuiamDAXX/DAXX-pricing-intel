@@ -1438,13 +1438,11 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (product === 'Acrylic_Acid') {
             return headerMatches(header, 'Acrylic_Acid') || 
                    headerMatches(header, 'Propylene') || 
-                   headerMatches(header, 'Naphtha') || 
-                   headerMatches(header, 'Methanol');
+                   headerMatches(header, 'Naphtha');
         } else if (product === 'Phthalic_Anhydride') {
             return headerMatches(header, 'Phthalic_Anhydride') || 
                    headerMatches(header, 'o_Xylene') || 
-                   headerMatches(header, 'Reformed_Naphtha') || 
-                   headerMatches(header, 'Methanol');
+                   headerMatches(header, 'Reformed_Naphtha');
         } else if (product === 'Maleic_Anhydride') {
             return headerMatches(header, 'Maleic_Anhydride') || 
                    headerMatches(header, 'n-Butanol') ||
@@ -1459,8 +1457,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return headerMatches(header, 'Butyl_Acrylate') || 
                    headerMatches(header, 'Acrylic_Acid') || 
                    headerMatches(header, 'n-Butanol') || 
-                   headerMatches(header, 'Propylene') || 
-                   headerMatches(header, 'Methanol');
+                   headerMatches(header, 'Propylene');
         } else if (product === 'VAM') {
             return headerMatches(header, 'VAM') || 
                    headerMatches(header, 'Ethylene') || 
