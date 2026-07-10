@@ -1473,8 +1473,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return headerMatches(header, '2_EHA') || 
                    headerMatches(header, 'Acrylic_Acid') || 
                    headerMatches(header, 'Octanol') || 
-                   headerMatches(header, 'Propylene') || 
-                   headerMatches(header, 'Methanol');
+                   headerMatches(header, 'Propylene');
         } else if (product === 'Ethyl_Acrylate') {
             return headerMatches(header, 'Ethyl_Acrylate') || 
                    headerMatches(header, 'Acrylic_Acid') || 
