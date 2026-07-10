@@ -1393,10 +1393,19 @@ document.addEventListener("DOMContentLoaded", () => {
             return header.includes('Ethylene') && !header.includes('Ethylene_Glycol') && !header.includes('Ethylene_Oxide') && !header.includes('EO_') && !header.includes('MEG') && !header.includes('DEG');
         }
         if (key === 'Xylene') {
-            return header.includes('Xylene') && !header.includes('o_Xylene') && !header.includes('m_Xylene');
+            return header.includes('Xylene') && !header.includes('o_Xylene') && !header.includes('m_Xylene') && !header.includes('PX') && !header.includes('p_Xylene');
         }
         if (key === 'Benzene') {
             return header.includes('Benzene') && !header.includes('Ethylbenzene');
+        }
+        if (key === 'Naphtha') {
+            return header.includes('Naphtha') && !header.includes('Reformed_Naphtha') && !header.includes('Naphtha_Butane');
+        }
+        if (key === '2_Butene') {
+            return header.includes('2_Butene') && !header.includes('1_Butene_2_Butene');
+        }
+        if (key === 'Ethanol') {
+            return header.includes('Ethanol') && !header.includes('Methanol');
         }
         return header.includes(key);
     }
