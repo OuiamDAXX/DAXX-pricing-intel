@@ -476,7 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         'VAM': {
-            title: "Vinyl Acetate Monomer",
+            title: "Vinyl Acetate Monomer (VAM)",
             precursors: {
                 butyl: 'VAM',
                 butanol: 'Ethylene',
