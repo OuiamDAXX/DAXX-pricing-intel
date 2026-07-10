@@ -2630,17 +2630,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 target: 'Styrene'
             },
             'MEG': {
-                upstreamA: 'Naphtha',
-                feedstockA: 'Ethylene',
-                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'EO_Domestic',
-                feedstockB: 'EO_Domestic',
+                upstreamA: 'Ethylene',
+                feedstockA: 'EO_Domestic',
+                upstreamB: 'H2O_Purified',
+                feedstockB: 'H2O',
                 target: 'MEG'
             },
             'DEG': {
-                upstreamA: 'Naphtha',
-                feedstockA: 'Ethylene',
-                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'EO_Domestic',
-                feedstockB: 'EO_Domestic',
+                upstreamA: 'Ethylene',
+                feedstockA: 'EO_Domestic',
+                upstreamB: 'H2O_Purified',
+                feedstockB: 'H2O',
                 target: 'DEG'
             },
             'Xylene': {
@@ -2674,6 +2674,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (key === '1_Butene_2_Butene') return '1-But. / 2-Buteno';
             if (key === 'Reformed_Naphtha') return 'Reformed Naphtha / Ethane';
             if (key === 'Gas_Europe_TTF' || key === 'Gas') return 'Natural Gas (TTF)';
+            if (key.includes('EO')) return 'Ethylene Oxide (EO)';
+            if (key === 'H2O') return 'Water (H2O)';
+            if (key === 'H2O_Purified') return 'Purified Water';
             const cleaned = key.replace(/_Domestic/i, '').replace(/_Proxy/i, '').replace(/_/g, ' ').replace(/-/g, ' ');
             return translateTextRegions(cleaned);
         };
