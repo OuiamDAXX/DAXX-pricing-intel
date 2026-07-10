@@ -279,20 +279,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'Butyl_Acetate',
                 butanol: 'n-Butanol',
                 acetic: 'Acetic_Acid',
-                methanol: 'Methanol'
+                methanol: 'Methanol',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "Butyl Acetate (Target)",
                 butanol: "n-Butanol (Feedstock)",
                 acetic: "Acetic Acid (Feedstock)",
-                methanol: "Methanol (Upstream)"
+                methanol: "Methanol (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'Butyl_Acetate',
                 'n-Butanol',
                 'Acetic_Acid',
                 'Methanol',
-                'Propylene'
+                'Propylene',
+                'Gas_Europe_TTF'
             ]
         },
         'Ethyl_Acetate': {
@@ -301,20 +304,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'Ethyl_Acetate',
                 butanol: 'Ethanol',
                 acetic: 'Acetic_Acid',
-                methanol: 'Methanol'
+                methanol: 'Methanol',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "Ethyl Acetate (Target)",
                 butanol: "Ethanol (Feedstock)",
                 acetic: "Acetic Acid (Feedstock)",
-                methanol: "Methanol (Upstream)"
+                methanol: "Methanol (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'Ethyl_Acetate',
                 'Ethanol',
                 'Acetic_Acid',
                 'Methanol',
-                'Ethylene'
+                'Ethylene',
+                'Gas_Europe_TTF'
             ]
         },
         'n_Propyl_Acetate': {
@@ -323,20 +329,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'n_Propyl_Acetate',
                 butanol: 'n-Propanol',
                 acetic: 'Acetic_Acid',
-                methanol: 'Methanol'
+                methanol: 'Methanol',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "Propyl Acetate (Target)",
                 butanol: "n-Propanol (Feedstock)",
                 acetic: "Acetic Acid (Feedstock)",
-                methanol: "Methanol (Upstream)"
+                methanol: "Methanol (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'n_Propyl_Acetate',
                 'n-Propanol',
                 'Acetic_Acid',
                 'Methanol',
-                'Propylene'
+                'Propylene',
+                'Gas_Europe_TTF'
             ]
         },
         'Isopropyl_Acetate_Proxy': {
@@ -345,20 +354,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'n_Propyl_Acetate', // Proxy
                 butanol: 'Isopropanol',
                 acetic: 'Acetic_Acid',
-                methanol: 'Methanol'
+                methanol: 'Methanol',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "Isopropyl Acetate (Proxy)",
                 butanol: "Isopropanol (Feedstock)",
                 acetic: "Acetic Acid (Feedstock)",
-                methanol: "Methanol (Upstream)"
+                methanol: "Methanol (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'n_Propyl_Acetate',
                 'Isopropanol',
                 'Acetic_Acid',
                 'Methanol',
-                'Propylene'
+                'Propylene',
+                'Gas_Europe_TTF'
             ]
         },
         'Acrylic_Acid': {
@@ -406,17 +418,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'Maleic_Anhydride',
                 butanol: 'n-Butanol',
                 acetic: 'n-Butanol',
-                methanol: 'n-Butanol'
+                methanol: 'n-Butanol',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "Maleic Anhydride (Target)",
                 butanol: "n-Butanol (Feedstock)",
                 acetic: "n-Butanol (Feedstock)",
-                methanol: "n-Butanol (Feedstock)"
+                methanol: "n-Butanol (Feedstock)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'Maleic_Anhydride',
-                'n-Butanol'
+                'n-Butanol',
+                'Gas_Europe_TTF'
             ]
         },
         'MMA': {
@@ -470,20 +485,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'VAM',
                 butanol: 'Ethylene',
                 acetic: 'Acetic_Acid',
-                methanol: 'Methanol'
+                methanol: 'Methanol',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "VAM (Target)",
                 butanol: "Ethylene (Feedstock)",
                 acetic: "Acetic Acid (Feedstock)",
-                methanol: "Methanol (Upstream)"
+                methanol: "Methanol (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'VAM',
                 'Ethylene',
                 'Acetic_Acid',
                 'Methanol',
-                'Naphtha'
+                'Naphtha',
+                'Gas_Europe_TTF'
             ]
         },
         '2_EHA': {
@@ -621,19 +639,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'PMA',
                 butanol: 'Propylene_Oxide',
                 acetic: 'Acetic_Acid',
-                methanol: 'Methanol'
+                methanol: 'Methanol',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "MPA (Target)",
                 butanol: "Propylene Oxide (Feedstock)",
                 acetic: "Acetic Acid (Feedstock)",
-                methanol: "Methanol (Feedstock)"
+                methanol: "Methanol (Feedstock)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'PMA',
                 'Propylene_Oxide',
                 'Acetic_Acid',
-                'Methanol'
+                'Methanol',
+                'Gas_Europe_TTF'
             ]
         },
         'PM': {
@@ -704,18 +725,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'n-Butanol',
                 butanol: 'Propylene',
                 acetic: 'Naphtha',
-                methanol: 'Naphtha'
+                methanol: 'Naphtha',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "n-Butanol (Target)",
                 butanol: "Propylene (Feedstock)",
                 acetic: "Naphtha (Upstream)",
-                methanol: "Naphtha (Upstream)"
+                methanol: "Naphtha (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'n-Butanol',
                 'Propylene',
-                'Naphtha'
+                'Naphtha',
+                'Gas_Europe_TTF'
             ]
         },
         'Isobutanol': {
@@ -724,18 +748,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'Isobutanol',
                 butanol: 'Propylene',
                 acetic: 'Naphtha',
-                methanol: 'Naphtha'
+                methanol: 'Naphtha',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "Isobutanol (Target)",
                 butanol: "Propylene (Feedstock)",
                 acetic: "Naphtha (Upstream)",
-                methanol: "Naphtha (Upstream)"
+                methanol: "Naphtha (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'Isobutanol',
                 'Propylene',
-                'Naphtha'
+                'Naphtha',
+                'Gas_Europe_TTF'
             ]
         },
         'MEK': {
@@ -822,17 +849,20 @@ document.addEventListener("DOMContentLoaded", () => {
             precursors: {
                 butyl: 'Xylene',
                 butanol: 'Naphtha',
-                acetic: 'Brent'
+                acetic: 'Brent',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "Mixed Xylene (Target)",
                 butanol: "Naphtha (Feedstock)",
-                acetic: "Brent Crude (Upstream)"
+                acetic: "Brent Crude (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'Xylene',
                 'Naphtha',
-                'Brent'
+                'Brent',
+                'Gas_Europe_TTF'
             ]
         },
         'MEG': {
@@ -841,19 +871,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'MEG',
                 butanol: 'EO',
                 acetic: 'Ethylene',
-                methanol: 'Naphtha'
+                methanol: 'Naphtha',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "MEG (Target)",
                 butanol: "Ethylene Oxide (Feedstock)",
                 acetic: "Ethylene (Upstream)",
-                methanol: "Naphtha (Upstream)"
+                methanol: "Naphtha (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'MEG',
                 'EO',
                 'Ethylene',
-                'Naphtha'
+                'Naphtha',
+                'Gas_Europe_TTF'
             ]
         },
         'DEG': {
@@ -862,19 +895,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'DEG',
                 butanol: 'EO',
                 acetic: 'Ethylene',
-                methanol: 'Naphtha'
+                methanol: 'Naphtha',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "DEG (Target)",
                 butanol: "Ethylene Oxide (Feedstock)",
                 acetic: "Ethylene (Upstream)",
-                methanol: "Naphtha (Upstream)"
+                methanol: "Naphtha (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'DEG',
                 'EO',
                 'Ethylene',
-                'Naphtha'
+                'Naphtha',
+                'Gas_Europe_TTF'
             ]
         },
         'PG': {
@@ -883,19 +919,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'PG',
                 butanol: 'Propylene_Oxide',
                 acetic: 'Propylene',
-                methanol: 'Naphtha'
+                methanol: 'Naphtha',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "Propylene Glycol (Target)",
                 butanol: "Propylene Oxide (Feedstock)",
                 acetic: "Propylene (Upstream)",
-                methanol: "Naphtha (Upstream)"
+                methanol: "Naphtha (Upstream)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'PG',
                 'Propylene_Oxide',
                 'Propylene',
-                'Naphtha'
+                'Naphtha',
+                'Gas_Europe_TTF'
             ]
         },
         'Brent': {
@@ -1376,20 +1415,23 @@ document.addEventListener("DOMContentLoaded", () => {
                    headerMatches(header, 'n-Butanol') || 
                    headerMatches(header, 'Acetic_Acid') || 
                    headerMatches(header, 'Methanol') || 
-                   headerMatches(header, 'Propylene');
+                   headerMatches(header, 'Propylene') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'Ethyl_Acetate') {
             return headerMatches(header, 'Ethyl_Acetate') || 
                    headerMatches(header, 'Ethanol') || 
                    headerMatches(header, 'Acetic_Acid') || 
                    headerMatches(header, 'Ethylene') || 
-                   headerMatches(header, 'Methanol');
+                   headerMatches(header, 'Methanol') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'n_Propyl_Acetate' || product === 'Isopropyl_Acetate_Proxy') {
             return headerMatches(header, 'n_Propyl_Acetate') || 
                    headerMatches(header, 'n-Propanol') || 
                    headerMatches(header, 'Isopropanol') || 
                    headerMatches(header, 'Acetic_Acid') || 
                    headerMatches(header, 'Propylene') || 
-                   headerMatches(header, 'Methanol');
+                   headerMatches(header, 'Methanol') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'Acrylic_Acid') {
             return headerMatches(header, 'Acrylic_Acid') || 
                    headerMatches(header, 'Propylene') || 
@@ -1402,7 +1444,8 @@ document.addEventListener("DOMContentLoaded", () => {
                    headerMatches(header, 'Methanol');
         } else if (product === 'Maleic_Anhydride') {
             return headerMatches(header, 'Maleic_Anhydride') || 
-                   headerMatches(header, 'n-Butanol');
+                   headerMatches(header, 'n-Butanol') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'MMA') {
             return headerMatches(header, 'MMA') || 
                    headerMatches(header, 'Acetone') || 
@@ -1421,7 +1464,8 @@ document.addEventListener("DOMContentLoaded", () => {
                    headerMatches(header, 'Acetic_Acid') || 
                    headerMatches(header, 'Naphtha') || 
                    headerMatches(header, 'Ethanol') || 
-                   headerMatches(header, 'Methanol');
+                   headerMatches(header, 'Methanol') ||
+                   headerMatches(header, 'Gas');
         } else if (product === '2_EHA') {
             return headerMatches(header, '2_EHA') || 
                    headerMatches(header, 'Acrylic_Acid') || 
@@ -1458,7 +1502,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return headerMatches(header, 'PMA') || 
                    headerMatches(header, 'Propylene_Oxide') || 
                    headerMatches(header, 'Acetic_Acid') || 
-                   headerMatches(header, 'Methanol');
+                   headerMatches(header, 'Methanol') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'PM') {
             return headerMatches(header, 'PM') || 
                    headerMatches(header, 'Propylene_Oxide') || 
@@ -1476,11 +1521,13 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (product === 'n_Butanol') {
             return headerMatches(header, 'n-Butanol') || 
                    headerMatches(header, 'Propylene') || 
-                   headerMatches(header, 'Naphtha');
+                   headerMatches(header, 'Naphtha') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'Isobutanol') {
             return headerMatches(header, 'Isobutanol') || 
                    headerMatches(header, 'Propylene') || 
-                   headerMatches(header, 'Naphtha');
+                   headerMatches(header, 'Naphtha') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'MEK') {
             return headerMatches(header, 'MEK') || 
                    headerMatches(header, '2_Butene') || 
@@ -2409,28 +2456,28 @@ document.addEventListener("DOMContentLoaded", () => {
             'Butyl_Acetate': {
                 upstreamA: 'Propylene',
                 feedstockA: 'n-Butanol',
-                upstreamB: 'Methanol',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'Butyl_Acetate'
             },
             'Ethyl_Acetate': {
                 upstreamA: 'Ethylene',
                 feedstockA: 'Ethanol',
-                upstreamB: 'Methanol',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'Ethyl_Acetate'
             },
             'n_Propyl_Acetate': {
                 upstreamA: 'Propylene',
                 feedstockA: 'n-Propanol',
-                upstreamB: 'Methanol',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'n_Propyl_Acetate'
             },
             'Isopropyl_Acetate_Proxy': {
                 upstreamA: 'Propylene',
                 feedstockA: 'Isopropanol',
-                upstreamB: 'Methanol',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'Isopropyl_Acetate_Proxy'
             },
@@ -2449,7 +2496,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 target: 'Phthalic_Anhydride'
             },
             'Maleic_Anhydride': {
-                upstreamA: '',
+                upstreamA: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : '',
                 feedstockA: 'n-Butanol',
                 upstreamB: '',
                 feedstockB: '',
@@ -2472,7 +2519,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'VAM': {
                 upstreamA: 'Naphtha',
                 feedstockA: 'Ethylene',
-                upstreamB: 'Methanol',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'VAM'
             },
@@ -2521,7 +2568,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'PMA': {
                 upstreamA: 'Propylene_Oxide',
                 feedstockA: 'PM',
-                upstreamB: 'Methanol',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'PMA'
             },
@@ -2556,14 +2603,14 @@ document.addEventListener("DOMContentLoaded", () => {
             'n_Butanol': {
                 upstreamA: 'Naphtha',
                 feedstockA: 'Propylene',
-                upstreamB: '',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : '',
                 feedstockB: '',
                 target: 'n-Butanol'
             },
             'Isobutanol': {
                 upstreamA: 'Naphtha',
                 feedstockA: 'Propylene',
-                upstreamB: '',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : '',
                 feedstockB: '',
                 target: 'Isobutanol'
             },
@@ -2591,28 +2638,28 @@ document.addEventListener("DOMContentLoaded", () => {
             'MEG': {
                 upstreamA: 'Naphtha',
                 feedstockA: 'Ethylene',
-                upstreamB: 'EO_Domestic',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'EO_Domestic',
                 feedstockB: 'EO_Domestic',
                 target: 'MEG'
             },
             'DEG': {
                 upstreamA: 'Naphtha',
                 feedstockA: 'Ethylene',
-                upstreamB: 'EO_Domestic',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'EO_Domestic',
                 feedstockB: 'EO_Domestic',
                 target: 'DEG'
             },
             'Xylene': {
                 upstreamA: 'Brent',
                 feedstockA: 'Naphtha',
-                upstreamB: '',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : '',
                 feedstockB: '',
                 target: 'Xylene'
             },
             'PG': {
                 upstreamA: 'Naphtha',
                 feedstockA: 'Propylene',
-                upstreamB: 'Propylene_Oxide',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Propylene_Oxide',
                 feedstockB: 'Propylene_Oxide',
                 target: 'PG'
             }
