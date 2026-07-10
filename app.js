@@ -801,17 +801,20 @@ document.addEventListener("DOMContentLoaded", () => {
             precursors: {
                 butyl: 'Toluene',
                 butanol: 'Benzene',
-                acetic: 'Methanol'
+                acetic: 'Methanol',
+                gas: 'Gas'
             },
             labels: {
                 butyl: "Toluene (Target)",
                 butanol: "Benzene (Feedstock)",
-                acetic: "Methanol (Feedstock)"
+                acetic: "Methanol (Feedstock)",
+                gas: "Natural Gas (Upstream)"
             },
             defaultChecked: [
                 'Toluene',
                 'Benzene',
-                'Methanol'
+                'Methanol',
+                'Gas_Europe_TTF'
             ]
         },
         'Xylene': {
@@ -2519,6 +2522,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 upstreamB: '',
                 feedstockB: '',
                 target: 'PTA'
+            },
+            'Toluene': {
+                upstreamA: 'Brent',
+                feedstockA: 'Benzene',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : '',
+                feedstockB: 'Methanol',
+                target: 'Toluene'
             },
             'n_Butanol': {
                 upstreamA: 'Naphtha',
