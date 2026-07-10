@@ -2632,15 +2632,15 @@ document.addEventListener("DOMContentLoaded", () => {
             'MEG': {
                 upstreamA: 'Ethylene',
                 feedstockA: 'EO_Domestic',
-                upstreamB: 'H2O_Purified',
-                feedstockB: 'H2O',
+                upstreamB: '',
+                feedstockB: '',
                 target: 'MEG'
             },
             'DEG': {
                 upstreamA: 'Ethylene',
                 feedstockA: 'EO_Domestic',
-                upstreamB: 'H2O_Purified',
-                feedstockB: 'H2O',
+                upstreamB: '',
+                feedstockB: '',
                 target: 'DEG'
             },
             'Xylene': {
