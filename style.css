@@ -287,6 +287,10 @@ body {
     gap: 20px;
 }
 
+.main-workspace.full-width {
+    grid-template-columns: 1fr;
+}
+
 .chart-column {
     display: flex;
     flex-direction: column;
@@ -379,6 +383,11 @@ body {
 }
 
 .btn-view-toggle {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
     background: transparent;
     border: none;
     outline: none;

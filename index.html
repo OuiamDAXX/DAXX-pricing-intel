@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=45">
+    <link rel="stylesheet" href="style.css?v=46">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -46,6 +46,7 @@
                 <select id="currency-select" class="currency-select-dropdown" title="Change Currency">
                     <option value="CNY">CNY (¥)</option>
                     <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
                 </select>
                 <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme">
                     <i class="fa-solid fa-sun"></i>
@@ -175,6 +176,9 @@
                             <button class="btn-view-toggle" id="btn-view-seasonal" data-view="seasonal" title="Yearly seasonal overlay">
                                 <i class="fa-solid fa-calendar-days"></i> Seasonal
                             </button>
+                            <button class="btn-view-toggle" id="btn-view-compare" data-view="compare" title="Compare Spain and Europe pricing">
+                                <i class="fa-solid fa-code-compare"></i> Compare
+                            </button>
                         </div>
 
                         <div class="metric-toggle-group" id="seasonal-metric-toggle" style="display: none;">
@@ -198,9 +202,18 @@
                 <div class="series-selector-container">
                     <span class="selector-label"><i class="fa-solid fa-list-check"></i> Compare:</span>
                     <div class="selectors-wrapper" id="series-checkboxes">
+                        <!-- Populated dynamically by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="series-selector-container" id="compare-products-selector-container" style="display: none;">
+                    <span class="selector-label"><i class="fa-solid fa-list-check"></i> Compare Products (Spain vs Europe):</span>
+                    <div class="selectors-wrapper" id="compare-products-checkboxes">
                         <!-- Filled dynamically by JavaScript -->
                     </div>
                 </div>
+
+                
                 
                 <div class="chart-container-inner">
                     <div id="chart-loader" class="loader-container">
@@ -244,6 +257,19 @@
                     <i class="fa-solid fa-circle-info"></i>
                     <p>No additional analysis available for the selected product under this tab.</p>
                 </div>
+
+                <!-- Comparative Arbitrage Dashboard -->
+                <aside class="sidebar-workspace-card" id="compare-arbitrage-card" style="display: none;">
+                    <div class="card-header">
+                        <div class="header-titles">
+                            <h2>Arbitrage & Spreads</h2>
+                            <p>China vs Europe Pricing Spreads</p>
+                        </div>
+                    </div>
+                    <div class="arbitrage-list" id="compare-arbitrage-list" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                        <!-- Populated dynamically by JavaScript -->
+                    </div>
+                </aside>
 
                 <!-- Decision Support & Financial Signals Card -->
                 <aside class="sidebar-workspace-card" id="financial-signals-card">

@@ -102,6 +102,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
             return valInCNY / rate;
+        } else if (currentCurrency === 'EUR') {
+            let rateCNY = exchangeRates.CNY || 7.25;
+            let rateEUR = exchangeRates.EUR || 0.92;
+            if (date && rawPricesData && rawPricesData.length > 0) {
+                const row = rawPricesData.find(r => r.Date === date);
+                if (row && row.USD_CNY_Rate) {
+                    rateCNY = parseFloat(row.USD_CNY_Rate) || rateCNY;
+                }
+                if (row && row.EUR_USD_Rate) {
+                    rateEUR = parseFloat(row.EUR_USD_Rate) || rateEUR;
+                }
+            } else if (rawPricesData && rawPricesData.length > 0) {
+                const lastRow = rawPricesData[rawPricesData.length - 1];
+                if (lastRow && lastRow.USD_CNY_Rate) {
+                    rateCNY = parseFloat(lastRow.USD_CNY_Rate) || rateCNY;
+                }
+                if (lastRow && lastRow.EUR_USD_Rate) {
+                    rateEUR = parseFloat(lastRow.EUR_USD_Rate) || rateEUR;
+                }
+            }
+            return (valInCNY / rateCNY) * rateEUR;
         }
         return valInCNY;
     }
@@ -109,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function getCurrencySymbol() {
         if (currentCurrency === 'CNY') return '¥';
         if (currentCurrency === 'USD') return '$';
+        if (currentCurrency === 'EUR') return '€';
         return '¥';
     }
 
@@ -948,6 +970,29 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    const RAW_MATERIALS_CONFIGS = {
+        'n_Butanol_MP': { title: "n-Butanol", base: "n-Butanol" },
+        'Isobutanol_MP': { title: "Isobutanol", base: "Isobutanol" },
+        'Isopropanol_MP': { title: "Isopropanol", base: "Isopropanol" },
+        'Acetone_MP': { title: "Acetone", base: "Acetone" },
+        'Styrene_MP': { title: "Styrene", base: "Styrene" },
+        'Toluene_MP': { title: "Toluene", base: "Toluene" },
+        'Xylene_MP': { title: "Mixed Xylene", base: "Xylene" },
+        'MEG_MP': { title: "Monoethylene Glycol (MEG)", base: "MEG" },
+        'DEG_MP': { title: "Diethylene Glycol (DEG)", base: "DEG" },
+        'PG_MP': { title: "Propylene Glycol (PG)", base: "PG" },
+        'Acetic_Acid_MP': { title: "Acetic Acid", base: "Acetic_Acid" },
+        'Propylene_MP': { title: "Propylene", base: "Propylene" },
+        'Methanol_MP': { title: "Methanol", base: "Methanol" },
+        'Propylene_Oxide_MP': { title: "Propylene Oxide", base: "Propylene_Oxide" },
+        'Cyclohexane_MP': { title: "Cyclohexane", base: "Cyclohexane" },
+        'Benzene_MP': { title: "Benzene", base: "Benzene" },
+        'EO_MP': { title: "Ethylene Oxide (EO)", base: "EO" },
+        'Octanol_MP': { title: "2-Ethylhexanol (Octanol)", base: "Octanol" },
+        'Ethanol_MP': { title: "Ethanol", base: "Ethanol" },
+        'o_Xylene_MP': { title: "o-Xylene", base: "o_Xylene" }
+    };
+
     // Color palette for chart series (matching glassmorphism design)
     const CHART_COLORS = [
         '#06b6d4', // Electric Cyan (Target)
@@ -971,9 +1016,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let timeRangeDays = "all";   // "all", 365, 180, 90
     let rawLeadLagData = [];     // Raw array of lead-lag results
     let KPI_COLUMNS = {};        // Dynamic columns mapping for KPIs
-    let currentChartView = 'trend'; // 'trend' or 'seasonal'
+    let currentChartView = 'trend'; // 'trend' or 'seasonal' or 'compare'
     let seasonalMetricMode = 'price'; // 'price' or 'margin'
     let activeSidebarTab = 'signals'; // 'signals', 'procurement', 'feedstocks'
+    let compareSelectedProducts = ['Butyl_Acetate', 'Ethyl_Acetate'];
     
     // Pagination state
     let currentPage = 1;
@@ -1613,6 +1659,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         updateKPIs();
         createSeriesSelectors();
+        createCompareProductSelectors();
         initializeChart();
         renderTable();
         
@@ -1735,6 +1782,158 @@ document.addEventListener("DOMContentLoaded", () => {
             label.appendChild(document.createTextNode(displayName));
             container.appendChild(label);
         });
+    }
+
+    function createCompareProductSelectors() {
+        const container = document.getElementById('compare-products-checkboxes');
+        if (!container) return;
+        container.innerHTML = "";
+
+        // Final Products header
+        const prodHeader = document.createElement('h3');
+        prodHeader.textContent = "Final Products";
+        prodHeader.style.cssText = "width: 100%; color: var(--accent-blue); font-size: 14px; margin-top: 10px; margin-bottom: 8px; font-family: var(--font-body);";
+        container.appendChild(prodHeader);
+
+        // Products Checkboxes
+        Object.keys(TARGET_CONFIGS).forEach(productKey => {
+            const config = TARGET_CONFIGS[productKey];
+            const isChecked = compareSelectedProducts.includes(productKey);
+
+            const label = document.createElement('label');
+            label.className = `check-tag ${isChecked ? 'active' : ''} accent`;
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = isChecked;
+            checkbox.value = productKey;
+            
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    compareSelectedProducts.push(productKey);
+                    label.classList.add('active');
+                } else {
+                    compareSelectedProducts = compareSelectedProducts.filter(p => p !== productKey);
+                    label.classList.remove('active');
+                }
+                initializeChart();
+                updateCompareArbitrageDashboard();
+            });
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(config.title));
+            container.appendChild(label);
+        });
+
+        // Raw Materials header
+        const rawHeader = document.createElement('h3');
+        rawHeader.textContent = "Raw Materials & Feedstocks";
+        rawHeader.style.cssText = "width: 100%; color: var(--accent-blue); font-size: 14px; margin-top: 20px; margin-bottom: 8px; font-family: var(--font-body);";
+        container.appendChild(rawHeader);
+
+        // Raw Materials Checkboxes
+        Object.keys(RAW_MATERIALS_CONFIGS).forEach(productKey => {
+            const config = RAW_MATERIALS_CONFIGS[productKey];
+            const isChecked = compareSelectedProducts.includes(productKey);
+
+            const label = document.createElement('label');
+            label.className = `check-tag ${isChecked ? 'active' : ''} accent`;
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = isChecked;
+            checkbox.value = productKey;
+            
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    compareSelectedProducts.push(productKey);
+                    label.classList.add('active');
+                } else {
+                    compareSelectedProducts = compareSelectedProducts.filter(p => p !== productKey);
+                    label.classList.remove('active');
+                }
+                initializeChart();
+                updateCompareArbitrageDashboard();
+            });
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(config.title));
+            container.appendChild(label);
+        });
+    }
+
+    function updateCompareArbitrageDashboard() {
+        const container = document.getElementById('compare-arbitrage-list');
+        if (!container) return;
+        container.innerHTML = "";
+
+        if (rawPricesData.length === 0 || compareSelectedProducts.length === 0) {
+            container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 15px;">No products selected or no data available.</div>`;
+            return;
+        }
+
+        const latestRow = rawPricesData[rawPricesData.length - 1];
+
+        compareSelectedProducts.forEach(productKey => {
+            let config = TARGET_CONFIGS[productKey];
+            let baseProd = "";
+            if (config) {
+                baseProd = config.precursors.butyl;
+            } else {
+                config = RAW_MATERIALS_CONFIGS[productKey];
+                if (config) baseProd = config.base;
+            }
+            if (!config) return;
+
+            const chinaCol = resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic') || resolveTargetColumn(baseProd, '华东');
+            const europeCol = resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE') || resolveTargetColumn(baseProd, 'Europe');
+
+            const chinaVal = latestRow[chinaCol];
+            const europeVal = latestRow[europeCol];
+
+            if (chinaVal === undefined || chinaVal === null || europeVal === undefined || europeVal === null) {
+                return;
+            }
+
+            const chinaConverted = convertValue(chinaVal, latestRow.Date);
+            const europeConverted = convertValue(europeVal, latestRow.Date);
+            const spread = europeConverted - chinaConverted;
+            const pctSpread = chinaConverted !== 0 ? (spread / chinaConverted) * 100 : 0;
+
+            const currencySymbol = getCurrencySymbol();
+            const formattedChina = `${currencySymbol}${Math.round(chinaConverted).toLocaleString()}/t`;
+            const formattedEurope = `${currencySymbol}${Math.round(europeConverted).toLocaleString()}/t`;
+            const formattedSpread = `${spread >= 0 ? '+' : ''}${currencySymbol}${Math.round(spread).toLocaleString()}/t`;
+
+            const isArbitrageOpen = spread > 0;
+            const statusText = isArbitrageOpen ? "Arbitrage Open" : "Closed";
+            const badgeBg = isArbitrageOpen ? "rgba(16, 185, 129, 0.15)" : "rgba(255, 255, 255, 0.05)";
+            const badgeColor = isArbitrageOpen ? "#10b981" : "#94a3b8";
+            const spreadColor = spread > 0 ? "#10b981" : (spread < 0 ? "#f43f5e" : "#94a3b8");
+
+            const item = document.createElement('div');
+            item.className = "arbitrage-item";
+            item.style.cssText = "background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px;";
+            item.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="color: var(--text-primary); font-size: 14px;">${config.title}</strong>
+                    <span class="status-badge" style="padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; background: ${badgeBg}; color: ${badgeColor};">${statusText}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; color: var(--text-secondary);">
+                    <div>China: <strong style="color: var(--text-primary);">${formattedChina}</strong></div>
+                    <div>Europe: <strong style="color: var(--text-primary);">${formattedEurope}</strong></div>
+                </div>
+                <div style="font-size: 12px; border-top: 1px dashed rgba(255, 255, 255, 0.05); padding-top: 6px; display: flex; justify-content: space-between;">
+                    <span>Spread (EU - CN):</span>
+                    <strong style="color: ${spreadColor}; font-weight: 600;">${formattedSpread} (${pctSpread.toFixed(1)}%)</strong>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+
+        if (container.children.length === 0) {
+            container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 15px;">No pricing data to compare for the selected items.</div>`;
+        }
     }
 
     function calculateMargin(row, product, region) {
@@ -1974,7 +2173,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             yaxis: {
                 title: {
-                    text: (isSeasonal && seasonalMetricMode === 'margin') ? `Theoretical Margin (${getCurrencySymbol()}/Ton)` : `Market Price (${getCurrencySymbol()}/Ton)`,
+                    text: (currentChartView === 'compare') ? `Market Price (${getCurrencySymbol()}/Ton)` : ((isSeasonal && seasonalMetricMode === 'margin') ? `Theoretical Margin (${getCurrencySymbol()}/Ton)` : `Market Price (${getCurrencySymbol()}/Ton)`),
                     style: {
                         color: '#94a3b8',
                         fontSize: '12px',
@@ -2015,6 +2214,75 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getChartSeries() {
+        if (currentChartView === 'compare') {
+            let slicedData = rawPricesData;
+            if (timeRangeDays !== "all") {
+                slicedData = rawPricesData.slice(-parseInt(timeRangeDays));
+            }
+
+            const series = [];
+
+            const prodColors = [
+                { eu: '#10b981', es: '#34d399' }, // Emerald / Mint
+                { eu: '#6366f1', es: '#818cf8' }, // Indigo / Light Indigo
+                { eu: '#f59e0b', es: '#fbbf24' }, // Amber / Yellow
+                { eu: '#f43f5e', es: '#fb7185' }, // Rose / Pink
+                { eu: '#a855f7', es: '#c084fc' }, // Purple / Light Purple
+                { eu: '#06b6d4', es: '#22d3ee' }, // Cyan / Light Cyan
+                { eu: '#ec4899', es: '#f472b6' }, // Pink / Light Pink
+                { eu: '#e17055', es: '#ff7675' }  // Terracotta / Salmon
+            ];
+
+            compareSelectedProducts.forEach((productKey, idx) => {
+                let config = TARGET_CONFIGS[productKey];
+                let baseProd = "";
+                if (config) {
+                    baseProd = config.precursors.butyl;
+                } else {
+                    config = RAW_MATERIALS_CONFIGS[productKey];
+                    if (config) baseProd = config.base;
+                }
+                if (!config) return;
+
+                const chinaCol = resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic') || resolveTargetColumn(baseProd, '华东');
+                const europeCol = resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE') || resolveTargetColumn(baseProd, 'Europe');
+
+                const colors = prodColors[idx % prodColors.length];
+
+                if (europeCol && priceHeaders.includes(europeCol)) {
+                    series.push({
+                        name: `${config.title} (Europe)`,
+                        color: colors.eu,
+                        type: 'line',
+                        data: slicedData.map(row => {
+                            const val = row[europeCol];
+                            return {
+                                x: new Date(row.Date).getTime(),
+                                y: val !== undefined && val !== null ? convertValue(val, row.Date) : null
+                            };
+                        }).filter(d => d.y !== null)
+                    });
+                }
+
+                if (chinaCol && priceHeaders.includes(chinaCol)) {
+                    series.push({
+                        name: `${config.title} (China)`,
+                        color: colors.es,
+                        type: 'line',
+                        data: slicedData.map(row => {
+                            const chinaVal = row[chinaCol];
+                            return {
+                                x: new Date(row.Date).getTime(),
+                                y: chinaVal !== undefined && chinaVal !== null ? convertValue(chinaVal, row.Date) : null
+                            };
+                        }).filter(d => d.y !== null)
+                    });
+                }
+            });
+
+            return series;
+        }
+
         if (currentChartView === 'seasonal') {
             const config = TARGET_CONFIGS[currentProduct];
             if (!config) return [];
@@ -2447,6 +2715,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const container = document.getElementById('chemical-tree-container');
         if (!container) return;
         container.innerHTML = "";
+
+        const card = document.getElementById('chemical-chain-card');
+        if (currentChartView === 'compare') {
+            if (card) card.style.display = 'none';
+            return;
+        } else {
+            if (card) card.style.display = 'block';
+        }
 
         const config = TARGET_CONFIGS[currentProduct];
         if (!config) return;
@@ -2978,7 +3254,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // View toggle buttons (Trend / Seasonal)
+    // View toggle buttons (Trend / Seasonal / Compare)
     document.querySelectorAll('.btn-view-toggle').forEach(button => {
         button.addEventListener('click', (e) => {
             const btn = e.currentTarget;
@@ -2990,18 +3266,40 @@ document.addEventListener("DOMContentLoaded", () => {
             const timeRangeEl = document.getElementById('time-range-controls');
             const selectorContainerEl = document.querySelector('.series-selector-container');
             const metricToggleEl = document.getElementById('seasonal-metric-toggle');
+            const compareProductsEl = document.getElementById('compare-products-selector-container');
+            const mainTargetSelectEl = document.querySelector('.target-select-wrapper');
+            const sidebarContainerEl = document.querySelector('.sidebar-container');
+            const mainWorkspaceEl = document.querySelector('.main-workspace');
             
-            if (currentChartView === 'seasonal') {
+            if (currentChartView === 'compare') {
+                if (timeRangeEl) timeRangeEl.style.display = 'flex';
+                if (selectorContainerEl) selectorContainerEl.style.display = 'none';
+                if (metricToggleEl) metricToggleEl.style.display = 'none';
+                if (compareProductsEl) compareProductsEl.style.display = 'block';
+                if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'none';
+                if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
+                if (mainWorkspaceEl) mainWorkspaceEl.classList.remove('full-width');
+            } else if (currentChartView === 'seasonal') {
                 if (timeRangeEl) timeRangeEl.style.display = 'none';
                 if (selectorContainerEl) selectorContainerEl.style.display = 'none';
                 if (metricToggleEl) metricToggleEl.style.display = 'flex';
+                if (compareProductsEl) compareProductsEl.style.display = 'none';
+                if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'flex';
+                if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
+                if (mainWorkspaceEl) mainWorkspaceEl.classList.remove('full-width');
             } else {
                 if (timeRangeEl) timeRangeEl.style.display = 'flex';
                 if (selectorContainerEl) selectorContainerEl.style.display = 'block';
                 if (metricToggleEl) metricToggleEl.style.display = 'none';
+                if (compareProductsEl) compareProductsEl.style.display = 'none';
+                if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'flex';
+                if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
+                if (mainWorkspaceEl) mainWorkspaceEl.classList.remove('full-width');
             }
             
             initializeChart();
+            updateSidebarTabs();
+            updateChemicalTree();
         });
     });
 
@@ -3027,6 +3325,8 @@ document.addEventListener("DOMContentLoaded", () => {
             renderTable();
         });
     }
+
+    
 
     // Pagination Click
     document.getElementById('btn-prev').addEventListener('click', () => {
@@ -3394,6 +3694,35 @@ document.addEventListener("DOMContentLoaded", () => {
             'procurement': ['budget-calculator-card', 'seasonal-planner-card'],
             'feedstocks': ['whatif-simulator-card', 'lead-lag-card']
         };
+
+        if (currentChartView === 'compare') {
+            Object.values(tabGroups).flat().forEach(cardId => {
+                const cardEl = document.getElementById(cardId);
+                if (cardEl) cardEl.style.display = 'none';
+            });
+            if (emptyMsgEl) {
+                emptyMsgEl.style.display = 'none';
+            }
+            const arbitrageCard = document.getElementById('compare-arbitrage-card');
+            if (arbitrageCard) {
+                arbitrageCard.style.display = 'block';
+            }
+            const sidebarTabsEl = document.querySelector('.sidebar-tabs');
+            if (sidebarTabsEl) sidebarTabsEl.style.display = 'none';
+            
+            updateCompareArbitrageDashboard();
+            return;
+        } else {
+            const arbitrageCard = document.getElementById('compare-arbitrage-card');
+            if (arbitrageCard) arbitrageCard.style.display = 'none';
+            
+            const sidebarTabsEl = document.querySelector('.sidebar-tabs');
+            if (sidebarTabsEl) sidebarTabsEl.style.display = 'flex';
+            
+            if (emptyMsgEl) {
+                emptyMsgEl.innerHTML = '<i class="fa-solid fa-circle-info"></i><p>No additional analysis available for the selected product under this tab.</p>';
+            }
+        }
 
         // Deactivate all tab buttons first, activate the active one
         tabButtons.forEach(btn => {
