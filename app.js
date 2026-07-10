@@ -342,8 +342,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 'n-Propanol',
                 'Acetic_Acid',
                 'Methanol',
-                'Propylene',
-                'Gas_Europe_TTF'
+                'Propylene'
             ]
         },
         'Isopropyl_Acetate_Proxy': {
@@ -367,8 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Isopropanol',
                 'Acetic_Acid',
                 'Methanol',
-                'Propylene',
-                'Gas_Europe_TTF'
+                'Propylene'
             ]
         },
         'Acrylic_Acid': {
@@ -2468,14 +2466,14 @@ document.addEventListener("DOMContentLoaded", () => {
             'n_Propyl_Acetate': {
                 upstreamA: 'Propylene',
                 feedstockA: 'n-Propanol',
-                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
+                upstreamB: 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'n_Propyl_Acetate'
             },
             'Isopropyl_Acetate_Proxy': {
                 upstreamA: 'Propylene',
                 feedstockA: 'Isopropanol',
-                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
+                upstreamB: 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'Isopropyl_Acetate_Proxy'
             },
