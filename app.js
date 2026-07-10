@@ -2651,10 +2651,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 target: 'Xylene'
             },
             'PG': {
-                upstreamA: 'Vegetable_Oil',
-                feedstockA: 'Glycerol',
-                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Hydrogen',
-                feedstockB: 'Hydrogen',
+                upstreamA: 'Propylene',
+                feedstockA: 'Propylene_Oxide',
+                upstreamB: '',
+                feedstockB: '',
                 target: 'PG'
             }
         };
