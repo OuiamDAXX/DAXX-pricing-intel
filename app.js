@@ -318,8 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Ethanol',
                 'Acetic_Acid',
                 'Methanol',
-                'Ethylene',
-                'Gas_Europe_TTF'
+                'Ethylene'
             ]
         },
         'n_Propyl_Acetate': {
@@ -2462,7 +2461,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'Ethyl_Acetate': {
                 upstreamA: 'Ethylene',
                 feedstockA: 'Ethanol',
-                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
+                upstreamB: 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'Ethyl_Acetate'
             },
