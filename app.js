@@ -1350,151 +1350,174 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Check if a header is related to the active product
+    // Helper to check if a header matches a product name exactly (avoiding substring collisions)
+    function headerMatches(header, key) {
+        if (!header) return false;
+        if (key === 'Propylene') {
+            return header.includes('Propylene') && !header.includes('Propylene_Oxide') && !header.includes('Propylene_Glycol') && !header.includes('PG');
+        }
+        if (key === 'Ethylene') {
+            return header.includes('Ethylene') && !header.includes('Ethylene_Glycol') && !header.includes('Ethylene_Oxide') && !header.includes('EO_') && !header.includes('MEG') && !header.includes('DEG');
+        }
+        if (key === 'Xylene') {
+            return header.includes('Xylene') && !header.includes('o_Xylene') && !header.includes('m_Xylene');
+        }
+        if (key === 'Benzene') {
+            return header.includes('Benzene') && !header.includes('Ethylbenzene');
+        }
+        return header.includes(key);
+    }
+
+    // Check if a header is related to the active product
     function isColumnRelated(header, product) {
-        if (header && header.includes('Gas_Europe_TTF')) return true;
+        if (!header) return false;
         if (product === 'Butyl_Acetate') {
-            return header.includes('Butyl_Acetate') || 
-                   header.includes('n-Butanol') || 
-                   header.includes('Acetic_Acid') || 
-                   header.includes('Methanol') || 
-                   header.includes('Propylene');
+            return headerMatches(header, 'Butyl_Acetate') || 
+                   headerMatches(header, 'n-Butanol') || 
+                   headerMatches(header, 'Acetic_Acid') || 
+                   headerMatches(header, 'Methanol') || 
+                   headerMatches(header, 'Propylene');
         } else if (product === 'Ethyl_Acetate') {
-            return header.includes('Ethyl_Acetate') || 
-                   header.includes('Ethanol') || 
-                   header.includes('Acetic_Acid') || 
-                   header.includes('Ethylene') || 
-                   header.includes('Methanol');
+            return headerMatches(header, 'Ethyl_Acetate') || 
+                   headerMatches(header, 'Ethanol') || 
+                   headerMatches(header, 'Acetic_Acid') || 
+                   headerMatches(header, 'Ethylene') || 
+                   headerMatches(header, 'Methanol');
         } else if (product === 'n_Propyl_Acetate' || product === 'Isopropyl_Acetate_Proxy') {
-            return header.includes('n_Propyl_Acetate') || 
-                   header.includes('n-Propanol') || 
-                   header.includes('Isopropanol') || 
-                   header.includes('Acetic_Acid') || 
-                   header.includes('Propylene') || 
-                   header.includes('Methanol');
+            return headerMatches(header, 'n_Propyl_Acetate') || 
+                   headerMatches(header, 'n-Propanol') || 
+                   headerMatches(header, 'Isopropanol') || 
+                   headerMatches(header, 'Acetic_Acid') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Methanol');
         } else if (product === 'Acrylic_Acid') {
-            return header.includes('Acrylic_Acid') || 
-                   header.includes('Propylene') || 
-                   header.includes('Naphtha') || 
-                   header.includes('Methanol');
+            return headerMatches(header, 'Acrylic_Acid') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Naphtha') || 
+                   headerMatches(header, 'Methanol');
         } else if (product === 'Phthalic_Anhydride') {
-            return header.includes('Phthalic_Anhydride') || 
-                   header.includes('o_Xylene') || 
-                   header.includes('Reformed_Naphtha') || 
-                   header.includes('Methanol');
+            return headerMatches(header, 'Phthalic_Anhydride') || 
+                   headerMatches(header, 'o_Xylene') || 
+                   headerMatches(header, 'Reformed_Naphtha') || 
+                   headerMatches(header, 'Methanol');
         } else if (product === 'Maleic_Anhydride') {
-            return header.includes('Maleic_Anhydride') || 
-                   header.includes('n-Butanol');
+            return headerMatches(header, 'Maleic_Anhydride') || 
+                   headerMatches(header, 'n-Butanol');
         } else if (product === 'MMA') {
-            return header.includes('MMA') || 
-                   header.includes('Acetone') || 
-                   header.includes('Propylene') || 
-                   header.includes('Methanol');
+            return headerMatches(header, 'MMA') || 
+                   headerMatches(header, 'Acetone') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Methanol') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'Butyl_Acrylate') {
-            return header.includes('Butyl_Acrylate') || 
-                   header.includes('Acrylic_Acid') || 
-                   header.includes('n-Butanol') || 
-                   header.includes('Propylene') || 
-                   header.includes('Methanol');
+            return headerMatches(header, 'Butyl_Acrylate') || 
+                   headerMatches(header, 'Acrylic_Acid') || 
+                   headerMatches(header, 'n-Butanol') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Methanol');
         } else if (product === 'VAM') {
-            return header.includes('VAM') || 
-                   header.includes('Ethylene') || 
-                   header.includes('Acetic_Acid') || 
-                   header.includes('Naphtha') || 
-                   header.includes('Ethanol') || 
-                   header.includes('Methanol');
+            return headerMatches(header, 'VAM') || 
+                   headerMatches(header, 'Ethylene') || 
+                   headerMatches(header, 'Acetic_Acid') || 
+                   headerMatches(header, 'Naphtha') || 
+                   headerMatches(header, 'Ethanol') || 
+                   headerMatches(header, 'Methanol');
         } else if (product === '2_EHA') {
-            return header.includes('2_EHA') || 
-                   header.includes('Acrylic_Acid') || 
-                   header.includes('Octanol') || 
-                   header.includes('Propylene') || 
-                   header.includes('Methanol');
+            return headerMatches(header, '2_EHA') || 
+                   headerMatches(header, 'Acrylic_Acid') || 
+                   headerMatches(header, 'Octanol') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Methanol');
         } else if (product === 'Ethyl_Acrylate') {
-            return header.includes('Ethyl_Acrylate') || 
-                   header.includes('Acrylic_Acid') || 
-                   header.includes('Ethanol') || 
-                   header.includes('Propylene') || 
-                   header.includes('Ethylene');
+            return headerMatches(header, 'Ethyl_Acrylate') || 
+                   headerMatches(header, 'Acrylic_Acid') || 
+                   headerMatches(header, 'Ethanol') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Ethylene');
         } else if (product === 'Acetone_V1') {
-            return header.includes('Acetone') || 
-                   header.includes('Isopropanol') || 
-                   header.includes('Propylene');
+            return headerMatches(header, 'Acetone') || 
+                   headerMatches(header, 'Isopropanol') || 
+                   headerMatches(header, 'Propylene');
         } else if (product === 'Acetone_V2') {
-            return header.includes('Acetone') || 
-                   header.includes('Benzene') || 
-                   header.includes('Propylene') || 
-                   header.includes('Reformed_Naphtha') || 
-                   header.includes('Naphtha');
+            return headerMatches(header, 'Acetone') || 
+                   headerMatches(header, 'Benzene') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Reformed_Naphtha') || 
+                   headerMatches(header, 'Naphtha');
         } else if (product === 'Dibasic_Ester') {
-            return header.includes('Dibasic_Ester') || 
-                   header.includes('Dicarboxylic_Acid') || 
-                   header.includes('Methanol') || 
-                   header.includes('Cyclohexane');
+            return headerMatches(header, 'Dibasic_Ester') || 
+                   headerMatches(header, 'Dicarboxylic_Acid') || 
+                   headerMatches(header, 'Methanol') || 
+                   headerMatches(header, 'Cyclohexane') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'Isopropanol') {
-            return header.includes('Isopropanol') || 
-                   header.includes('Propylene') || 
-                   header.includes('Naphtha');
+            return headerMatches(header, 'Isopropanol') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Naphtha');
         } else if (product === 'PMA') {
-            return header.includes('PMA') || 
-                   header.includes('Propylene_Oxide') || 
-                   header.includes('Acetic_Acid') || 
-                   header.includes('Methanol');
+            return headerMatches(header, 'PMA') || 
+                   headerMatches(header, 'Propylene_Oxide') || 
+                   headerMatches(header, 'Acetic_Acid') || 
+                   headerMatches(header, 'Methanol');
         } else if (product === 'PM') {
-            return header.includes('PM') || 
-                   header.includes('Propylene_Oxide') || 
-                   header.includes('Methanol') || 
-                   header.includes('Propylene');
+            return headerMatches(header, 'PM') || 
+                   headerMatches(header, 'Propylene_Oxide') || 
+                   headerMatches(header, 'Methanol') || 
+                   headerMatches(header, 'Propylene') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'Isophthalic_Acid') {
-            return header.includes('Isophthalic_Acid') || 
-                   header.includes('m_Xylene') || 
-                   header.includes('Reformed_Naphtha');
+            return headerMatches(header, 'Isophthalic_Acid') || 
+                   headerMatches(header, 'm_Xylene') || 
+                   headerMatches(header, 'Reformed_Naphtha');
         } else if (product === 'PTA') {
-            return header.includes('PTA') || 
-                   header.includes('Xylene_Domestic') || 
-                   header.includes('Reformed_Naphtha');
+            return headerMatches(header, 'PTA') || 
+                   headerMatches(header, 'Xylene') || 
+                   headerMatches(header, 'Reformed_Naphtha');
         } else if (product === 'n_Butanol') {
-            return header.includes('n-Butanol') || 
-                   header.includes('Propylene') || 
-                   header.includes('Naphtha');
+            return headerMatches(header, 'n-Butanol') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Naphtha');
         } else if (product === 'Isobutanol') {
-            return header.includes('Isobutanol') || 
-                   header.includes('Propylene') || 
-                   header.includes('Naphtha');
+            return headerMatches(header, 'Isobutanol') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Naphtha');
         } else if (product === 'MEK') {
-            return header.includes('MEK') || 
-                   header.includes('2_Butene') || 
-                   header.includes('Naphtha') || 
-                   header.includes('n_Butane');
+            return headerMatches(header, 'MEK') || 
+                   headerMatches(header, '2_Butene') || 
+                   headerMatches(header, 'Naphtha') || 
+                   headerMatches(header, 'n_Butane');
         } else if (product === 'MEK_V2') {
-            return header.includes('MEK') || 
-                   header.includes('2_Butanol') || 
-                   header.includes('1_Butene_2_Butene');
+            return headerMatches(header, 'MEK') || 
+                   headerMatches(header, '2_Butanol') || 
+                   headerMatches(header, '1_Butene_2_Butene');
         } else if (product === 'Styrene') {
-            return header.includes('Styrene') || 
-                   header.includes('Ethylbenzene') || 
-                   header.includes('Propylene') || 
-                   header.includes('Reformed_Naphtha') || 
-                   header.includes('Naphtha');
+            return headerMatches(header, 'Styrene') || 
+                   headerMatches(header, 'Ethylbenzene') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Reformed_Naphtha') || 
+                   headerMatches(header, 'Naphtha');
         } else if (product === 'Toluene') {
-            return header.includes('Toluene') || 
-                   header.includes('Benzene') || 
-                   header.includes('Methanol');
+            return headerMatches(header, 'Toluene') || 
+                   headerMatches(header, 'Benzene') || 
+                   headerMatches(header, 'Methanol') ||
+                   headerMatches(header, 'Gas');
         } else if (product === 'MEG' || product === 'DEG') {
-            return header.includes('MEG') || 
-                   header.includes('DEG') || 
-                   header.includes('EO_Domestic') || 
-                   header.includes('Ethylene') || 
-                   header.includes('Naphtha');
+            return headerMatches(header, 'MEG') || 
+                   headerMatches(header, 'DEG') || 
+                   headerMatches(header, 'EO_Domestic') || 
+                   headerMatches(header, 'Ethylene') || 
+                   headerMatches(header, 'Naphtha');
         } else if (product === 'PG') {
-            return header.includes('PG_Domestic') || 
-                   header.includes('Propylene_Oxide') || 
-                   header.includes('Propylene') || 
-                   header.includes('Naphtha');
+            return headerMatches(header, 'PG_Domestic') || 
+                   headerMatches(header, 'Propylene_Oxide') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Naphtha');
         } else if (product === 'Xylene') {
-            return header.includes('Xylene_Domestic') || 
-                   header.includes('Naphtha') || 
-                   header.includes('Brent');
+            return headerMatches(header, 'Xylene_Domestic') || 
+                   headerMatches(header, 'Naphtha') || 
+                   headerMatches(header, 'Brent');
         } else if (product === 'Brent') {
-            return header.includes('Brent');
+            return headerMatches(header, 'Brent');
         }
         return false;
     }
