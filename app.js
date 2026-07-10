@@ -2651,10 +2651,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 target: 'Xylene'
             },
             'PG': {
-                upstreamA: 'Naphtha',
-                feedstockA: 'Propylene',
-                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Propylene_Oxide',
-                feedstockB: 'Propylene_Oxide',
+                upstreamA: 'Vegetable_Oil',
+                feedstockA: 'Glycerol',
+                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Hydrogen',
+                feedstockB: 'Hydrogen',
                 target: 'PG'
             }
         };
@@ -2677,6 +2677,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (key.includes('EO')) return 'Ethylene Oxide (EO)';
             if (key === 'H2O') return 'Water (H2O)';
             if (key === 'H2O_Purified') return 'Purified Water';
+            if (key === 'Vegetable_Oil') return 'Vegetable Oil / Tallow';
+            if (key === 'Glycerol') return 'Glycerol';
+            if (key === 'Hydrogen') return 'Hydrogen (H2)';
             const cleaned = key.replace(/_Domestic/i, '').replace(/_Proxy/i, '').replace(/_/g, ' ').replace(/-/g, ' ');
             return translateTextRegions(cleaned);
         };
