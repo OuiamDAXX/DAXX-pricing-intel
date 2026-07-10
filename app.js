@@ -496,8 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Ethylene',
                 'Acetic_Acid',
                 'Methanol',
-                'Naphtha',
-                'Gas_Europe_TTF'
+                'Naphtha'
             ]
         },
         '2_EHA': {
@@ -2515,7 +2514,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'VAM': {
                 upstreamA: 'Naphtha',
                 feedstockA: 'Ethylene',
-                upstreamB: (getMainRegionForSubRegion(currentRegion) === 'Europe') ? 'Gas_Europe_TTF' : 'Methanol',
+                upstreamB: 'Methanol',
                 feedstockB: 'Acetic_Acid',
                 target: 'VAM'
             },
