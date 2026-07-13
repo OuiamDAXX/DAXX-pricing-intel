@@ -84,8 +84,8 @@ TARGET_CONFIGS = {
         'coefficients': {'butanol': 1.05}
     },
     'Acetone_V2': {
-        'precursors': {'butanol': 'Benzene', 'acetic': 'Propylene'},
-        'coefficients': {'butanol': 1.40, 'acetic': 0.75}
+        'precursors': {'butanol': 'Benzene', 'acetic': 'Propylene', 'gas': 'Phenol'},
+        'coefficients': {'butanol': 1.40, 'acetic': 0.75, 'gas': -1.613}
     },
     'Dibasic_Ester': {
         'precursors': {'butanol': 'Dicarboxylic_Acid', 'acetic': 'Methanol'},
@@ -108,8 +108,8 @@ TARGET_CONFIGS = {
         'coefficients': {'butanol': 0.70}
     },
     'PTA': {
-        'precursors': {},
-        'coefficients': {}
+        'precursors': {'butanol': 'Xylene'},
+        'coefficients': {'butanol': 0.67}
     },
     'n_Butanol': {
         'precursors': {'butanol': 'Propylene'},
@@ -128,8 +128,8 @@ TARGET_CONFIGS = {
         'coefficients': {'butanol': 1.05}
     },
     'Styrene': {
-        'precursors': {'benzene': 'Benzene', 'ethylene': 'Ethylene'},
-        'coefficients': {'benzene': 0.80, 'ethylene': 0.30}
+        'precursors': {'butanol': 'Ethylbenzene', 'acetic': 'Propylene'},
+        'coefficients': {'butanol': 1.05, 'acetic': 0.30}
     },
     'Toluene': {
         'precursors': {'benzene': 'Benzene', 'methanol': 'Methanol'},
@@ -185,13 +185,15 @@ FEEDSTOCK_BENCHMARKS = {
     'PX': 'PX_Domestic_扬子石化',
     'Ethylbenzene': 'Ethylbenzene_Domestic_吉林石化',
     'Acrylic_Acid': 'Acrylic_Acid_Domestic_华东',
-    'Toluene': 'Toluene_Domestic_山东'
+    'Toluene': 'Toluene_Domestic_山东',
+    'Phenol': 'Phenol_Domestic_华东'
 }
 
 # Helper to find matching column in dataframe
 def find_column_for_region(df, product_base, region, target_col=None, lead_lag_df=None, is_feedstock=False):
-    # Normalize product_base (hyphens to underscores)
+    # Normalize product_base (hyphens to underscores and vice versa)
     clean_base = product_base.replace('-', '_')
+    hyphen_base = product_base.replace('_', '-')
     
     # Determine if this is an international/European region
     is_intl = any(x in str(region) for x in ["Europe", "Global", "Rotterdam", "NWE", "ARA"])
@@ -203,27 +205,27 @@ def find_column_for_region(df, product_base, region, target_col=None, lead_lag_d
             return col
 
     # 1. Exact match with region (e.g. starts with product_base + '_')
-    exact_match = [col for col in df.columns if (col.startswith(product_base + '_') or col.startswith(clean_base + '_')) and region in col]
+    exact_match = [col for col in df.columns if (col.startswith(clean_base + '_') or col.startswith(hyphen_base + '_')) and region in col]
     if exact_match:
         return exact_match[0]
     
     # Partial match containing both product_base and region
-    partial_match = [col for col in df.columns if (product_base in col or clean_base in col) and region in col]
+    partial_match = [col for col in df.columns if (clean_base in col or hyphen_base in col) and region in col]
     if partial_match:
         return partial_match[0]
         
     # 1.5 Fallback to Europe precursor columns if in Europe/Global region
     if is_intl:
-        eu_match = [col for col in df.columns if col.startswith(product_base + '_Europe_') or col.startswith(clean_base + '_Europe_') or (product_base in col and '_Europe_' in col) or (clean_base in col and '_Europe_' in col)]
+        eu_match = [col for col in df.columns if col.startswith(clean_base + '_Europe_') or col.startswith(hyphen_base + '_Europe_') or (clean_base in col and '_Europe_' in col) or (hyphen_base in col and '_Europe_' in col)]
         if eu_match:
             return eu_match[0]
-        global_match = [col for col in df.columns if col.startswith(product_base + '_Global_') or col.startswith(clean_base + '_Global_') or (product_base in col and '_Global_' in col) or (clean_base in col and '_Global_' in col)]
+        global_match = [col for col in df.columns if col.startswith(clean_base + '_Global_') or col.startswith(hyphen_base + '_Global_') or (clean_base in col and '_Global_' in col) or (hyphen_base in col and '_Global_' in col)]
         if global_match:
             return global_match[0]
 
     # 2. Dynamic Fallback: Lead-Lag correlation (highest absolute correlation for this target)
     if target_col and lead_lag_df is not None and not lead_lag_df.empty:
-        mask = (lead_lag_df['Target'] == target_col) & lead_lag_df['Feature'].str.contains(product_base, na=False)
+        mask = (lead_lag_df['Target'] == target_col) & (lead_lag_df['Feature'].str.contains(clean_base, na=False) | lead_lag_df['Feature'].str.contains(hyphen_base, na=False))
         target_rows = lead_lag_df[mask].copy()
         if not target_rows.empty:
             target_rows['abs_corr'] = target_rows['Max_Correlation'].abs()
@@ -233,12 +235,12 @@ def find_column_for_region(df, product_base, region, target_col=None, lead_lag_d
                 return best_feature
 
     # 3. Fallback: exact product_base but any region
-    fallback_exact = [col for col in df.columns if col.startswith(product_base + '_')]
+    fallback_exact = [col for col in df.columns if col.startswith(clean_base + '_') or col.startswith(hyphen_base + '_')]
     if fallback_exact:
         return fallback_exact[0]
         
     # 4. Fallback: any partial match
-    fallback_partial = [col for col in df.columns if product_base in col]
+    fallback_partial = [col for col in df.columns if clean_base in col or hyphen_base in col]
     if fallback_partial:
         return fallback_partial[0]
         
@@ -282,7 +284,7 @@ for prod_key, conf in TARGET_CONFIGS.items():
     backtest_results[prod_key] = {}
     
     # Identify target columns
-    possible_cols = [c for c in df.columns if c.startswith(prod_key + '_')]
+    possible_cols = [c for c in df.columns if c.startswith(prod_key + '_') or c.startswith(prod_key.replace('_', '-') + '_')]
     regions = []
     for c in possible_cols:
         parts = c.split('_')

@@ -414,20 +414,17 @@ document.addEventListener("DOMContentLoaded", () => {
             precursors: {
                 butyl: 'Phthalic_Anhydride',
                 butanol: 'o_Xylene',
-                acetic: 'Reformed_Naphtha',
-                methanol: 'Methanol'
+                acetic: 'Reformed_Naphtha'
             },
             labels: {
                 butyl: "Phthalic Anhydride (Target)",
                 butanol: "o-Xylene (Feedstock)",
-                acetic: "Reformed Naphtha (Feedstock)",
-                methanol: "Methanol (Upstream)"
+                acetic: "Reformed Naphtha (Feedstock)"
             },
             defaultChecked: [
                 'Phthalic_Anhydride',
                 'o_Xylene',
-                'Reformed_Naphtha',
-                'Methanol'
+                'Reformed_Naphtha'
             ]
         },
         'Maleic_Anhydride': {
@@ -522,7 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         '2_EHA': {
-            title: "2-Ethylhexyl Acrylate",
+            title: "2-Ethylhexyl Acrylate (2-EHA)",
             precursors: {
                 butyl: '2_EHA',
                 butanol: 'Acrylic_Acid',
@@ -590,20 +587,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 butyl: 'Acetone',
                 butanol: 'Benzene',
                 acetic: 'Propylene',
-                methanol: 'Naphtha'
+                methanol: 'Naphtha',
+                gas: 'Phenol'
             },
             labels: {
                 butyl: "Acetone (Target)",
                 butanol: "Benzene (Feedstock)",
                 acetic: "Propylene (Feedstock)",
-                methanol: "Naphtha (Upstream)"
+                methanol: "Naphtha (Upstream)",
+                gas: "Phenol (Co-product)"
             },
             defaultChecked: [
                 'Acetone',
                 'Benzene',
                 'Propylene',
                 'Naphtha',
-                'Reformed_Naphtha'
+                'Phenol'
             ]
         },
         'Dibasic_Ester': {
@@ -825,18 +824,18 @@ document.addEventListener("DOMContentLoaded", () => {
             title: "Styrene",
             precursors: {
                 butyl: 'Styrene',
-                benzene: 'Benzene',
-                ethylene: 'Ethylene'
+                butanol: 'Ethylbenzene',
+                acetic: 'Propylene'
             },
             labels: {
                 butyl: "Styrene (Target)",
-                benzene: "Benzene (Feedstock)",
-                ethylene: "Ethylene (Feedstock)"
+                butanol: "Ethylbenzene (Feedstock)",
+                acetic: "Propylene (Feedstock)"
             },
             defaultChecked: [
                 'Styrene',
-                'Benzene',
-                'Ethylene'
+                'Ethylbenzene',
+                'Propylene'
             ]
         },
         'Toluene': {
@@ -1136,7 +1135,8 @@ document.addEventListener("DOMContentLoaded", () => {
         'Toluene': 'Toluene_Domestic_山东',
         'EO': 'EO_Domestic_华东',
         'Propylene_Oxide': 'Propylene_Oxide_Domestic_华东',
-        'Naphtha': 'Naphtha_Domestic_中国'
+        'Naphtha': 'Naphtha_Domestic_中国',
+        'Phenol': 'Phenol_Domestic_华东'
     };
 
     // Helper to resolve the correct column name with region fallback
@@ -1151,28 +1151,39 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 1. Find exact match for baseProd/cleanBase and region
-        const exact = priceHeaders.find(h => (h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_')) && h.includes(region));
+        const exact = priceHeaders.find(h => 
+            (h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_')) && 
+            h.includes(region) &&
+            (headerMatches(h, baseProd) || headerMatches(h, cleanBase))
+        );
         if (exact) return exact;
-        const partial = priceHeaders.find(h => (h.includes(baseProd) || h.includes(cleanBase)) && h.includes(region));
+        const partial = priceHeaders.find(h => 
+            (h.includes(baseProd) || h.includes(cleanBase)) && 
+            h.includes(region) &&
+            (headerMatches(h, baseProd) || headerMatches(h, cleanBase))
+        );
         if (partial) return partial;
 
         // 1.5 Fallback to Europe or Global precursor columns if in Europe/Global region
         if (mainReg === 'Europe') {
             const euFallback = priceHeaders.find(h => 
-                h.startsWith(baseProd + '_Europe_') || h.startsWith(cleanBase + '_Europe_') || 
-                (h.includes(baseProd) && h.includes('_Europe_')) || (h.includes(cleanBase) && h.includes('_Europe_'))
+                (h.startsWith(baseProd + '_Europe_') || h.startsWith(cleanBase + '_Europe_') || 
+                (h.includes(baseProd) && h.includes('_Europe_')) || (h.includes(cleanBase) && h.includes('_Europe_'))) &&
+                (headerMatches(h, baseProd) || headerMatches(h, cleanBase))
             );
             if (euFallback) return euFallback;
         }
         if (mainReg === 'Global') {
             const globalFallback = priceHeaders.find(h => 
-                h.startsWith(baseProd + '_Global_') || h.startsWith(cleanBase + '_Global_') ||
-                (h.includes(baseProd) && h.includes('_Global_')) || (h.includes(cleanBase) && h.includes('_Global_'))
+                (h.startsWith(baseProd + '_Global_') || h.startsWith(cleanBase + '_Global_') ||
+                (h.includes(baseProd) && h.includes('_Global_')) || (h.includes(cleanBase) && h.includes('_Global_'))) &&
+                (headerMatches(h, baseProd) || headerMatches(h, cleanBase))
             );
             if (globalFallback) return globalFallback;
             const euFallback = priceHeaders.find(h => 
-                h.startsWith(baseProd + '_Europe_') || h.startsWith(cleanBase + '_Europe_') || 
-                (h.includes(baseProd) && h.includes('_Europe_')) || (h.includes(cleanBase) && h.includes('_Europe_'))
+                (h.startsWith(baseProd + '_Europe_') || h.startsWith(cleanBase + '_Europe_') || 
+                (h.includes(baseProd) && h.includes('_Europe_')) || (h.includes(cleanBase) && h.includes('_Europe_'))) &&
+                (headerMatches(h, baseProd) || headerMatches(h, cleanBase))
             );
             if (euFallback) return euFallback;
         }
@@ -1185,11 +1196,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 (item.Feature.includes(baseProd) || item.Feature.includes(cleanBase))
             );
             if (targetRows.length > 0) {
-                // Sort by absolute correlation to pick the strongest reference market
-                targetRows.sort((a, b) => Math.abs(b.Max_Correlation) - Math.abs(a.Max_Correlation));
-                const bestFeature = targetRows[0].Feature;
-                // Verify it exists in priceHeaders
-                if (priceHeaders.includes(bestFeature)) return bestFeature;
+                let filteredRows = targetRows;
+                if (mainReg === 'Europe' || mainReg === 'Global') {
+                    filteredRows = targetRows.filter(item => {
+                        const hReg = getMainRegionForSubRegion(item.Feature);
+                        return hReg === 'Europe' || hReg === 'Global';
+                    });
+                }
+                if (filteredRows.length > 0) {
+                    // Sort by absolute correlation to pick the strongest reference market
+                    filteredRows.sort((a, b) => Math.abs(b.Max_Correlation) - Math.abs(a.Max_Correlation));
+                    const bestFeature = filteredRows[0].Feature;
+                    // Verify it exists in priceHeaders
+                    if (priceHeaders.includes(bestFeature)) return bestFeature;
+                }
             }
         }
 
@@ -1216,15 +1236,28 @@ document.addEventListener("DOMContentLoaded", () => {
         const fallbackReg = mainReg === 'Europe' ? 'DDP Northwest Europe' : (mainReg === 'Global' ? 'Global' : '华东');
 
         if (product === 'Isopropyl_Acetate_Proxy') {
-            return priceHeaders.find(h => h.includes('n_Propyl_Acetate') && h.includes(region)) || `n_Propyl_Acetate_${prefix}_${fallbackReg}`;
+            return priceHeaders.find(h => {
+                const cleanH = h.replace(/-/g, '_');
+                return cleanH.includes('n_Propyl_Acetate') && h.includes(region);
+            }) || `n_Propyl_Acetate_${prefix}_${fallbackReg}`;
         }
         if (product === 'Acetone_V1' || product === 'Acetone_V2') {
-            return priceHeaders.find(h => h.includes('Acetone') && h.includes(region)) || `Acetone_${prefix}_${fallbackReg}`;
+            return priceHeaders.find(h => {
+                const cleanH = h.replace(/-/g, '_');
+                return cleanH.includes('Acetone') && h.includes(region);
+            }) || `Acetone_${prefix}_${fallbackReg}`;
         }
         if (product === 'Xylene') {
-            return priceHeaders.find(h => h.includes('Xylene') && !h.includes('o_Xylene') && !h.includes('m_Xylene') && h.includes(region)) || `Xylene_${prefix}_${fallbackReg}`;
+            return priceHeaders.find(h => {
+                const cleanH = h.replace(/-/g, '_');
+                return cleanH.includes('Xylene') && !cleanH.includes('o_Xylene') && !cleanH.includes('m_Xylene') && h.includes(region);
+            }) || `Xylene_${prefix}_${fallbackReg}`;
         }
-        return priceHeaders.find(h => h.includes(product) && h.includes(region)) || `${product}_${prefix}_${region}`;
+        return priceHeaders.find(h => {
+            const cleanH = h.replace(/-/g, '_');
+            const cleanProd = product.replace(/-/g, '_');
+            return cleanH.includes(cleanProd) && h.includes(region);
+        }) || `${product}_${prefix}_${region}`;
     }
 
     // Extract regions available in CSV for a given product
@@ -1239,18 +1272,24 @@ document.addEventListener("DOMContentLoaded", () => {
             basePattern = 'Acetone';
         }
         
+        const cleanPattern = basePattern.replace(/-/g, '_');
+        
         const matchedCols = priceHeaders.filter(h => {
+            const cleanH = h.replace(/-/g, '_');
             if (product === 'Xylene') {
-                return (h.startsWith(basePattern + '_Domestic_') || h.startsWith(basePattern + '_Europe_') || h.startsWith(basePattern + '_Global_')) && !h.includes('o_Xylene') && !h.includes('m_Xylene');
+                return (cleanH.startsWith(cleanPattern + '_Domestic_') || cleanH.startsWith(cleanPattern + '_Europe_') || cleanH.startsWith(cleanPattern + '_Global_')) && !cleanH.includes('o_Xylene') && !cleanH.includes('m_Xylene');
             }
-            return h.startsWith(basePattern + '_Domestic_') || h.startsWith(basePattern + '_Europe_') || h.startsWith(basePattern + '_Global_');
+            return cleanH.startsWith(cleanPattern + '_Domestic_') || cleanH.startsWith(cleanPattern + '_Europe_') || cleanH.startsWith(cleanPattern + '_Global_');
         });
 
         const regions = [];
         matchedCols.forEach(col => {
+            const cleanCol = col.replace(/-/g, '_');
             let subRegion = col;
-            for (const prefix of [basePattern + '_Domestic_', basePattern + '_Europe_', basePattern + '_Global_']) {
-                if (col.startsWith(prefix)) {
+            const prefixes = [cleanPattern + '_Domestic_', cleanPattern + '_Europe_', cleanPattern + '_Global_'];
+            for (let i = 0; i < prefixes.length; i++) {
+                const prefix = prefixes[i];
+                if (cleanCol.startsWith(prefix)) {
                     subRegion = col.substring(prefix.length);
                     break;
                 }
@@ -1432,28 +1471,31 @@ document.addEventListener("DOMContentLoaded", () => {
     // Helper to check if a header matches a product name exactly (avoiding substring collisions)
     function headerMatches(header, key) {
         if (!header) return false;
-        if (key === 'Propylene') {
-            return header.includes('Propylene') && !header.includes('Propylene_Oxide') && !header.includes('Propylene_Glycol') && !header.includes('PG');
+        const cleanHeader = header.replace(/-/g, '_');
+        const cleanKey = key.replace(/-/g, '_');
+        
+        if (cleanKey === 'Propylene') {
+            return cleanHeader.includes('Propylene') && !cleanHeader.includes('Propylene_Oxide') && !cleanHeader.includes('Propylene_Glycol') && !cleanHeader.includes('PG');
         }
-        if (key === 'Ethylene') {
-            return header.includes('Ethylene') && !header.includes('Ethylene_Glycol') && !header.includes('Ethylene_Oxide') && !header.includes('EO_') && !header.includes('MEG') && !header.includes('DEG');
+        if (cleanKey === 'Ethylene') {
+            return cleanHeader.includes('Ethylene') && !cleanHeader.includes('Ethylene_Glycol') && !cleanHeader.includes('Ethylene_Oxide') && !cleanHeader.includes('EO_') && !cleanHeader.includes('MEG') && !cleanHeader.includes('DEG');
         }
-        if (key === 'Xylene') {
-            return header.includes('Xylene') && !header.includes('o_Xylene') && !header.includes('m_Xylene') && !header.includes('PX') && !header.includes('p_Xylene');
+        if (cleanKey === 'Xylene') {
+            return cleanHeader.includes('Xylene') && !cleanHeader.includes('o_Xylene') && !cleanHeader.includes('m_Xylene') && !cleanHeader.includes('PX') && !cleanHeader.includes('p_Xylene');
         }
-        if (key === 'Benzene') {
-            return header.includes('Benzene') && !header.includes('Ethylbenzene');
+        if (cleanKey === 'Benzene') {
+            return cleanHeader.includes('Benzene') && !cleanHeader.includes('Ethylbenzene');
         }
-        if (key === 'Naphtha') {
-            return header.includes('Naphtha') && !header.includes('Reformed_Naphtha') && !header.includes('Naphtha_Butane');
+        if (cleanKey === 'Naphtha') {
+            return cleanHeader.includes('Naphtha') && !cleanHeader.includes('Reformed_Naphtha') && !cleanHeader.includes('Naphtha_Butane');
         }
-        if (key === '2_Butene') {
-            return header.includes('2_Butene') && !header.includes('1_Butene_2_Butene');
+        if (cleanKey === '2_Butene') {
+            return cleanHeader.includes('2_Butene') && !cleanHeader.includes('1_Butene_2_Butene');
         }
-        if (key === 'Ethanol') {
-            return header.includes('Ethanol') && !header.includes('Methanol');
+        if (cleanKey === 'Ethanol') {
+            return cleanHeader.includes('Ethanol') && !cleanHeader.includes('Methanol');
         }
-        return header.includes(key);
+        return cleanHeader.includes(cleanKey);
     }
 
     // Check if a header is related to the active product
@@ -1473,9 +1515,15 @@ document.addEventListener("DOMContentLoaded", () => {
                    headerMatches(header, 'Ethylene') || 
                    headerMatches(header, 'Methanol') ||
                    headerMatches(header, 'Gas');
-        } else if (product === 'n_Propyl_Acetate' || product === 'Isopropyl_Acetate_Proxy') {
+        } else if (product === 'n_Propyl_Acetate') {
             return headerMatches(header, 'n_Propyl_Acetate') || 
                    headerMatches(header, 'n-Propanol') || 
+                   headerMatches(header, 'Acetic_Acid') || 
+                   headerMatches(header, 'Propylene') || 
+                   headerMatches(header, 'Methanol') ||
+                   headerMatches(header, 'Gas');
+        } else if (product === 'Isopropyl_Acetate_Proxy') {
+            return headerMatches(header, 'n_Propyl_Acetate') || 
                    headerMatches(header, 'Isopropanol') || 
                    headerMatches(header, 'Acetic_Acid') || 
                    headerMatches(header, 'Propylene') || 
@@ -1997,7 +2045,8 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             'Acetone_V2': {
                 'butanol': 1.40, // benzene
-                'acetic': 0.75   // propylene
+                'acetic': 0.75,  // propylene
+                'gas': -1.613    // phenol (co-product credit)
             },
             'Dibasic_Ester': {
                 'butanol': 0.70, // dicarboxylic acid
@@ -2016,7 +2065,9 @@ document.addEventListener("DOMContentLoaded", () => {
             'Isophthalic_Acid': {
                 'butanol': 0.70  // m-xylene
             },
-            'PTA': {},
+            'PTA': {
+                'butanol': 0.67
+            },
             'n_Butanol': {
                 'butanol': 0.60  // propylene
             },
@@ -2030,8 +2081,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 'butanol': 1.05  // 2-butanol
             },
             'Styrene': {
-                'benzene': 0.80,  // benzene
-                'ethylene': 0.30  // ethylene
+                'butanol': 1.05,  // ethylbenzene
+                'acetic': 0.30   // propylene
             },
             'MEG': {
                 'butanol': 0.57   // ethylene oxide (EO)
@@ -2062,6 +2113,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const colName = resolveColumnForRegion(rawColName, region, true);
             const val = row[colName];
             if (val === undefined || val === null) {
+                if (precursorKey === 'gas') {
+                    continue;
+                }
                 valid = false;
                 break;
             }
@@ -2520,11 +2574,15 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = "";
 
         const config = TARGET_CONFIGS[currentProduct];
+        console.log("[DEBUG LEAD-LAG] currentProduct:", currentProduct, "currentRegion:", currentRegion, "currentTarget:", currentTarget);
+        console.log("[DEBUG LEAD-LAG] selectedSeries:", selectedSeries);
+        console.log("[DEBUG LEAD-LAG] config.defaultChecked:", config ? config.defaultChecked : null);
         const allowedBaseProds = config ? config.defaultChecked.filter(base => {
             if (base === 'Propylene' && !selectedSeries.some(sel => sel.includes('Propylene') && !sel.includes('Propylene_Oxide'))) return false;
             if (base === 'Ethylene' && !selectedSeries.some(sel => sel.includes('Ethylene') && !sel.includes('Ethylene_Glycol'))) return false;
             return selectedSeries.some(sel => sel.includes(base));
         }) : [];
+        console.log("[DEBUG LEAD-LAG] allowedBaseProds:", allowedBaseProds);
 
         const filtered = [];
         allowedBaseProds.forEach(base => {
@@ -2538,6 +2596,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (base === 'Ethylene' && item.Feature.includes('Ethylene_Glycol')) return false;
                 return item.Feature.includes(base);
             });
+            console.log("[DEBUG LEAD-LAG] base:", base, "targetRows for base:", targetRows);
             if (targetRows.length === 0) return;
 
             const exactCheckedCol = selectedSeries.find(sel => {
@@ -2553,6 +2612,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 filtered.push(targetRows[0]);
             }
         });
+        console.log("[DEBUG LEAD-LAG] final filtered:", filtered);
 
         if (filtered.length === 0) {
             container.innerHTML = `<div class="lead-lag-info"><p>No lead-lag results available for this target region.</p></div>`;
@@ -3177,7 +3237,9 @@ document.addEventListener("DOMContentLoaded", () => {
         displayHeaders = displayHeaders.concat(selectedSeries.slice(0, 5));
         // Add USD_CNY_Rate and EUR_USD_Rate to the columns displayed in the table
         displayHeaders.push('USD_CNY_Rate');
-        displayHeaders.push('EUR_USD_Rate');
+        if (getMainRegionForSubRegion(currentRegion) !== 'Chine') {
+            displayHeaders.push('EUR_USD_Rate');
+        }
         displayHeaders = [...new Set(displayHeaders)];
         
         if (filteredData.length === 0) {
@@ -3188,7 +3250,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         displayHeaders.forEach(col => {
             const th = document.createElement('th');
-            let headerText = translateTextRegions(col).replace('_Domestic', '').replace('_Europe', '').replace('_Global', '').replace(/_/g, ' ');
+            let headerText = translateTextRegions(col).replace('_Domestic', '').replace('_Europe', '').replace('_Global', '').replace('Octanol', '2-Ethylhexanol').replace(/_/g, ' ');
             if (currentProduct === 'Isopropyl_Acetate_Proxy' && col.includes('n_Propyl_Acetate')) {
                 headerText = headerText.replace('n Propyl Acetate', 'Isopropyl Acetate (Proxy)');
             }
@@ -3925,12 +3987,12 @@ document.addEventListener("DOMContentLoaded", () => {
             'PMA': { 'butanol': 0.48, 'acetic': 0.46, 'methanol': 0.26 },
             'PM': { 'butanol': 0.69 },
             'Isophthalic_Acid': { 'butanol': 0.70 },
-            'PTA': {},
+            'PTA': { 'butanol': 0.67 },
             'n_Butanol': { 'butanol': 0.60 },
             'Isobutanol': { 'butanol': 0.60 },
             'MEK': { 'butanol': 0.80 },
             'MEK_V2': { 'butanol': 1.05 },
-            'Styrene': { 'benzene': 0.80, 'ethylene': 0.30 },
+            'Styrene': { 'butanol': 1.05, 'acetic': 0.30 },
             'MEG': { 'butanol': 0.57 },
             'DEG': { 'butanol': 0.30 },
             'PG':  { 'butanol': 0.70 },
@@ -4002,12 +4064,12 @@ document.addEventListener("DOMContentLoaded", () => {
             'PMA': { 'butanol': 0.48, 'acetic': 0.46, 'methanol': 0.26 },
             'PM': { 'butanol': 0.69 },
             'Isophthalic_Acid': { 'butanol': 0.70 },
-            'PTA': {},
+            'PTA': { 'butanol': 0.67 },
             'n_Butanol': { 'butanol': 0.60 },
             'Isobutanol': { 'butanol': 0.60 },
             'MEK': { 'butanol': 0.80 },
             'MEK_V2': { 'butanol': 1.05 },
-            'Styrene': { 'benzene': 0.80, 'ethylene': 0.30 },
+            'Styrene': { 'butanol': 1.05, 'acetic': 0.30 },
             'MEG': { 'butanol': 0.57 },
             'DEG': { 'butanol': 0.30 },
             'PG':  { 'butanol': 0.70 }

@@ -113,14 +113,13 @@ for target in targets_to_process:
         }
     elif 'Acrylic_Acid' in target:
         keywords = {
-            'Propylene': ['Propylene_Domestic'],
+            'Propylene': ['Propylene_Domestic', 'Propylene_Europe'],
             'Naphtha': ['Naphtha_Domestic']
         }
     elif 'Phthalic_Anhydride' in target:
         keywords = {
             'o_Xylene': ['o_Xylene_Domestic'],
-            'Reformed_Naphtha': ['Reformed_Naphtha_Domestic'],
-            'Methanol': ['Methanol_Domestic']
+            'Reformed_Naphtha': ['Reformed_Naphtha_Domestic']
         }
     elif 'Maleic_Anhydride' in target:
         keywords = {
@@ -235,6 +234,8 @@ for target in targets_to_process:
         }
     elif 'Toluene' in target:
         keywords = {
+            'Benzene': ['Benzene_Domestic', 'Benzene_Europe'],
+            'Methanol': ['Methanol_Domestic'],
             'Brent': ['Brent_Domestic_Global']
         }
     else:

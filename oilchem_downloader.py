@@ -92,7 +92,9 @@ PRODUCTS = [
     ("MEG_Domestic", "乙二醇", 3),
     ("DEG_Domestic", "二甘醇", 3),
     ("PG_Domestic", "丙二醇", 3),
-    ("EO_Domestic", "环氧乙烷", 3)
+    ("EO_Domestic", "环氧乙烷", 3),
+    ("Phenol_Domestic", "苯酚", 3),
+    ("2_Butanol_Domestic", "仲丁醇", 3)
 ]
 
 
@@ -260,6 +262,9 @@ def search_variety_markets(keyword, business_type):
                 filtered_items = []
                 for item in items:
                     if item.get("businessType") == business_type:
+                        # Skip futures basis / premium-discount (priceType = 10)
+                        if item.get("priceType") == 10:
+                            continue
                         filtered_items.append(item)
                 return filtered_items
     except Exception as e:
