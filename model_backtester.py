@@ -84,8 +84,8 @@ TARGET_CONFIGS = {
         'coefficients': {'butanol': 1.05}
     },
     'Acetone_V2': {
-        'precursors': {'butanol': 'Benzene', 'acetic': 'Propylene', 'gas': 'Phenol'},
-        'coefficients': {'butanol': 1.40, 'acetic': 0.75, 'gas': -1.613}
+        'precursors': {'butanol': 'Benzene', 'acetic': 'Propylene'},
+        'coefficients': {'butanol': 1.40, 'acetic': 0.75}
     },
     'Dibasic_Ester': {
         'precursors': {'butanol': 'Dicarboxylic_Acid', 'acetic': 'Methanol'},
@@ -123,10 +123,7 @@ TARGET_CONFIGS = {
         'precursors': {'butanol': '2_Butene'},
         'coefficients': {'butanol': 0.80}
     },
-    'MEK_V2': {
-        'precursors': {'butanol': '2_Butanol'},
-        'coefficients': {'butanol': 1.05}
-    },
+
     'Styrene': {
         'precursors': {'butanol': 'Ethylbenzene', 'acetic': 'Propylene'},
         'coefficients': {'butanol': 1.05, 'acetic': 0.30}
@@ -293,8 +290,12 @@ backtest_results = {}
 for prod_key, conf in TARGET_CONFIGS.items():
     backtest_results[prod_key] = {}
     
-    # Identify target columns
-    possible_cols = [c for c in df.columns if c.startswith(prod_key + '_') or c.startswith(prod_key.replace('_', '-') + '_')]
+    # Resolve base name (strip _V1/_V2 variations and handle proxies)
+    base_name = prod_key.split('_V')[0]
+    if base_name == 'Isopropyl_Acetate_Proxy':
+        base_name = 'n_Propyl_Acetate'
+        
+    possible_cols = [c for c in df.columns if c.startswith(base_name + '_') or c.startswith(base_name.replace('_', '-') + '_')]
     regions = []
     for c in possible_cols:
         parts = c.split('_')

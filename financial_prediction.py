@@ -109,8 +109,8 @@ TARGET_CONFIGS = {
         'coefficients': {'butanol': 1.05}
     },
     'Acetone_V2': {
-        'precursors': {'butanol': 'Benzene', 'acetic': 'Propylene', 'gas': 'Phenol'},
-        'coefficients': {'butanol': 1.40, 'acetic': 0.75, 'gas': -1.613}
+        'precursors': {'butanol': 'Benzene', 'acetic': 'Propylene'},
+        'coefficients': {'butanol': 1.40, 'acetic': 0.75}
     },
     'Dibasic_Ester': {
         'precursors': {'butanol': 'Dicarboxylic_Acid', 'acetic': 'Methanol'},
@@ -148,10 +148,7 @@ TARGET_CONFIGS = {
         'precursors': {'butanol': '2_Butene'},
         'coefficients': {'butanol': 0.80}
     },
-    'MEK_V2': {
-        'precursors': {'butanol': '2_Butanol'},
-        'coefficients': {'butanol': 1.05}
-    },
+
     'Styrene': {
         'precursors': {'butanol': 'Ethylbenzene', 'acetic': 'Propylene'},
         'coefficients': {'butanol': 1.05, 'acetic': 0.30}

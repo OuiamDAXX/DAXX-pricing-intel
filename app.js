@@ -601,8 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Acetone',
                 'Benzene',
                 'Propylene',
-                'Naphtha',
-                'Phenol'
+                'Naphtha'
             ]
         },
         'Dibasic_Ester': {
@@ -800,26 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 'Naphtha'
             ]
         },
-        'MEK_V2': {
-            title: "Methyl Ethyl Ketone (MEK) Route 2",
-            precursors: {
-                butyl: 'MEK',
-                butanol: '2_Butanol',
-                acetic: '1_Butene_2_Butene',
-                methanol: '1_Butene_2_Butene'
-            },
-            labels: {
-                butyl: "MEK (Target)",
-                butanol: "2-Butanol (Feedstock)",
-                acetic: "1-But. / 2-Buteno (Upstream)",
-                methanol: "1-But. / 2-Buteno (Upstream)"
-            },
-            defaultChecked: [
-                'MEK',
-                '2_Butanol',
-                '1_Butene_2_Butene'
-            ]
-        },
+
         'Styrene': {
             title: "Styrene",
             precursors: {
@@ -1163,6 +1143,29 @@ document.addEventListener("DOMContentLoaded", () => {
             (headerMatches(h, baseProd) || headerMatches(h, cleanBase))
         );
         if (partial) return partial;
+
+        // 1.2 Smart European subregion matching (e.g. T2 FOB Rotterdam should align with FOB Rotterdam feedstock)
+        if (mainReg === 'Europe') {
+            const isRotterdam = region.includes('Rotterdam') || region.includes('ARA');
+            const isNWE = region.includes('NWE') || region.includes('Northwest') || region.includes('Northeast') || region.includes('NWE Spot') || region.includes('Northwest Europe');
+            
+            if (isRotterdam) {
+                const rotterdamMatch = priceHeaders.find(h => 
+                    (h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_') || h.includes(baseProd) || h.includes(cleanBase)) && 
+                    (h.includes('Rotterdam') || h.includes('ARA')) &&
+                    (headerMatches(h, baseProd) || headerMatches(h, cleanBase))
+                );
+                if (rotterdamMatch) return rotterdamMatch;
+            }
+            if (isNWE) {
+                const nweMatch = priceHeaders.find(h => 
+                    (h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_') || h.includes(baseProd) || h.includes(cleanBase)) && 
+                    (h.includes('NWE') || h.includes('Northwest') || h.includes('Northeast') || h.includes('ARA')) &&
+                    (headerMatches(h, baseProd) || headerMatches(h, cleanBase))
+                );
+                if (nweMatch) return nweMatch;
+            }
+        }
 
         // 1.5 Fallback to Europe or Global precursor columns if in Europe/Global region
         if (mainReg === 'Europe') {
@@ -1580,7 +1583,8 @@ document.addEventListener("DOMContentLoaded", () => {
                    headerMatches(header, 'Benzene') || 
                    headerMatches(header, 'Propylene') || 
                    headerMatches(header, 'Reformed_Naphtha') || 
-                   headerMatches(header, 'Naphtha');
+                   headerMatches(header, 'Naphtha') ||
+                   headerMatches(header, 'Phenol');
         } else if (product === 'Dibasic_Ester') {
             return headerMatches(header, 'Dibasic_Ester') || 
                    headerMatches(header, 'Dicarboxylic_Acid') || 
@@ -1626,10 +1630,7 @@ document.addEventListener("DOMContentLoaded", () => {
                    headerMatches(header, '2_Butene') || 
                    headerMatches(header, 'Naphtha') || 
                    headerMatches(header, 'n_Butane');
-        } else if (product === 'MEK_V2') {
-            return headerMatches(header, 'MEK') || 
-                   headerMatches(header, '2_Butanol') || 
-                   headerMatches(header, '1_Butene_2_Butene');
+
         } else if (product === 'Styrene') {
             return headerMatches(header, 'Styrene') || 
                    headerMatches(header, 'Ethylbenzene') || 
@@ -2045,8 +2046,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             'Acetone_V2': {
                 'butanol': 1.40, // benzene
-                'acetic': 0.75,  // propylene
-                'gas': -1.613    // phenol (co-product credit)
+                'acetic': 0.75  // propylene
             },
             'Dibasic_Ester': {
                 'butanol': 0.70, // dicarboxylic acid
@@ -2077,9 +2077,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'MEK': {
                 'butanol': 0.80  // 2-butene
             },
-            'MEK_V2': {
-                'butanol': 1.05  // 2-butanol
-            },
+
             'Styrene': {
                 'butanol': 1.05,  // ethylbenzene
                 'acetic': 0.30   // propylene
@@ -2956,13 +2954,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 feedstockB: '',
                 target: 'MEK'
             },
-            'MEK_V2': {
-                upstreamA: '1_Butene_2_Butene',
-                feedstockA: '2_Butanol',
-                upstreamB: '',
-                feedstockB: '',
-                target: 'MEK'
-            },
+
             'Styrene': {
                 upstreamA: 'Reformed_Naphtha',
                 feedstockA: 'Ethylbenzene',
@@ -3340,7 +3332,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (compareProductsEl) compareProductsEl.style.display = 'block';
                 if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'none';
                 if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
-                if (mainWorkspaceEl) mainWorkspaceEl.classList.remove('full-width');
+                if (mainWorkspaceEl) {
+                    mainWorkspaceEl.classList.remove('full-width');
+                    mainWorkspaceEl.classList.add('compare-view');
+                }
             } else if (currentChartView === 'seasonal') {
                 if (timeRangeEl) timeRangeEl.style.display = 'none';
                 if (selectorContainerEl) selectorContainerEl.style.display = 'none';
@@ -3348,7 +3343,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (compareProductsEl) compareProductsEl.style.display = 'none';
                 if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'flex';
                 if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
-                if (mainWorkspaceEl) mainWorkspaceEl.classList.remove('full-width');
+                if (mainWorkspaceEl) {
+                    mainWorkspaceEl.classList.remove('full-width');
+                    mainWorkspaceEl.classList.remove('compare-view');
+                }
             } else {
                 if (timeRangeEl) timeRangeEl.style.display = 'flex';
                 if (selectorContainerEl) selectorContainerEl.style.display = 'block';
@@ -3356,7 +3354,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (compareProductsEl) compareProductsEl.style.display = 'none';
                 if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'flex';
                 if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
-                if (mainWorkspaceEl) mainWorkspaceEl.classList.remove('full-width');
+                if (mainWorkspaceEl) {
+                    mainWorkspaceEl.classList.remove('full-width');
+                    mainWorkspaceEl.classList.remove('compare-view');
+                }
             }
             
             initializeChart();
@@ -3991,7 +3992,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'n_Butanol': { 'butanol': 0.60 },
             'Isobutanol': { 'butanol': 0.60 },
             'MEK': { 'butanol': 0.80 },
-            'MEK_V2': { 'butanol': 1.05 },
+
             'Styrene': { 'butanol': 1.05, 'acetic': 0.30 },
             'MEG': { 'butanol': 0.57 },
             'DEG': { 'butanol': 0.30 },
@@ -4068,7 +4069,7 @@ document.addEventListener("DOMContentLoaded", () => {
             'n_Butanol': { 'butanol': 0.60 },
             'Isobutanol': { 'butanol': 0.60 },
             'MEK': { 'butanol': 0.80 },
-            'MEK_V2': { 'butanol': 1.05 },
+
             'Styrene': { 'butanol': 1.05, 'acetic': 0.30 },
             'MEG': { 'butanol': 0.57 },
             'DEG': { 'butanol': 0.30 },
