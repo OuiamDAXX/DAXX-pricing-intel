@@ -234,13 +234,23 @@ def find_column_for_region(df, product_base, region, target_col=None, lead_lag_d
             if best_feature in df.columns:
                 return best_feature
 
-    # 3. Fallback: exact product_base but any region
+    # 3. Fallback: exact product_base but restricted by region type to avoid mixing China/Europe
     fallback_exact = [col for col in df.columns if col.startswith(clean_base + '_') or col.startswith(hyphen_base + '_')]
+    if is_intl:
+        fallback_exact = [c for c in fallback_exact if 'Europe' in c or 'Global' in c or 'NWE' in c or 'Rotterdam' in c or 'ARA' in c]
+    else:
+        fallback_exact = [c for c in fallback_exact if not ('Europe' in c or 'Global' in c or 'NWE' in c or 'Rotterdam' in c or 'ARA' in c)]
+        
     if fallback_exact:
         return fallback_exact[0]
         
-    # 4. Fallback: any partial match
+    # 4. Fallback: any partial match restricted by region type
     fallback_partial = [col for col in df.columns if clean_base in col or hyphen_base in col]
+    if is_intl:
+        fallback_partial = [c for c in fallback_partial if 'Europe' in c or 'Global' in c or 'NWE' in c or 'Rotterdam' in c or 'ARA' in c]
+    else:
+        fallback_partial = [c for c in fallback_partial if not ('Europe' in c or 'Global' in c or 'NWE' in c or 'Rotterdam' in c or 'ARA' in c)]
+        
     if fallback_partial:
         return fallback_partial[0]
         
@@ -291,6 +301,17 @@ for prod_key, conf in TARGET_CONFIGS.items():
         if len(parts) >= 3:
             regions.append(parts[-1])
             
+    # Check if any precursor has European data to enable feedstock_index mode for Europe
+    has_eu_precursor = False
+    for prec_key, raw_prod in conf['precursors'].items():
+        clean_p = raw_prod.replace('-', '_')
+        eu_cols = [c for c in df.columns if (clean_p in c) and ('Europe' in c or 'NWE' in c or 'Rotterdam' in c or 'ARA' in c)]
+        if eu_cols:
+            has_eu_precursor = True
+            break
+    if has_eu_precursor:
+        regions.append('Europe')
+
     if not regions:
         regions = ['华东']
         
