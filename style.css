@@ -2012,4 +2012,40 @@ body.light-theme .node-icon {
 
 
 
+    transform: translateY(-2px);
+}
 
+/* Compare Matrix Enhancements */
+#compare-matrix-container {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: var(--card-shadow);
+}
+
+#compare-matrix-tbody tr {
+    transition: all 0.2s ease;
+}
+
+#compare-matrix-tbody td {
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+#compare-matrix-tbody tr:hover td {
+    color: var(--text-primary) !important;
+}
+
+/* Custom Checkboxes Grid style */
+#custom-compare-checkboxes-grid .check-tag {
+    transition: all 0.2s ease;
+}
+
+#custom-compare-checkboxes-grid .check-tag:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--glass-border-hover) !important;
+}
+
+#custom-compare-checkboxes-grid .check-tag.active {
+    background: rgba(99, 102, 241, 0.15) !important;
+    border-color: var(--color-accent) !important;
+    color: var(--text-primary) !important;
+}

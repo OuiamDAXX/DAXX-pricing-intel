@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=46">
+    <link rel="stylesheet" href="style.css?v=48">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -168,7 +168,7 @@
                     </div>
                     
                     <div class="chart-controls-wrapper" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                        <div class="view-toggle-group">
+                        <div class="view-toggle-group" id="main-view-toggle-group">
                             <button class="btn-view-toggle active" id="btn-view-trend" data-view="trend" title="Multi-year trend analysis">
                                 <i class="fa-solid fa-chart-line"></i> Trend
                             </button>
@@ -205,12 +205,45 @@
                     </div>
                 </div>
 
-                <div class="series-selector-container" id="compare-products-selector-container" style="display: none;">
-                    <span class="selector-label"><i class="fa-solid fa-list-check"></i> Compare Products (Spain vs Europe):</span>
-                    <div class="selectors-wrapper" id="compare-products-checkboxes">
-                        <!-- Filled dynamically by JavaScript -->
-                    </div>
+                <!-- Compare sub-tabs group (styled exactly like main view toggles) -->
+                <div class="view-toggle-group" id="compare-subtabs-container" style="display: none; width: fit-content; margin-bottom: 15px;">
+                    <button class="btn-view-toggle active" data-subtab="standard" title="Standard comparison view">
+                        <i class="fa-solid fa-scale-balanced"></i> Standard
+                    </button>
+                    <button class="btn-view-toggle" data-subtab="custom" title="Freely compare any series from any region">
+                        <i class="fa-solid fa-earth-americas"></i> Multi-Region Select
+                    </button>
+                    <button class="btn-view-toggle" data-subtab="matrix" title="Global spread and margin matrix recap">
+                        <i class="fa-solid fa-table-cells"></i> Spreads Matrix
+                    </button>
                 </div>
+
+                <div class="series-selector-container" id="compare-products-selector-container" style="display: none; padding: 15px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; margin-bottom: 15px;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; font-weight: 500; text-transform: uppercase;">Product</label>
+                            <select id="compare-product-select" class="target-select" style="width: 100%;">
+                                <!-- Filled dynamically -->
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 180px;">
+                            <label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; font-weight: 500; text-transform: uppercase;">China Subregion</label>
+                            <select id="compare-china-subregion-select" class="target-select" style="width: 100%;">
+                                <!-- Filled dynamically -->
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 180px;">
+                            <label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; font-weight: 500; text-transform: uppercase;">Europe Subregion</label>
+                            <select id="compare-europe-subregion-select" class="target-select" style="width: 100%;">
+                                <!-- Filled dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Legend container -->
+                    <div id="compare-legend-container" style="display: none; gap: 15px; flex-wrap: wrap; margin-top: 15px; font-size: 11px; padding: 10px 14px; background: rgba(255,255,255,0.015); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); align-items: center;"></div>
+                </div>
+
+
 
                 
                 
@@ -220,6 +253,30 @@
                         <p>Loading charts...</p>
                     </div>
                     <div id="main-chart"></div>
+
+                    <!-- Spreads & Arbitrage Matrix View -->
+                    <div id="compare-matrix-container" style="display: none; background: rgba(20,20,20,0.4); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; width: 100%; box-sizing: border-box; overflow-x: auto; max-height: 500px;">
+                        <span style="display: block; font-size: 1rem; font-weight: 600; color: var(--accent-blue); margin-bottom: 15px;"><i class="fa-solid fa-table-cells"></i> Global Price Spreads Matrix</span>
+                        <div style="overflow-x: auto; width: 100%;">
+                            <table class="prices-table" style="width: 100%; border-collapse: collapse; text-align: left; min-width: 800px;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid var(--border-color);">
+                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Product</th>
+                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">China Region</th>
+                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Europe Region</th>
+                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">China Price</th>
+                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Europe Price</th>
+                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Price Spread</th>
+                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Margin (China)</th>
+                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Margin (Europe)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="compare-matrix-tbody" style="font-size: 0.85rem; color: var(--text-secondary);">
+                                    <!-- Filled dynamically by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -257,15 +314,33 @@
                     <p>No additional analysis available for the selected product under this tab.</p>
                 </div>
 
-                <!-- Comparative Arbitrage Dashboard -->
+                <!-- Comparative Spreads Dashboard -->
                 <aside class="sidebar-workspace-card" id="compare-arbitrage-card" style="display: none;">
                     <div class="card-header">
                         <div class="header-titles">
-                            <h2>Arbitrage & Spreads</h2>
-                            <p>China vs Europe Pricing Spreads</p>
+                            <h2>Regional Spreads</h2>
+                            <p>China vs Europe Pricing Analysis</p>
                         </div>
                     </div>
                     <div class="arbitrage-list" id="compare-arbitrage-list" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                        <!-- Populated dynamically by JavaScript -->
+                    </div>
+                </aside>
+
+                <!-- Custom Multi-Region Selector Sidebar Card -->
+                <aside class="sidebar-workspace-card" id="custom-compare-selector-container" style="display: none;">
+                    <div class="card-header">
+                        <div class="header-titles">
+                            <h2>Multi-Region Select</h2>
+                            <p>Freely Select Series to Plot</p>
+                        </div>
+                    </div>
+                    <div class="view-toggle-group" id="custom-compare-tab-select-group" style="display: flex; gap: 4px; margin-top: 15px; width: 100%;">
+                        <button class="btn-view-toggle active" data-group="targets" style="flex: 1; padding: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase;">Targets</button>
+                        <button class="btn-view-toggle" data-group="raws" style="flex: 1; padding: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase;">Feedstocks</button>
+                        <button class="btn-view-toggle" data-group="macro" style="flex: 1; padding: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase;">Macro</button>
+                    </div>
+                    <div id="custom-compare-checkboxes-grid" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px; max-height: 500px; overflow-y: auto; padding-right: 5px;">
                         <!-- Populated dynamically by JavaScript -->
                     </div>
                 </aside>
@@ -533,11 +608,13 @@
 
     </div>
 
+
+
     <!-- CDNs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=234"></script>
+    <script src="app.js?v=263"></script>
 </body>
 </html>

@@ -998,7 +998,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentChartView = 'trend'; // 'trend' or 'seasonal' or 'compare'
     let seasonalMetricMode = 'price'; // 'price' or 'margin'
     let activeSidebarTab = 'signals'; // 'signals', 'procurement', 'feedstocks'
-    let compareSelectedProducts = ['Butyl_Acetate', 'Ethyl_Acetate'];
+    let compareSelectedProducts = [];
+    let compareActiveChinaSubregions = {};
+    let compareActiveEuropeSubregions = {};
+    let compareCustomLogisticsCosts = {};
+    let currentCompareSubtab = 'standard';
+    let customCompareSelectedSeries = [];
+    let activeCustomCompareGroup = 'targets';
     
     // Pagination state
     let currentPage = 1;
@@ -1834,80 +1840,414 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function createCompareProductSelectors() {
-        const container = document.getElementById('compare-products-checkboxes');
-        if (!container) return;
-        container.innerHTML = "";
+        const prodSelect = document.getElementById('compare-product-select');
+        const chinaSelect = document.getElementById('compare-china-subregion-select');
+        const europeSelect = document.getElementById('compare-europe-subregion-select');
+        if (!prodSelect || !chinaSelect || !europeSelect) return;
 
-        // Final Products header
-        const prodHeader = document.createElement('h3');
-        prodHeader.textContent = "Final Products";
-        prodHeader.style.cssText = "width: 100%; color: var(--accent-blue); font-size: 14px; margin-top: 10px; margin-bottom: 8px; font-family: var(--font-body);";
-        container.appendChild(prodHeader);
+        if (rawPricesData.length === 0) return;
 
-        // Products Checkboxes
-        Object.keys(TARGET_CONFIGS).forEach(productKey => {
-            const config = TARGET_CONFIGS[productKey];
-            const isChecked = compareSelectedProducts.includes(productKey);
+        const allProducts = { ...TARGET_CONFIGS, ...RAW_MATERIALS_CONFIGS };
 
-            const label = document.createElement('label');
-            label.className = `check-tag ${isChecked ? 'active' : ''} accent`;
+        // 1. Populate product dropdown if empty
+        if (prodSelect.children.length === 0) {
+            const finalOptions = Object.entries(TARGET_CONFIGS).map(([key, cfg]) => 
+                `<option value="${key}">${cfg.title}</option>`
+            ).join('');
             
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = isChecked;
-            checkbox.value = productKey;
-            
-            checkbox.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    compareSelectedProducts.push(productKey);
-                    label.classList.add('active');
-                } else {
-                    compareSelectedProducts = compareSelectedProducts.filter(p => p !== productKey);
-                    label.classList.remove('active');
-                }
-                initializeChart();
+            const rawOptions = Object.entries(RAW_MATERIALS_CONFIGS).map(([key, cfg]) => 
+                `<option value="${key}">${cfg.title}</option>`
+            ).join('');
+
+            prodSelect.innerHTML = `
+                <optgroup label="Final Products (Targets)">
+                    ${finalOptions}
+                </optgroup>
+                <optgroup label="Raw Materials & Feedstocks">
+                    ${rawOptions}
+                </optgroup>
+            `;
+
+            // Keep only the first product selected by default
+            if (compareSelectedProducts.length === 0 || !allProducts[compareSelectedProducts[0]]) {
+                compareSelectedProducts = [Object.keys(allProducts)[0]];
+            } else {
+                compareSelectedProducts = [compareSelectedProducts[0]];
+            }
+        }
+        prodSelect.value = compareSelectedProducts[0];
+
+        const activeProduct = compareSelectedProducts[0];
+        let cfg = allProducts[activeProduct];
+        if (!cfg) return;
+
+        let baseProd = '';
+        if (cfg.precursors) {
+            baseProd = cfg.precursors.butyl || cfg.precursors[Object.keys(cfg.precursors)[0]] || '';
+        } else {
+            baseProd = cfg.base || '';
+        }
+
+        // 2. Detect available China columns
+        const chinaCols = priceHeaders.filter(h => {
+            const lh = h.toLowerCase();
+            const lb = baseProd.toLowerCase().replace(/-/g,'_');
+            return (h.startsWith(baseProd + '_') || h.startsWith(lb + '_')) &&
+                (lh.includes('china') || lh.includes('华东') || lh.includes('domestic'));
+        });
+        if (chinaCols.length === 0) {
+            const fb = resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic');
+            if (fb) chinaCols.push(fb);
+        }
+
+        // 3. Detect available Europe columns
+        const europeCols = priceHeaders.filter(h => {
+            const lh = h.toLowerCase();
+            const lb = baseProd.toLowerCase().replace(/-/g,'_');
+            return (h.startsWith(baseProd + '_') || h.startsWith(lb + '_')) &&
+                (lh.includes('europe') || lh.includes('nwe') || lh.includes('rotterdam') || lh.includes('eu_'));
+        });
+        if (europeCols.length === 0) {
+            const fb = resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE');
+            if (fb) europeCols.push(fb);
+        }
+
+        // Resolve active selections
+        if (!compareActiveChinaSubregions[baseProd] || !chinaCols.includes(compareActiveChinaSubregions[baseProd])) {
+            compareActiveChinaSubregions[baseProd] = chinaCols[0] || '';
+        }
+        if (!compareActiveEuropeSubregions[baseProd] || !europeCols.includes(compareActiveEuropeSubregions[baseProd])) {
+            compareActiveEuropeSubregions[baseProd] = europeCols[0] || '';
+        }
+
+        // Populate China subregion dropdown
+        const fmtCol = col => col ? translateTextRegions(col).replace(/_/g,' ').replace(/  +/g,' ') : 'N/A';
+        chinaSelect.innerHTML = chinaCols.map(c => 
+            `<option value="${c}" ${c === compareActiveChinaSubregions[baseProd] ? 'selected' : ''}>${fmtCol(c)}</option>`
+        ).join('');
+
+        // Populate Europe subregion dropdown
+        europeSelect.innerHTML = europeCols.map(c => 
+            `<option value="${c}" ${c === compareActiveEuropeSubregions[baseProd] ? 'selected' : ''}>${fmtCol(c)}</option>`
+        ).join('');
+
+        // Wire change events safely (only if not already wired)
+        if (!prodSelect.dataset.wired) {
+            prodSelect.addEventListener('change', (e) => {
+                compareSelectedProducts = [e.target.value];
+                createCompareProductSelectors();
+                updateChartData();
                 updateCompareArbitrageDashboard();
             });
+            prodSelect.dataset.wired = "true";
+        }
 
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(config.title));
-            container.appendChild(label);
+        // Always overwrite onchange for subregions because they change dynamically based on the product
+        chinaSelect.onchange = (e) => {
+            compareActiveChinaSubregions[baseProd] = e.target.value;
+            updateChartData();
+            updateCompareArbitrageDashboard();
+        };
+
+        europeSelect.onchange = (e) => {
+            compareActiveEuropeSubregions[baseProd] = e.target.value;
+            updateChartData();
+            updateCompareArbitrageDashboard();
+        };
+    }
+
+    function updateCompareSubtabsDOM() {
+        const standardSelects = document.getElementById('compare-products-selector-container');
+        const customSelects = document.getElementById('custom-compare-selector-container');
+        const matrixContainer = document.getElementById('compare-matrix-container');
+        const mainChart = document.getElementById('main-chart');
+        const arbitrageSidebarCard = document.getElementById('compare-arbitrage-card');
+
+        if (currentChartView !== 'compare') {
+            if (standardSelects) standardSelects.style.display = 'none';
+            if (customSelects) customSelects.style.display = 'none';
+            if (matrixContainer) matrixContainer.style.display = 'none';
+            if (arbitrageSidebarCard) arbitrageSidebarCard.style.display = 'none';
+            return;
+        }
+
+        if (currentCompareSubtab === 'standard') {
+            if (standardSelects) standardSelects.style.display = 'block';
+            if (customSelects) customSelects.style.display = 'none';
+            if (matrixContainer) matrixContainer.style.display = 'none';
+            if (mainChart) mainChart.style.display = 'block';
+            if (arbitrageSidebarCard) arbitrageSidebarCard.style.display = 'block';
+
+            createCompareProductSelectors();
+            updateCompareArbitrageDashboard();
+        } 
+        else if (currentCompareSubtab === 'custom') {
+            if (standardSelects) standardSelects.style.display = 'none';
+            if (customSelects) customSelects.style.display = 'block';
+            if (matrixContainer) matrixContainer.style.display = 'none';
+            if (mainChart) mainChart.style.display = 'block';
+            if (arbitrageSidebarCard) arbitrageSidebarCard.style.display = 'none';
+
+            populateCustomCompareSelectors();
+        } 
+        else if (currentCompareSubtab === 'matrix') {
+            if (standardSelects) standardSelects.style.display = 'none';
+            if (customSelects) customSelects.style.display = 'none';
+            if (matrixContainer) matrixContainer.style.display = 'block';
+            if (mainChart) mainChart.style.display = 'none';
+            if (arbitrageSidebarCard) arbitrageSidebarCard.style.display = 'none';
+
+            renderCompareMatrix();
+        }
+    }
+
+    function populateCustomCompareSelectors() {
+        const container = document.getElementById('custom-compare-checkboxes-grid');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        // Wire inner sub-tab switch buttons (inside the card)
+        const tabSelectGroup = document.getElementById('custom-compare-tab-select-group');
+        if (tabSelectGroup && !tabSelectGroup.dataset.wired) {
+            tabSelectGroup.querySelectorAll('.btn-view-toggle').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const btn = e.currentTarget;
+                    tabSelectGroup.querySelectorAll('.btn-view-toggle').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    activeCustomCompareGroup = btn.getAttribute('data-group');
+                    populateCustomCompareSelectors();
+                });
+            });
+            tabSelectGroup.dataset.wired = "true";
+        }
+
+        // Keep active button class in sync when re-rendering
+        if (tabSelectGroup) {
+            tabSelectGroup.querySelectorAll('.btn-view-toggle').forEach(btn => {
+                if (btn.getAttribute('data-group') === activeCustomCompareGroup) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        const targetGroups = {};
+        Object.entries(TARGET_CONFIGS).forEach(([key, cfg]) => {
+            targetGroups[key] = { title: cfg.title, headers: [] };
         });
 
-        // Raw Materials header
-        const rawHeader = document.createElement('h3');
-        rawHeader.textContent = "Raw Materials & Feedstocks";
-        rawHeader.style.cssText = "width: 100%; color: var(--accent-blue); font-size: 14px; margin-top: 20px; margin-bottom: 8px; font-family: var(--font-body);";
-        container.appendChild(rawHeader);
+        const rawGroups = {};
+        Object.entries(RAW_MATERIALS_CONFIGS).forEach(([key, cfg]) => {
+            rawGroups[key] = { title: cfg.title, headers: [] };
+        });
 
-        // Raw Materials Checkboxes
-        Object.keys(RAW_MATERIALS_CONFIGS).forEach(productKey => {
-            const config = RAW_MATERIALS_CONFIGS[productKey];
-            const isChecked = compareSelectedProducts.includes(productKey);
+        const otherGroup = { title: 'Energy, Macro & Forex', headers: [] };
 
-            const label = document.createElement('label');
-            label.className = `check-tag ${isChecked ? 'active' : ''} accent`;
-            
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = isChecked;
-            checkbox.value = productKey;
-            
-            checkbox.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    compareSelectedProducts.push(productKey);
-                    label.classList.add('active');
-                } else {
-                    compareSelectedProducts = compareSelectedProducts.filter(p => p !== productKey);
-                    label.classList.remove('active');
+        priceHeaders.forEach(header => {
+            if (header === 'Date') return;
+
+            const lh = header.toLowerCase();
+
+            if (header.endsWith('_Rate') || header.startsWith('Brent_') || header.startsWith('Gas_')) {
+                otherGroup.headers.push(header);
+                return;
+            }
+
+            let baseProd = header;
+            if (header.includes('_Domestic_')) baseProd = header.split('_Domestic_')[0];
+            else if (header.includes('_Europe_')) baseProd = header.split('_Europe_')[0];
+            else if (header.includes('_Domestic')) baseProd = header.split('_Domestic')[0];
+            else if (header.includes('_Europe')) baseProd = header.split('_Europe')[0];
+
+            let matched = false;
+
+            for (const [key, cfg] of Object.entries(TARGET_CONFIGS)) {
+                let targetBase = cfg.precursors ? (cfg.precursors.butyl || cfg.precursors[Object.keys(cfg.precursors)[0]] || '') : (cfg.base || '');
+                if (targetBase.toLowerCase().replace(/-/g, '_') === baseProd.toLowerCase().replace(/-/g, '_')) {
+                    targetGroups[key].headers.push(header);
+                    matched = true;
+                    break;
                 }
-                initializeChart();
-                updateCompareArbitrageDashboard();
+            }
+            if (matched) return;
+
+            for (const [key, cfg] of Object.entries(RAW_MATERIALS_CONFIGS)) {
+                let rawBase = cfg.base || '';
+                if (rawBase.toLowerCase().replace(/-/g, '_') === baseProd.toLowerCase().replace(/-/g, '_')) {
+                    rawGroups[key].headers.push(header);
+                    matched = true;
+                    break;
+                }
+            }
+            if (matched) return;
+
+            const cleanTitle = baseProd.replace(/_/g, ' ');
+            if (!rawGroups[baseProd]) {
+                rawGroups[baseProd] = {
+                    title: cleanTitle,
+                    headers: []
+                };
+            }
+            rawGroups[baseProd].headers.push(header);
+        });
+
+        const renderSection = (groupKey, group) => {
+            if (group.headers.length === 0) return null;
+
+            const section = document.createElement('div');
+            section.style.cssText = 'display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;';
+
+            const sectionTitle = document.createElement('span');
+            sectionTitle.style.cssText = 'font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--accent-blue); letter-spacing: 0.5px;';
+            sectionTitle.textContent = group.title;
+            section.appendChild(sectionTitle);
+
+            const grid = document.createElement('div');
+            grid.style.cssText = 'display: flex; flex-direction: column; gap: 5px;';
+
+            group.headers.forEach(header => {
+                const label = document.createElement('label');
+                const shouldBeChecked = customCompareSelectedSeries.includes(header);
+                label.className = `check-tag ${shouldBeChecked ? 'active' : ''}`;
+                label.style.cssText = 'padding: 6px 10px; font-size: 11px; display: flex; align-items: center; gap: 8px; cursor: pointer; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); margin: 0;';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = shouldBeChecked;
+                checkbox.value = header;
+                checkbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        customCompareSelectedSeries.push(header);
+                        label.classList.add('active');
+                    } else {
+                        customCompareSelectedSeries = customCompareSelectedSeries.filter(s => s !== header);
+                        label.classList.remove('active');
+                    }
+                    updateChartData();
+                });
+
+                label.appendChild(checkbox);
+                
+                const displayName = translateTextRegions(header)
+                    .replace('_Domestic', '')
+                    .replace('Octanol', '2-Ethylhexanol')
+                    .replace(/_/g, ' ');
+                label.appendChild(document.createTextNode(displayName));
+                grid.appendChild(label);
             });
 
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(config.title));
-            container.appendChild(label);
+            section.appendChild(grid);
+            return section;
+        };
+
+        if (activeCustomCompareGroup === 'targets') {
+            Object.entries(targetGroups).forEach(([key, group]) => {
+                const el = renderSection(key, group);
+                if (el) container.appendChild(el);
+            });
+        } 
+        else if (activeCustomCompareGroup === 'raws') {
+            Object.entries(rawGroups).forEach(([key, group]) => {
+                const el = renderSection(key, group);
+                if (el) container.appendChild(el);
+            });
+        } 
+        else if (activeCustomCompareGroup === 'macro') {
+            if (otherGroup.headers.length > 0) {
+                const macroGrid = document.createElement('div');
+                macroGrid.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
+
+                otherGroup.headers.forEach(header => {
+                    const label = document.createElement('label');
+                    const shouldBeChecked = customCompareSelectedSeries.includes(header);
+                    label.className = `check-tag ${shouldBeChecked ? 'active' : ''}`;
+                    label.style.cssText = 'padding: 6px 10px; font-size: 10px; display: flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); margin: 0;';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = shouldBeChecked;
+                    checkbox.value = header;
+                    checkbox.addEventListener('change', (e) => {
+                        if (e.target.checked) {
+                            customCompareSelectedSeries.push(header);
+                            label.classList.add('active');
+                        } else {
+                            customCompareSelectedSeries = customCompareSelectedSeries.filter(s => s !== header);
+                            label.classList.remove('active');
+                        }
+                        updateChartData();
+                    });
+
+                    label.appendChild(checkbox);
+                    
+                    const displayName = translateTextRegions(header)
+                        .replace('_Domestic', '')
+                        .replace(/_/g, ' ');
+                    label.appendChild(document.createTextNode(displayName));
+                    macroGrid.appendChild(label);
+                });
+                container.appendChild(macroGrid);
+            }
+        }
+    }
+
+    function renderCompareMatrix() {
+        const tbody = document.getElementById('compare-matrix-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (rawPricesData.length === 0) return;
+        const latestRow = rawPricesData[rawPricesData.length - 1];
+        const allProducts = { ...TARGET_CONFIGS, ...RAW_MATERIALS_CONFIGS };
+        const curr = getCurrencySymbol();
+
+        Object.entries(allProducts).forEach(([key, cfg]) => {
+            let baseProd = '';
+            if (cfg.precursors) {
+                baseProd = cfg.precursors.butyl || cfg.precursors[Object.keys(cfg.precursors)[0]] || '';
+            } else {
+                baseProd = cfg.base || '';
+            }
+
+            const chinaCol = compareActiveChinaSubregions[baseProd] || resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic') || resolveTargetColumn(baseProd, '华东');
+            const europeCol = compareActiveEuropeSubregions[baseProd] || resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE') || resolveTargetColumn(baseProd, 'Europe');
+
+            const chinaVal = latestRow[chinaCol];
+            const europeVal = latestRow[europeCol];
+
+            if (chinaVal === undefined || chinaVal === null || europeVal === undefined || europeVal === null) return;
+
+            const chinaConverted = convertValue(chinaVal, latestRow.Date);
+            const europeConverted = convertValue(europeVal, latestRow.Date);
+            const spread = europeConverted - chinaConverted;
+
+            const chinaMargin = calculateMargin(latestRow, key, '华东') || calculateMargin(latestRow, key, 'Domestic');
+            const europeMargin = calculateMargin(latestRow, key, 'Europe') || calculateMargin(latestRow, key, 'NWE');
+
+            const tr = document.createElement('tr');
+            tr.style.cssText = 'border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;';
+            tr.onmouseenter = () => tr.style.background = 'rgba(255,255,255,0.02)';
+            tr.onmouseleave = () => tr.style.background = 'transparent';
+
+            const fmtVal = v => v !== null && v !== undefined ? `${curr}${Math.round(v).toLocaleString()}/t` : '—';
+            const spreadColor = spread > 0 ? '#10b981' : (spread < 0 ? '#f43f5e' : '#94a3b8');
+
+            const fmtColName = c => c ? translateTextRegions(c).replace(/_/g,' ').replace('Domestic','').trim() : 'N/A';
+
+            tr.innerHTML = `
+                <td style="padding: 12px 10px; font-weight: 600; color: var(--text-primary);">${cfg.title}</td>
+                <td style="padding: 12px 10px; color: var(--text-secondary);">${fmtColName(chinaCol)}</td>
+                <td style="padding: 12px 10px; color: var(--text-secondary);">${fmtColName(europeCol)}</td>
+                <td style="padding: 12px 10px; text-align: right; color: var(--text-primary); font-weight: 500;">${fmtVal(chinaConverted)}</td>
+                <td style="padding: 12px 10px; text-align: right; color: var(--text-primary); font-weight: 500;">${fmtVal(europeConverted)}</td>
+                <td style="padding: 12px 10px; text-align: right; color: ${spreadColor}; font-weight: 700;">${spread >= 0 ? '+' : ''}${fmtVal(spread)}</td>
+                <td style="padding: 12px 10px; text-align: right; color: var(--text-secondary);">${fmtVal(chinaMargin)}</td>
+                <td style="padding: 12px 10px; text-align: right; color: var(--text-secondary);">${fmtVal(europeMargin)}</td>
+            `;
+            tbody.appendChild(tr);
         });
     }
 
@@ -1922,6 +2262,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const latestRow = rawPricesData[rawPricesData.length - 1];
+        const currencySymbol = getCurrencySymbol();
+        const fmtColName = c => c ? translateTextRegions(c).replace(/_/g,' ').replace('Domestic','').trim() : 'N/A';
+
+        const eurUsd = parseFloat(latestRow.EUR_USD_Rate) || 1.08;
+        const usdCny = parseFloat(latestRow.USD_CNY_Rate) || 7.25;
+        let eurToActive = 1.0;
+        if (currentCurrency === 'CNY') {
+            eurToActive = eurUsd * usdCny;
+        } else if (currentCurrency === 'USD') {
+            eurToActive = eurUsd;
+        }
 
         compareSelectedProducts.forEach(productKey => {
             let config = TARGET_CONFIGS[productKey];
@@ -1934,8 +2285,41 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             if (!config) return;
 
-            const chinaCol = resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic') || resolveTargetColumn(baseProd, '华东');
-            const europeCol = resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE') || resolveTargetColumn(baseProd, 'Europe');
+            const chinaCol = compareActiveChinaSubregions[baseProd] || resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic') || resolveTargetColumn(baseProd, '华东');
+            const europeCol = compareActiveEuropeSubregions[baseProd] || resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE') || resolveTargetColumn(baseProd, 'Europe');
+
+            let incotermLabel = "FOB";
+            let defaultEuropeTransport = 90;
+            const upperCol = europeCol.toUpperCase();
+            if (upperCol.includes("FD") || upperCol.includes("DDP")) {
+                incotermLabel = "FD (Delivered)";
+                defaultEuropeTransport = 60;
+            } else if (upperCol.includes("FCA")) {
+                incotermLabel = "FCA (Free Carrier)";
+                defaultEuropeTransport = 85;
+            } else if (upperCol.includes("CIF")) {
+                incotermLabel = "CIF (Cost, Ins. & Freight)";
+                defaultEuropeTransport = 80;
+            }
+
+            if (!compareCustomLogisticsCosts[productKey] || 
+                typeof compareCustomLogisticsCosts[productKey] !== 'object' || 
+                compareCustomLogisticsCosts[productKey].europeTransport === 70 ||
+                compareCustomLogisticsCosts[productKey].europeTransport === 76 ||
+                compareCustomLogisticsCosts[productKey].europeTransport === 550) {
+                
+                compareCustomLogisticsCosts[productKey] = {
+                    oceanFreight: 120,
+                    tariffPct: 5.5,
+                    chinaHandling: 25,
+                    europeTransport: defaultEuropeTransport
+                };
+            }
+            const logData = compareCustomLogisticsCosts[productKey];
+
+            const activeOceanFreight = logData.oceanFreight * eurToActive;
+            const activeChinaHandling = logData.chinaHandling * eurToActive;
+            const activeEuropeTransport = logData.europeTransport * eurToActive;
 
             const chinaVal = latestRow[chinaCol];
             const europeVal = latestRow[europeCol];
@@ -1946,43 +2330,162 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const chinaConverted = convertValue(chinaVal, latestRow.Date);
             const europeConverted = convertValue(europeVal, latestRow.Date);
-            const spread = europeConverted - chinaConverted;
-            const pctSpread = chinaConverted !== 0 ? (spread / chinaConverted) * 100 : 0;
+            
+            const chinaTariffVal = chinaConverted * (logData.tariffPct / 100);
+            const chinaDelivered = chinaConverted + activeOceanFreight + chinaTariffVal + activeChinaHandling;
 
-            const currencySymbol = getCurrencySymbol();
-            const formattedChina = `${currencySymbol}${Math.round(chinaConverted).toLocaleString()}/t`;
-            const formattedEurope = `${currencySymbol}${Math.round(europeConverted).toLocaleString()}/t`;
-            const formattedSpread = `${spread >= 0 ? '+' : ''}${currencySymbol}${Math.round(spread).toLocaleString()}/t`;
+            const europeDelivered = europeConverted + activeEuropeTransport;
 
-            const isArbitrageOpen = spread > 0;
-            const statusText = isArbitrageOpen ? "Arbitrage Open" : "Closed";
-            const badgeBg = isArbitrageOpen ? "rgba(16, 185, 129, 0.15)" : "rgba(255, 255, 255, 0.05)";
-            const badgeColor = isArbitrageOpen ? "#10b981" : "#94a3b8";
-            const spreadColor = spread > 0 ? "#10b981" : (spread < 0 ? "#f43f5e" : "#94a3b8");
+            const grossSpread = europeConverted - chinaConverted;
+            const pctGrossSpread = chinaConverted !== 0 ? (grossSpread / chinaConverted) * 100 : 0;
+            
+            const netSpread = europeDelivered - chinaDelivered;
+            const pctNetMargin = chinaDelivered !== 0 ? (netSpread / chinaDelivered) * 100 : 0;
+
+            const formattedChina = `${currencySymbol}${Math.round(chinaConverted).toLocaleString()}`;
+            const formattedEurope = `${currencySymbol}${Math.round(europeConverted).toLocaleString()}`;
+            const formattedChinaDelivered = `${currencySymbol}${Math.round(chinaDelivered).toLocaleString()}`;
+            const formattedEuropeDelivered = `${currencySymbol}${Math.round(europeDelivered).toLocaleString()}`;
+            const formattedNet = `${netSpread >= 0 ? '+' : ''}${currencySymbol}${Math.round(netSpread).toLocaleString()}/t`;
+
+            const benefitColor = netSpread > 0 ? "#10b981" : (netSpread < 0 ? "#f43f5e" : "#94a3b8");
+            const benefitText = netSpread > 0 ? "China Sourcing Advantage" : "Europe Sourcing Advantage";
 
             const item = document.createElement('div');
-            item.className = "arbitrage-item";
-            item.style.cssText = "background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px;";
+            item.className = "spread-comparison-item";
+            item.style.cssText = "background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 12px;";
+
             item.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center;">
+                <!-- Product Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
                     <strong style="color: var(--text-primary); font-size: 14px;">${config.title}</strong>
-                    <span class="status-badge" style="padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; background: ${badgeBg}; color: ${badgeColor};">${statusText}</span>
+                    <span style="font-size: 10px; font-weight: 700; color: ${benefitColor}; background: ${netSpread > 0 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(244, 63, 94, 0.12)'}; padding: 2px 8px; border-radius: 12px; text-transform: uppercase;">
+                        Net: ${pctNetMargin.toFixed(1)}%
+                    </span>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; color: var(--text-secondary);">
-                    <div>China: <strong style="color: var(--text-primary);">${formattedChina}</strong></div>
-                    <div>Europe: <strong style="color: var(--text-primary);">${formattedEurope}</strong></div>
+                
+                <!-- Base Prices & Incoterms info -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px;">
+                    <div style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;">
+                        <span style="color: var(--text-muted); display: block; font-size: 10px; margin-bottom: 4px; font-weight: 500;">China Ex-Works / Domestic</span>
+                        <strong style="color: var(--text-primary); font-size: 13px;">${formattedChina}/t</strong>
+                        <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; font-style: italic;">(${fmtColName(chinaCol)})</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;">
+                        <span style="color: var(--text-muted); display: block; font-size: 10px; margin-bottom: 4px; font-weight: 500;">Europe (${incotermLabel})</span>
+                        <strong style="color: var(--text-primary); font-size: 13px;">${formattedEurope}/t</strong>
+                        <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; font-style: italic;">(${fmtColName(europeCol)})</div>
+                    </div>
                 </div>
-                <div style="font-size: 12px; border-top: 1px dashed rgba(255, 255, 255, 0.05); padding-top: 6px; display: flex; justify-content: space-between;">
-                    <span>Spread (EU - CN):</span>
-                    <strong style="color: ${spreadColor}; font-weight: 600;">${formattedSpread} (${pctSpread.toFixed(1)}%)</strong>
+
+                <!-- Delivered Cost Breakdown Table -->
+                <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; font-size: 11px; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px; font-weight: 600; color: var(--text-primary);">
+                        <span>Delivered Cost Spain</span>
+                        <span>China</span>
+                        <span>Europe</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+                        <span>Base price:</span>
+                        <span>${formattedChina}</span>
+                        <span>${formattedEurope}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+                        <span>Ocean Freight:</span>
+                        <span style="color: #60a5fa;">+${currencySymbol}${Math.round(activeOceanFreight)}</span>
+                        <span style="color: var(--text-muted);">—</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+                        <span>Import Duty (${logData.tariffPct}%):</span>
+                        <span style="color: #60a5fa;">+${currencySymbol}${Math.round(chinaTariffVal)}</span>
+                        <span style="color: var(--text-muted);">—</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+                        <span>EU Handling & Clearance:</span>
+                        <span style="color: #60a5fa;">+${currencySymbol}${Math.round(activeChinaHandling)}</span>
+                        <span style="color: var(--text-muted);">—</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+                        <span>Inland Logistics/Incoterm:</span>
+                        <span style="color: var(--text-muted);">—</span>
+                        <span style="color: #a78bfa;">+${currencySymbol}${Math.round(activeEuropeTransport)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 5px; font-weight: 700; color: var(--text-primary);">
+                        <span>Total Cost (DDP Spain):</span>
+                        <span style="color: #3b82f6;">${formattedChinaDelivered}</span>
+                        <span style="color: #8b5cf6;">${formattedEuropeDelivered}</span>
+                    </div>
+                </div>
+
+                <!-- Interactive Accordion for Logistics Parameters -->
+                <details style="border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 4px 8px; font-size: 11px;">
+                    <summary style="cursor: pointer; color: var(--text-muted); outline: none; user-select: none; font-size: 10px; font-weight: 600;">
+                        ⚙️ Adjust Logistics Parameters
+                    </summary>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-secondary);">Ocean Freight (${currencySymbol}/t):</span>
+                            <input id="input-freight-${productKey}" type="number" value="${Math.round(activeOceanFreight)}" style="width: 60px; background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 1px 4px; text-align: right;">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-secondary);">Import Duty Rate (%):</span>
+                            <input id="input-duty-${productKey}" type="number" value="${logData.tariffPct}" step="0.1" style="width: 60px; background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 1px 4px; text-align: right;">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-secondary);">Customs Handling (${currencySymbol}/t):</span>
+                            <input id="input-handling-${productKey}" type="number" value="${Math.round(activeChinaHandling)}" style="width: 60px; background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 1px 4px; text-align: right;">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-secondary);">EU Inland Transport (${currencySymbol}/t):</span>
+                            <input id="input-eu-trans-${productKey}" type="number" value="${Math.round(activeEuropeTransport)}" style="width: 60px; background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 1px 4px; text-align: right;">
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Potential Benefit / Real Spread -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; font-size: 12px; margin-top: 2px;">
+                    <span style="color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <span>Potential Benefit:</span>
+                    </span>
+                    <strong style="color: ${benefitColor}; font-size: 15px; font-weight: 800;">${formattedNet}</strong>
+                </div>
+                <div style="font-size: 10px; color: var(--text-muted); text-align: right; margin-top: -4px;">
+                    ${benefitText}
                 </div>
             `;
             container.appendChild(item);
+
+            const oceanInput = document.getElementById(`input-freight-${productKey}`);
+            const dutyInput = document.getElementById(`input-duty-${productKey}`);
+            const handlingInput = document.getElementById(`input-handling-${productKey}`);
+            const euTransInput = document.getElementById(`input-eu-trans-${productKey}`);
+
+            if (oceanInput) {
+                oceanInput.addEventListener('change', (e) => {
+                    logData.oceanFreight = (parseFloat(e.target.value) || 0) / eurToActive;
+                    updateCompareArbitrageDashboard();
+                });
+            }
+            if (dutyInput) {
+                dutyInput.addEventListener('change', (e) => {
+                    logData.tariffPct = parseFloat(e.target.value) || 0;
+                    updateCompareArbitrageDashboard();
+                });
+            }
+            if (handlingInput) {
+                handlingInput.addEventListener('change', (e) => {
+                    logData.chinaHandling = (parseFloat(e.target.value) || 0) / eurToActive;
+                    updateCompareArbitrageDashboard();
+                });
+            }
+            if (euTransInput) {
+                euTransInput.addEventListener('change', (e) => {
+                    logData.europeTransport = (parseFloat(e.target.value) || 0) / eurToActive;
+                    updateCompareArbitrageDashboard();
+                });
+            }
         });
 
-        if (container.children.length === 0) {
-            container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 15px;">No pricing data to compare for the selected items.</div>`;
-        }
     }
 
     function calculateMargin(row, product, region) {
@@ -2274,6 +2777,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const series = [];
 
+            if (currentCompareSubtab === 'custom') {
+                const colors = [
+                    '#10b981', '#6366f1', '#f59e0b', '#f43f5e', '#a855f7',
+                    '#06b6d4', '#ec4899', '#e17055', '#3b82f6', '#14b8a6'
+                ];
+                customCompareSelectedSeries.forEach((header, idx) => {
+                    if (!priceHeaders.includes(header)) return;
+                    
+                    series.push({
+                        name: translateTextRegions(header).replace(/_/g, ' '),
+                        color: colors[idx % colors.length],
+                        type: 'line',
+                        data: slicedData.map(row => {
+                            const val = row[header];
+                            return {
+                                x: new Date(row.Date).getTime(),
+                                y: val !== undefined && val !== null ? convertValue(val, row.Date) : null
+                            };
+                        }).filter(d => d.y !== null)
+                    });
+                });
+                return series;
+            }
+
             const prodColors = [
                 { eu: '#10b981', es: '#34d399' }, // Emerald / Mint
                 { eu: '#6366f1', es: '#818cf8' }, // Indigo / Light Indigo
@@ -2296,8 +2823,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 if (!config) return;
 
-                const chinaCol = resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic') || resolveTargetColumn(baseProd, '华东');
-                const europeCol = resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE') || resolveTargetColumn(baseProd, 'Europe');
+                const chinaCol = compareActiveChinaSubregions[baseProd] || resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic') || resolveTargetColumn(baseProd, '华东');
+                const europeCol = compareActiveEuropeSubregions[baseProd] || resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE') || resolveTargetColumn(baseProd, 'Europe');
 
                 const colors = prodColors[idx % prodColors.length];
 
@@ -3309,10 +3836,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // View toggle buttons (Trend / Seasonal / Compare)
-    document.querySelectorAll('.btn-view-toggle').forEach(button => {
+    document.querySelectorAll('#main-view-toggle-group .btn-view-toggle').forEach(button => {
         button.addEventListener('click', (e) => {
             const btn = e.currentTarget;
-            document.querySelectorAll('.btn-view-toggle').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#main-view-toggle-group .btn-view-toggle').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
             currentChartView = btn.getAttribute('data-view');
@@ -3321,6 +3848,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const selectorContainerEl = document.querySelector('.series-selector-container');
             const metricToggleEl = document.getElementById('seasonal-metric-toggle');
             const compareProductsEl = document.getElementById('compare-products-selector-container');
+            const compareSubtabsEl = document.getElementById('compare-subtabs-container');
             const mainTargetSelectEl = document.querySelector('.target-select-wrapper');
             const sidebarContainerEl = document.querySelector('.sidebar-container');
             const mainWorkspaceEl = document.querySelector('.main-workspace');
@@ -3330,6 +3858,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (selectorContainerEl) selectorContainerEl.style.display = 'none';
                 if (metricToggleEl) metricToggleEl.style.display = 'none';
                 if (compareProductsEl) compareProductsEl.style.display = 'block';
+                if (compareSubtabsEl) compareSubtabsEl.style.display = 'flex';
                 if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'none';
                 if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
                 if (mainWorkspaceEl) {
@@ -3341,6 +3870,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (selectorContainerEl) selectorContainerEl.style.display = 'none';
                 if (metricToggleEl) metricToggleEl.style.display = 'flex';
                 if (compareProductsEl) compareProductsEl.style.display = 'none';
+                if (compareSubtabsEl) compareSubtabsEl.style.display = 'none';
                 if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'flex';
                 if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
                 if (mainWorkspaceEl) {
@@ -3352,6 +3882,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (selectorContainerEl) selectorContainerEl.style.display = 'block';
                 if (metricToggleEl) metricToggleEl.style.display = 'none';
                 if (compareProductsEl) compareProductsEl.style.display = 'none';
+                if (compareSubtabsEl) compareSubtabsEl.style.display = 'none';
                 if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'flex';
                 if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
                 if (mainWorkspaceEl) {
@@ -3363,6 +3894,20 @@ document.addEventListener("DOMContentLoaded", () => {
             initializeChart();
             updateSidebarTabs();
             updateChemicalTree();
+            updateCompareSubtabsDOM();
+        });
+    });
+
+    // Sub-view toggle buttons under Compare tab
+    document.querySelectorAll('#compare-subtabs-container .btn-view-toggle').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            document.querySelectorAll('#compare-subtabs-container .btn-view-toggle').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            currentCompareSubtab = btn.getAttribute('data-subtab');
+            updateCompareSubtabsDOM();
+            initializeChart();
         });
     });
 
@@ -3766,18 +4311,16 @@ document.addEventListener("DOMContentLoaded", () => {
             if (emptyMsgEl) {
                 emptyMsgEl.style.display = 'none';
             }
-            const arbitrageCard = document.getElementById('compare-arbitrage-card');
-            if (arbitrageCard) {
-                arbitrageCard.style.display = 'block';
-            }
             const sidebarTabsEl = document.querySelector('.sidebar-tabs');
             if (sidebarTabsEl) sidebarTabsEl.style.display = 'none';
             
-            updateCompareArbitrageDashboard();
+            updateCompareSubtabsDOM();
             return;
         } else {
             const arbitrageCard = document.getElementById('compare-arbitrage-card');
             if (arbitrageCard) arbitrageCard.style.display = 'none';
+            const customSelects = document.getElementById('custom-compare-selector-container');
+            if (customSelects) customSelects.style.display = 'none';
             
             const sidebarTabsEl = document.querySelector('.sidebar-tabs');
             if (sidebarTabsEl) sidebarTabsEl.style.display = 'flex';
