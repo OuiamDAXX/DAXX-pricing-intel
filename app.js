@@ -2023,6 +2023,17 @@ document.addEventListener("DOMContentLoaded", () => {
             tabSelectGroup.dataset.wired = "true";
         }
 
+        const btnResetCustomCompare = document.getElementById('btn-reset-custom-compare');
+        if (btnResetCustomCompare && !btnResetCustomCompare.dataset.wired) {
+            btnResetCustomCompare.addEventListener('click', () => {
+                customCompareSelectedSeries = [];
+                // Re-render the selector UI to uncheck everything visually
+                populateCustomCompareSelectors();
+                updateCompareChart();
+            });
+            btnResetCustomCompare.dataset.wired = "true";
+        }
+
         // Keep active button class in sync when re-rendering
         if (tabSelectGroup) {
             tabSelectGroup.querySelectorAll('.btn-view-toggle').forEach(btn => {

@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=48">
+    <link rel="stylesheet" href="style.css?v=51">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -329,11 +329,12 @@
 
                 <!-- Custom Multi-Region Selector Sidebar Card -->
                 <aside class="sidebar-workspace-card" id="custom-compare-selector-container" style="display: none;">
-                    <div class="card-header">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <div class="header-titles">
                             <h2>Multi-Region Select</h2>
                             <p>Freely Select Series to Plot</p>
                         </div>
+                        <button id="btn-reset-custom-compare" style="background: var(--glass-border); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-primary); border-radius: 4px; padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all 0.2s;"><i class="fa-solid fa-rotate-right" style="margin-right: 6px;"></i>Reset</button>
                     </div>
                     <div class="view-toggle-group" id="custom-compare-tab-select-group" style="display: flex; gap: 4px; margin-top: 15px; width: 100%;">
                         <button class="btn-view-toggle active" data-group="targets" style="flex: 1; padding: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase;">Targets</button>
@@ -615,6 +616,6 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=263"></script>
+    <script src="app.js?v=261"></script>
 </body>
 </html>

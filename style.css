@@ -288,7 +288,7 @@ body {
 }
 
 .main-workspace.compare-view {
-    grid-template-columns: 3.1fr 0.9fr;
+    grid-template-columns: 2.9fr 1.1fr;
 }
 
 .main-workspace.full-width {
