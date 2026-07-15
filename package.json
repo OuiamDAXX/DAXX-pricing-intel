@@ -1,0 +1,16 @@
+{
+  "name": "oilchem-report-scheduler",
+  "version": "1.0.0",
+  "description": "Scheduler for OilChem Spreads Matrix Email Reports",
+  "main": "report-scheduler.js",
+  "scripts": {
+    "start": "node report-scheduler.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.7",
+    "xlsx": "^0.18.5"
+  }
+}

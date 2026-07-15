@@ -255,9 +255,11 @@
                     <div id="main-chart"></div>
 
                     <!-- Spreads & Arbitrage Matrix View -->
-                    <div id="compare-matrix-container" style="display: none; background: rgba(20,20,20,0.4); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; width: 100%; box-sizing: border-box; overflow-x: auto; max-height: 500px;">
-                        <span style="display: block; font-size: 1rem; font-weight: 600; color: var(--accent-blue); margin-bottom: 15px;"><i class="fa-solid fa-table-cells"></i> Global Price Spreads Matrix</span>
-                        <div style="overflow-x: auto; width: 100%;">
+                    <div id="compare-matrix-container" style="display: none; background: rgba(20,20,20,0.4); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; width: 100%; box-sizing: border-box; overflow-y: auto; max-height: 500px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="display: block; font-size: 1rem; font-weight: 600; color: var(--accent-blue);"><i class="fa-solid fa-table-cells"></i> Global Price Spreads Matrix</span>
+                        </div>
+                        <div style="overflow-x: auto; width: 100%;" id="matrix-table-wrapper">
                             <table class="prices-table" style="width: 100%; border-collapse: collapse; text-align: left; min-width: 800px;">
                                 <thead>
                                     <tr style="border-bottom: 2px solid var(--border-color);">
@@ -343,6 +345,23 @@
                     </div>
                     <div id="custom-compare-checkboxes-grid" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px; max-height: 500px; overflow-y: auto; padding-right: 5px;">
                         <!-- Populated dynamically by JavaScript -->
+                    </div>
+                </aside>
+
+                <!-- Matrix Export Card -->
+                <aside class="sidebar-workspace-card" id="matrix-report-config-card" style="display: none;">
+                    <div class="card-header">
+                        <div class="header-titles">
+                            <h2>Export Report</h2>
+                            <p>Download Spreads Matrix Data</p>
+                        </div>
+                    </div>
+                    <div style="padding: 15px;">
+                        <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; font-weight: 600;">Direct Download</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="downloadMatrixAsCSV()" style="flex: 1; background: var(--glass-border); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-primary); border-radius: 4px; padding: 10px 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;"><i class="fa-solid fa-file-csv" style="margin-right: 6px;"></i>CSV</button>
+                            <button onclick="downloadMatrixAsPDF()" style="flex: 1; background: var(--glass-border); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-primary); border-radius: 4px; padding: 10px 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;"><i class="fa-solid fa-file-pdf" style="margin-right: 6px;"></i>PDF</button>
+                        </div>
                     </div>
                 </aside>
 
@@ -614,8 +633,10 @@
     <!-- CDNs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=261"></script>
+    <script src="app.js?v=265"></script>
 </body>
 </html>

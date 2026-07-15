@@ -1962,12 +1962,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const matrixContainer = document.getElementById('compare-matrix-container');
         const mainChart = document.getElementById('main-chart');
         const arbitrageSidebarCard = document.getElementById('compare-arbitrage-card');
+        const matrixReportConfigCard = document.getElementById('matrix-report-config-card');
 
         if (currentChartView !== 'compare') {
             if (standardSelects) standardSelects.style.display = 'none';
             if (customSelects) customSelects.style.display = 'none';
             if (matrixContainer) matrixContainer.style.display = 'none';
             if (arbitrageSidebarCard) arbitrageSidebarCard.style.display = 'none';
+            if (matrixReportConfigCard) matrixReportConfigCard.style.display = 'none';
             return;
         }
 
@@ -1977,6 +1979,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (matrixContainer) matrixContainer.style.display = 'none';
             if (mainChart) mainChart.style.display = 'block';
             if (arbitrageSidebarCard) arbitrageSidebarCard.style.display = 'block';
+            if (matrixReportConfigCard) matrixReportConfigCard.style.display = 'none';
 
             createCompareProductSelectors();
             updateCompareArbitrageDashboard();
@@ -1987,6 +1990,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (matrixContainer) matrixContainer.style.display = 'none';
             if (mainChart) mainChart.style.display = 'block';
             if (arbitrageSidebarCard) arbitrageSidebarCard.style.display = 'none';
+            if (matrixReportConfigCard) matrixReportConfigCard.style.display = 'none';
 
             populateCustomCompareSelectors();
         } 
@@ -1996,6 +2000,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (matrixContainer) matrixContainer.style.display = 'block';
             if (mainChart) mainChart.style.display = 'none';
             if (arbitrageSidebarCard) arbitrageSidebarCard.style.display = 'none';
+            if (matrixReportConfigCard) matrixReportConfigCard.style.display = 'block';
 
             renderCompareMatrix();
         }
@@ -2248,19 +2253,101 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const fmtColName = c => c ? translateTextRegions(c).replace(/_/g,' ').replace('Domestic','').trim() : 'N/A';
 
+            const spreadIcon = spread > 0 ? '<i class="fa-solid fa-arrow-trend-up"></i>' : (spread < 0 ? '<i class="fa-solid fa-arrow-trend-down"></i>' : '<i class="fa-solid fa-minus"></i>');
+
             tr.innerHTML = `
-                <td style="padding: 12px 10px; font-weight: 600; color: var(--text-primary);">${cfg.title}</td>
-                <td style="padding: 12px 10px; color: var(--text-secondary);">${fmtColName(chinaCol)}</td>
-                <td style="padding: 12px 10px; color: var(--text-secondary);">${fmtColName(europeCol)}</td>
+                <td style="padding: 12px 10px; font-weight: 600; color: var(--text-primary); border-left: 3px solid ${spreadColor};">${cfg.title}</td>
+                <td style="padding: 12px 10px; color: var(--text-secondary);"><span style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">${fmtColName(chinaCol)}</span></td>
+                <td style="padding: 12px 10px; color: var(--text-secondary);"><span style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">${fmtColName(europeCol)}</span></td>
                 <td style="padding: 12px 10px; text-align: right; color: var(--text-primary); font-weight: 500;">${fmtVal(chinaConverted)}</td>
                 <td style="padding: 12px 10px; text-align: right; color: var(--text-primary); font-weight: 500;">${fmtVal(europeConverted)}</td>
-                <td style="padding: 12px 10px; text-align: right; color: ${spreadColor}; font-weight: 700;">${spread >= 0 ? '+' : ''}${fmtVal(spread)}</td>
+                <td style="padding: 12px 10px; text-align: right; color: ${spreadColor}; font-weight: 700;">${spreadIcon} ${spread >= 0 ? '+' : ''}${fmtVal(spread)}</td>
                 <td style="padding: 12px 10px; text-align: right; color: var(--text-secondary);">${fmtVal(chinaMargin)}</td>
                 <td style="padding: 12px 10px; text-align: right; color: var(--text-secondary);">${fmtVal(europeMargin)}</td>
             `;
             tbody.appendChild(tr);
         });
     }
+
+    window.downloadMatrixAsCSV = function() {
+        const table = document.querySelector('.prices-table');
+        if (!table) return;
+        let csvContent = "data:text/csv;charset=utf-8,";
+        const rows = table.querySelectorAll('tr');
+        rows.forEach(row => {
+            const cols = row.querySelectorAll('th, td');
+            const rowData = Array.from(cols).map(c => `"${c.innerText.replace(/"/g, '""')}"`);
+            csvContent += rowData.join(",") + "\r\n";
+        });
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `spreads_matrix_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    window.downloadMatrixAsPDF = function() {
+        const table = document.querySelector('.prices-table');
+        if (!table || typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+            alert("PDF libraries not loaded or table missing.");
+            return;
+        }
+
+        // Clone the table to a temporary container appended to body to avoid clipping
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.top = '-9999px';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '1200px'; // Give it a fixed width for good layout
+        tempContainer.style.backgroundColor = '#0f172a'; // Match theme
+        tempContainer.style.padding = '30px';
+        
+        // Add a title
+        const title = document.createElement('h2');
+        title.innerText = "Global Price Spreads Matrix";
+        title.style.color = '#fff';
+        title.style.fontFamily = 'sans-serif';
+        title.style.marginBottom = '20px';
+        tempContainer.appendChild(title);
+
+        const clone = table.cloneNode(true);
+        tempContainer.appendChild(clone);
+        document.body.appendChild(tempContainer);
+        
+        html2canvas(tempContainer, {
+            scale: 2,
+            backgroundColor: '#0f172a'
+        }).then(canvas => {
+            document.body.removeChild(tempContainer);
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new window.jspdf.jsPDF('p', 'pt', 'a4'); // Portrait might fit better for long lists
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+            
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            // Add new pages if table is very long
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+
+            pdf.save(`spreads_matrix_${new Date().toISOString().split('T')[0]}.pdf`);
+        }).catch(err => {
+            console.error("PDF generation failed:", err);
+            document.body.removeChild(tempContainer);
+        });
+    };
 
     function updateCompareArbitrageDashboard() {
         const container = document.getElementById('compare-arbitrage-list');
