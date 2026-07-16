@@ -998,10 +998,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentChartView = 'trend'; // 'trend' or 'seasonal' or 'compare'
     let seasonalMetricMode = 'price'; // 'price' or 'margin'
     let activeSidebarTab = 'signals'; // 'signals', 'procurement', 'feedstocks'
-    let compareSelectedProducts = [];
-    let compareActiveChinaSubregions = {};
-    let compareActiveEuropeSubregions = {};
-    let compareCustomLogisticsCosts = {};
+    let compareRows = [
+        { product: 'Butyl_Acetate', chinaSub: '', europeSub: '' }
+    ];
+    let compareCustomLogisticsCosts = {};     // productKey -> custom freight cost (EUR/t)
     let currentCompareSubtab = 'standard';
     let customCompareSelectedSeries = [];
     let activeCustomCompareGroup = 'targets';
@@ -1738,6 +1738,141 @@ document.addEventListener("DOMContentLoaded", () => {
         // Compare with 7 days ago if possible, otherwise fall back to previous day
         const previousRow = totalRows > 7 ? rawPricesData[totalRows - 8] : (totalRows > 1 ? rawPricesData[totalRows - 2] : latestRow);
 
+        if (currentChartView === 'compare') {
+            const kpiItems = [];
+            
+            if (currentCompareSubtab === 'custom') {
+                customCompareSelectedSeries.forEach(colName => {
+                    let title = colName;
+                    let foundConfig = null;
+                    
+                    for (const cfg of Object.values(TARGET_CONFIGS)) {
+                        const baseProd = cfg.precursors ? (cfg.precursors.butyl || '') : '';
+                        if (baseProd && (colName.startsWith(baseProd + '_') || colName === baseProd)) {
+                            foundConfig = cfg;
+                            break;
+                        }
+                    }
+                    if (!foundConfig) {
+                        for (const cfg of Object.values(RAW_MATERIALS_CONFIGS)) {
+                            const baseProd = cfg.base || '';
+                            if (baseProd && (colName.startsWith(baseProd + '_') || colName === baseProd)) {
+                                foundConfig = cfg;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (foundConfig) {
+                        title = foundConfig.title;
+                    } else {
+                        title = colName.split('_')[0].replace(/-/g, ' ');
+                    }
+                    
+                    kpiItems.push({
+                        title: title,
+                        regionLabel: translateTextRegions(colName).replace(/_/g,' ').replace('Domestic','').trim(),
+                        col: colName
+                    });
+                });
+            } else {
+                compareRows.forEach(rowObj => {
+                    const productKey = rowObj.product;
+                    const config = TARGET_CONFIGS[productKey] || RAW_MATERIALS_CONFIGS[productKey];
+                    if (!config) return;
+
+                    let baseProd = '';
+                    if (config.precursors) {
+                        baseProd = config.precursors.butyl || config.precursors[Object.keys(config.precursors)[0]] || '';
+                    } else {
+                        baseProd = config.base || '';
+                    }
+
+                    const chinaCol = rowObj.chinaSub || resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic');
+                    const europeCol = rowObj.europeSub || resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE');
+
+                    const fmtCol = c => c ? translateTextRegions(c).replace(/_/g,' ').replace('Domestic','').trim() : 'N/A';
+
+                    // 1. Europe item
+                    kpiItems.push({
+                        title: config.title,
+                        regionLabel: `Europe: ${fmtCol(europeCol)}`,
+                        col: europeCol
+                    });
+
+                    // 2. China item
+                    kpiItems.push({
+                        title: config.title,
+                        regionLabel: `China: ${fmtCol(chinaCol)}`,
+                        col: chinaCol
+                    });
+                });
+            }
+
+            const kpiKeys = ['butyl', 'butanol', 'acetic', 'methanol', 'gas'];
+            kpiKeys.forEach((key, index) => {
+                const cardEl = document.getElementById(`kpi-${key}`);
+                const titleEl = document.querySelector(`#kpi-${key} h3`);
+                const marketEl = document.querySelector(`#kpi-${key} .kpi-market`);
+                const valEl = document.getElementById(`kpi-${key}-val`);
+                const changeEl = document.getElementById(`kpi-${key}-change`);
+                
+                if (!cardEl || !titleEl || !marketEl || !valEl || !changeEl) return;
+
+                if (index < kpiItems.length) {
+                    const item = kpiItems[index];
+                    cardEl.style.display = 'flex';
+
+                    titleEl.textContent = item.title;
+                    marketEl.textContent = item.regionLabel;
+
+                    const activeCol = item.col;
+                    const activeVal = latestRow[activeCol];
+
+                    if (activeVal !== undefined && activeVal !== null) {
+                        const prevVal = (previousRow[activeCol] !== undefined && previousRow[activeCol] !== null) ? previousRow[activeCol] : activeVal;
+                        const absChange = activeVal - prevVal;
+                        const pctChange = prevVal !== 0 ? (absChange / prevVal) * 100 : 0;
+
+                        valEl.textContent = formatVal(activeVal, 1);
+
+                        if (absChange > 0.05) {
+                            changeEl.className = 'kpi-change';
+                            changeEl.innerHTML = `<span class="kpi-trend-badge positive"><i class="fa-solid fa-arrow-trend-up"></i> +${pctChange.toFixed(2)}%</span>`;
+                        } else if (absChange < -0.05) {
+                            changeEl.className = 'kpi-change';
+                            changeEl.innerHTML = `<span class="kpi-trend-badge negative"><i class="fa-solid fa-arrow-trend-down"></i> ${pctChange.toFixed(2)}%</span>`;
+                        } else {
+                            changeEl.className = 'kpi-change';
+                            changeEl.innerHTML = `<span class="kpi-trend-badge neutral"><i class="fa-solid fa-minus"></i> Stable</span>`;
+                        }
+                    } else {
+                        valEl.textContent = "N/A";
+                        changeEl.className = 'kpi-change';
+                        changeEl.innerHTML = `<span class="kpi-trend-badge neutral">-</span>`;
+                    }
+                } else {
+                    cardEl.style.display = 'none';
+                }
+            });
+            return;
+        }
+
+        const config = TARGET_CONFIGS[currentProduct];
+        if (config) {
+            document.querySelector('#kpi-butyl h3').textContent = config.labels.butyl;
+            document.querySelector('#kpi-butanol h3').textContent = config.labels.butanol;
+            document.querySelector('#kpi-acetic h3').textContent = config.labels.acetic;
+            document.querySelector('#kpi-methanol h3').textContent = config.labels.methanol;
+            
+            const getRefMarket = col => col ? `Reference Market: ${translateTextRegions(col).replace(/_/g,' ').replace('Domestic','').trim()}` : 'N/A';
+            document.querySelector('#kpi-butyl .kpi-market').textContent = getRefMarket(KPI_COLUMNS.butyl);
+            document.querySelector('#kpi-butanol .kpi-market').textContent = getRefMarket(KPI_COLUMNS.butanol);
+            document.querySelector('#kpi-acetic .kpi-market').textContent = getRefMarket(KPI_COLUMNS.acetic);
+            document.querySelector('#kpi-methanol .kpi-market').textContent = getRefMarket(KPI_COLUMNS.methanol);
+            document.querySelector('#kpi-gas .kpi-market').textContent = getRefMarket(KPI_COLUMNS.gas);
+        }
+
         const seenCols = new Set();
         Object.entries(KPI_COLUMNS).forEach(([key, colName]) => {
             const cardEl = document.getElementById(`kpi-${key}`);
@@ -1777,6 +1912,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 changeEl.innerHTML = `<span class="kpi-trend-badge neutral">-</span>`;
             }
         });
+        updateKPIArrows();
+    }
+
+    function updateKPIArrows() {
+        const grid = document.getElementById('kpi-grid-scrollable');
+        const leftBtn = document.getElementById('kpi-scroll-left');
+        const rightBtn = document.getElementById('kpi-scroll-right');
+        if (!grid || !leftBtn || !rightBtn) return;
+
+        setTimeout(() => {
+            const isOverflowing = grid.scrollWidth > grid.clientWidth + 5;
+            if (isOverflowing) {
+                leftBtn.style.display = grid.scrollLeft > 5 ? 'flex' : 'none';
+                rightBtn.style.display = (grid.scrollLeft + grid.clientWidth < grid.scrollWidth - 5) ? 'flex' : 'none';
+            } else {
+                leftBtn.style.display = 'none';
+                rightBtn.style.display = 'none';
+            }
+        }, 50);
     }
 
     // ==========================================
@@ -1840,17 +1994,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function createCompareProductSelectors() {
-        const prodSelect = document.getElementById('compare-product-select');
-        const chinaSelect = document.getElementById('compare-china-subregion-select');
-        const europeSelect = document.getElementById('compare-europe-subregion-select');
-        if (!prodSelect || !chinaSelect || !europeSelect) return;
+        const container = document.getElementById('compare-rows-container');
+        if (!container) return;
+        container.innerHTML = '';
 
         if (rawPricesData.length === 0) return;
 
         const allProducts = { ...TARGET_CONFIGS, ...RAW_MATERIALS_CONFIGS };
 
-        // 1. Populate product dropdown if empty
-        if (prodSelect.children.length === 0) {
+        // Render each row in compareRows
+        compareRows.forEach((rowObj, idx) => {
+            const rowDiv = document.createElement('div');
+            rowDiv.style.cssText = 'display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; width: 100%; border-bottom: 1px dashed rgba(255,255,255,0.04); padding-bottom: 15px;';
+            if (idx === compareRows.length - 1) {
+                rowDiv.style.borderBottom = 'none';
+                rowDiv.style.paddingBottom = '0';
+            }
+
+            // A. Product Select Box
+            const prodWrapper = document.createElement('div');
+            prodWrapper.style.cssText = 'flex: 1.2; min-width: 200px;';
+            prodWrapper.innerHTML = `<label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; font-weight: 500; text-transform: uppercase;">Product</label>`;
+            
+            const prodSelect = document.createElement('select');
+            prodSelect.className = 'target-select';
+            prodSelect.style.width = '100%';
+
             const finalOptions = Object.entries(TARGET_CONFIGS).map(([key, cfg]) => 
                 `<option value="${key}">${cfg.title}</option>`
             ).join('');
@@ -1867,93 +2036,140 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${rawOptions}
                 </optgroup>
             `;
+            prodSelect.value = rowObj.product;
+            prodWrapper.appendChild(prodSelect);
 
-            // Keep only the first product selected by default
-            if (compareSelectedProducts.length === 0 || !allProducts[compareSelectedProducts[0]]) {
-                compareSelectedProducts = [Object.keys(allProducts)[0]];
-            } else {
-                compareSelectedProducts = [compareSelectedProducts[0]];
+            // B. Resolve base product
+            let cfg = allProducts[rowObj.product];
+            let baseProd = '';
+            if (cfg) {
+                baseProd = cfg.precursors ? (cfg.precursors.butyl || cfg.precursors[Object.keys(cfg.precursors)[0]] || '') : '';
+                if (!baseProd) baseProd = cfg.base || '';
             }
-        }
-        prodSelect.value = compareSelectedProducts[0];
 
-        const activeProduct = compareSelectedProducts[0];
-        let cfg = allProducts[activeProduct];
-        if (!cfg) return;
+            // C. Detect available China columns
+            const chinaCols = priceHeaders.filter(h => {
+                const lh = h.toLowerCase();
+                const lb = baseProd.toLowerCase().replace(/-/g,'_');
+                return (h.startsWith(baseProd + '_') || h.startsWith(lb + '_')) &&
+                    (lh.includes('china') || lh.includes('华东') || lh.includes('domestic'));
+            });
+            if (chinaCols.length === 0 && baseProd) {
+                const fb = resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic');
+                if (fb) chinaCols.push(fb);
+            }
 
-        let baseProd = '';
-        if (cfg.precursors) {
-            baseProd = cfg.precursors.butyl || cfg.precursors[Object.keys(cfg.precursors)[0]] || '';
-        } else {
-            baseProd = cfg.base || '';
-        }
+            // D. Detect available Europe columns
+            const europeCols = priceHeaders.filter(h => {
+                const lh = h.toLowerCase();
+                const lb = baseProd.toLowerCase().replace(/-/g,'_');
+                return (h.startsWith(baseProd + '_') || h.startsWith(lb + '_')) &&
+                    (lh.includes('europe') || lh.includes('nwe') || lh.includes('rotterdam') || lh.includes('eu_'));
+            });
+            if (europeCols.length === 0 && baseProd) {
+                const fb = resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE');
+                if (fb) europeCols.push(fb);
+            }
 
-        // 2. Detect available China columns
-        const chinaCols = priceHeaders.filter(h => {
-            const lh = h.toLowerCase();
-            const lb = baseProd.toLowerCase().replace(/-/g,'_');
-            return (h.startsWith(baseProd + '_') || h.startsWith(lb + '_')) &&
-                (lh.includes('china') || lh.includes('华东') || lh.includes('domestic'));
-        });
-        if (chinaCols.length === 0) {
-            const fb = resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic');
-            if (fb) chinaCols.push(fb);
-        }
+            // Resolve subregion active selections inside rowObj
+            if (!rowObj.chinaSub || !chinaCols.includes(rowObj.chinaSub)) {
+                rowObj.chinaSub = chinaCols[0] || '';
+            }
+            if (!rowObj.europeSub || !europeCols.includes(rowObj.europeSub)) {
+                rowObj.europeSub = europeCols[0] || '';
+            }
 
-        // 3. Detect available Europe columns
-        const europeCols = priceHeaders.filter(h => {
-            const lh = h.toLowerCase();
-            const lb = baseProd.toLowerCase().replace(/-/g,'_');
-            return (h.startsWith(baseProd + '_') || h.startsWith(lb + '_')) &&
-                (lh.includes('europe') || lh.includes('nwe') || lh.includes('rotterdam') || lh.includes('eu_'));
-        });
-        if (europeCols.length === 0) {
-            const fb = resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE');
-            if (fb) europeCols.push(fb);
-        }
+            // E. China Select Box
+            const chinaWrapper = document.createElement('div');
+            chinaWrapper.style.cssText = 'flex: 1; min-width: 180px;';
+            chinaWrapper.innerHTML = `<label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; font-weight: 500; text-transform: uppercase;">China Subregion</label>`;
+            
+            const chinaSelect = document.createElement('select');
+            chinaSelect.className = 'target-select';
+            chinaSelect.style.width = '100%';
 
-        // Resolve active selections
-        if (!compareActiveChinaSubregions[baseProd] || !chinaCols.includes(compareActiveChinaSubregions[baseProd])) {
-            compareActiveChinaSubregions[baseProd] = chinaCols[0] || '';
-        }
-        if (!compareActiveEuropeSubregions[baseProd] || !europeCols.includes(compareActiveEuropeSubregions[baseProd])) {
-            compareActiveEuropeSubregions[baseProd] = europeCols[0] || '';
-        }
+            const fmtCol = col => col ? translateTextRegions(col).replace(/_/g,' ').replace(/  +/g,' ') : 'N/A';
+            chinaSelect.innerHTML = chinaCols.map(c => 
+                `<option value="${c}" ${c === rowObj.chinaSub ? 'selected' : ''}>${fmtCol(c)}</option>`
+            ).join('');
+            chinaWrapper.appendChild(chinaSelect);
 
-        // Populate China subregion dropdown
-        const fmtCol = col => col ? translateTextRegions(col).replace(/_/g,' ').replace(/  +/g,' ') : 'N/A';
-        chinaSelect.innerHTML = chinaCols.map(c => 
-            `<option value="${c}" ${c === compareActiveChinaSubregions[baseProd] ? 'selected' : ''}>${fmtCol(c)}</option>`
-        ).join('');
+            // F. Europe Select Box
+            const europeWrapper = document.createElement('div');
+            europeWrapper.style.cssText = 'flex: 1; min-width: 180px;';
+            europeWrapper.innerHTML = `<label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; font-weight: 500; text-transform: uppercase;">Europe Subregion</label>`;
+            
+            const europeSelect = document.createElement('select');
+            europeSelect.className = 'target-select';
+            europeSelect.style.width = '100%';
+            europeSelect.innerHTML = europeCols.map(c => 
+                `<option value="${c}" ${c === rowObj.europeSub ? 'selected' : ''}>${fmtCol(c)}</option>`
+            ).join('');
+            europeWrapper.appendChild(europeSelect);
 
-        // Populate Europe subregion dropdown
-        europeSelect.innerHTML = europeCols.map(c => 
-            `<option value="${c}" ${c === compareActiveEuropeSubregions[baseProd] ? 'selected' : ''}>${fmtCol(c)}</option>`
-        ).join('');
+            // G. Remove row button if more than 1 row exists
+            const actionWrapper = document.createElement('div');
+            actionWrapper.style.cssText = 'display: flex; align-items: center; justify-content: center; height: 38px;';
+            if (compareRows.length > 1) {
+                const btnRemove = document.createElement('button');
+                btnRemove.className = 'btn-range';
+                btnRemove.style.cssText = 'padding: 8px 12px; color: var(--color-rose); background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.15); border-radius: 8px;';
+                btnRemove.innerHTML = `<i class="fa-solid fa-trash-can"></i>`;
+                btnRemove.onclick = () => {
+                    compareRows.splice(idx, 1);
+                    createCompareProductSelectors();
+                    updateChartData();
+                    updateCompareArbitrageDashboard();
+                };
+                actionWrapper.appendChild(btnRemove);
+            } else {
+                // Placeholder to keep spacing alignment
+                actionWrapper.style.width = '38px';
+            }
 
-        // Wire change events safely (only if not already wired)
-        if (!prodSelect.dataset.wired) {
-            prodSelect.addEventListener('change', (e) => {
-                compareSelectedProducts = [e.target.value];
+            // H. Assemble row elements
+            rowDiv.appendChild(prodWrapper);
+            rowDiv.appendChild(chinaWrapper);
+            rowDiv.appendChild(europeWrapper);
+            rowDiv.appendChild(actionWrapper);
+            container.appendChild(rowDiv);
+
+            // I. Bind change listeners safely
+            prodSelect.onchange = (e) => {
+                rowObj.product = e.target.value;
+                rowObj.chinaSub = '';
+                rowObj.europeSub = '';
                 createCompareProductSelectors();
                 updateChartData();
                 updateCompareArbitrageDashboard();
-            });
-            prodSelect.dataset.wired = "true";
+            };
+
+            chinaSelect.onchange = (e) => {
+                rowObj.chinaSub = e.target.value;
+                updateChartData();
+                updateCompareArbitrageDashboard();
+            };
+
+            europeSelect.onchange = (e) => {
+                rowObj.europeSub = e.target.value;
+                updateChartData();
+                updateCompareArbitrageDashboard();
+            };
+        });
+
+        // Setup the plus button click handler once
+        const btnAdd = document.getElementById('btn-add-compare-row');
+        if (btnAdd && !btnAdd.dataset.wired) {
+            btnAdd.onclick = () => {
+                // Default product to n_Butanol or the next available key
+                const defaultProd = Object.keys(allProducts).find(k => !compareRows.some(r => r.product === k)) || Object.keys(allProducts)[0];
+                compareRows.push({ product: defaultProd, chinaSub: '', europeSub: '' });
+                createCompareProductSelectors();
+                updateChartData();
+                updateCompareArbitrageDashboard();
+            };
+            btnAdd.dataset.wired = "true";
         }
-
-        // Always overwrite onchange for subregions because they change dynamically based on the product
-        chinaSelect.onchange = (e) => {
-            compareActiveChinaSubregions[baseProd] = e.target.value;
-            updateChartData();
-            updateCompareArbitrageDashboard();
-        };
-
-        europeSelect.onchange = (e) => {
-            compareActiveEuropeSubregions[baseProd] = e.target.value;
-            updateChartData();
-            updateCompareArbitrageDashboard();
-        };
     }
 
     function updateCompareSubtabsDOM() {
@@ -2220,6 +2436,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const allProducts = { ...TARGET_CONFIGS, ...RAW_MATERIALS_CONFIGS };
         const curr = getCurrencySymbol();
 
+        function getRegionFromHeader(colName, baseProd) {
+            let suffix = colName.replace(baseProd + '_', '');
+            if (suffix.startsWith('Domestic_')) return suffix.replace('Domestic_', '');
+            if (suffix.startsWith('Europe_')) return suffix.replace('Europe_', '');
+            return suffix;
+        }
+
         Object.entries(allProducts).forEach(([key, cfg]) => {
             let baseProd = '';
             if (cfg.precursors) {
@@ -2228,44 +2451,85 @@ document.addEventListener("DOMContentLoaded", () => {
                 baseProd = cfg.base || '';
             }
 
-            const chinaCol = compareActiveChinaSubregions[baseProd] || resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic') || resolveTargetColumn(baseProd, '华东');
-            const europeCol = compareActiveEuropeSubregions[baseProd] || resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE') || resolveTargetColumn(baseProd, 'Europe');
+            const cleanBase = baseProd.replace(/-/g, '_');
+            const productCols = priceHeaders.filter(h => 
+                h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_') || h === baseProd || h === cleanBase
+            );
 
-            const chinaVal = latestRow[chinaCol];
-            const europeVal = latestRow[europeCol];
+            const europeCols = productCols.filter(h => {
+                const lh = h.toLowerCase();
+                return lh.includes('europe') || lh.includes('rotterdam') || lh.includes('nwe') || lh.includes('ara') || lh.includes('ttf') || lh.includes('global');
+            });
 
-            if (chinaVal === undefined || chinaVal === null || europeVal === undefined || europeVal === null) return;
+            const chinaCols = productCols.filter(h => !europeCols.includes(h));
 
-            const chinaConverted = convertValue(chinaVal, latestRow.Date);
-            const europeConverted = convertValue(europeVal, latestRow.Date);
-            const spread = europeConverted - chinaConverted;
+            const priorityRegions = ['华东', 'East_China', '山东', 'Shandong', '华南', 'South_China', '江苏', 'Jiangsu', 'Domestic'];
+            chinaCols.sort((a, b) => {
+                let indexA = priorityRegions.findIndex(r => a.includes(r));
+                let indexB = priorityRegions.findIndex(r => b.includes(r));
+                if (indexA === -1) indexA = 999;
+                if (indexB === -1) indexB = 999;
+                return indexA - indexB;
+            });
 
-            const chinaMargin = calculateMargin(latestRow, key, '华东') || calculateMargin(latestRow, key, 'Domestic');
-            const europeMargin = calculateMargin(latestRow, key, 'Europe') || calculateMargin(latestRow, key, 'NWE');
+            const cleanBaseName = cfg.title;
+            const fmtColName = c => {
+                if (!c) return 'N/A';
+                let name = translateTextRegions(c).replace(/_/g,' ').replace('Domestic','').trim();
+                const prefixes = [cleanBaseName, baseProd.replace(/_/g, ' '), cleanBase.replace(/_/g, ' ')];
+                prefixes.forEach(p => {
+                    if (name.startsWith(p)) {
+                        name = name.substring(p.length).trim();
+                    }
+                });
+                return name;
+            };
 
-            const tr = document.createElement('tr');
-            tr.style.cssText = 'border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;';
-            tr.onmouseenter = () => tr.style.background = 'rgba(255,255,255,0.02)';
-            tr.onmouseleave = () => tr.style.background = 'transparent';
+            europeCols.forEach(europeCol => {
+                chinaCols.forEach(chinaCol => {
+                    const chinaVal = latestRow[chinaCol];
+                    const europeVal = latestRow[europeCol];
 
-            const fmtVal = v => v !== null && v !== undefined ? `${curr}${Math.round(v).toLocaleString()}/t` : '—';
-            const spreadColor = spread > 0 ? '#10b981' : (spread < 0 ? '#f43f5e' : '#94a3b8');
+                    if (chinaVal === undefined || chinaVal === null || europeVal === undefined || europeVal === null) return;
 
-            const fmtColName = c => c ? translateTextRegions(c).replace(/_/g,' ').replace('Domestic','').trim() : 'N/A';
+                    const chinaConverted = convertValue(chinaVal, latestRow.Date);
+                    const europeConverted = convertValue(europeVal, latestRow.Date);
+                    const spread = europeConverted - chinaConverted;
 
-            const spreadIcon = spread > 0 ? '<i class="fa-solid fa-arrow-trend-up"></i>' : (spread < 0 ? '<i class="fa-solid fa-arrow-trend-down"></i>' : '<i class="fa-solid fa-minus"></i>');
+                    const chinaReg = getRegionFromHeader(chinaCol, baseProd);
+                    const europeReg = getRegionFromHeader(europeCol, baseProd);
 
-            tr.innerHTML = `
-                <td style="padding: 12px 10px; font-weight: 600; color: var(--text-primary); border-left: 3px solid ${spreadColor};">${cfg.title}</td>
-                <td style="padding: 12px 10px; color: var(--text-secondary);"><span style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">${fmtColName(chinaCol)}</span></td>
-                <td style="padding: 12px 10px; color: var(--text-secondary);"><span style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">${fmtColName(europeCol)}</span></td>
-                <td style="padding: 12px 10px; text-align: right; color: var(--text-primary); font-weight: 500;">${fmtVal(chinaConverted)}</td>
-                <td style="padding: 12px 10px; text-align: right; color: var(--text-primary); font-weight: 500;">${fmtVal(europeConverted)}</td>
-                <td style="padding: 12px 10px; text-align: right; color: ${spreadColor}; font-weight: 700;">${spreadIcon} ${spread >= 0 ? '+' : ''}${fmtVal(spread)}</td>
-                <td style="padding: 12px 10px; text-align: right; color: var(--text-secondary);">${fmtVal(chinaMargin)}</td>
-                <td style="padding: 12px 10px; text-align: right; color: var(--text-secondary);">${fmtVal(europeMargin)}</td>
-            `;
-            tbody.appendChild(tr);
+                    const chinaMargin = calculateMargin(latestRow, key, chinaReg);
+                    const europeMargin = calculateMargin(latestRow, key, europeReg);
+
+                    const tr = document.createElement('tr');
+                    tr.style.cssText = 'border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;';
+                    tr.onmouseenter = () => tr.style.background = 'rgba(255,255,255,0.02)';
+                    tr.onmouseleave = () => tr.style.background = 'transparent';
+
+                    // Replace non-breaking spaces in formatting to avoid rendering issues
+                    const fmtVal = v => {
+                        if (v === null || v === undefined) return '—';
+                        const formatted = Math.round(v).toLocaleString().replace(/\u00a0/g, ' ');
+                        return `${curr}${formatted}/t`;
+                    };
+
+                    const spreadColor = spread > 0 ? '#10b981' : (spread < 0 ? '#f43f5e' : '#94a3b8');
+                    const spreadIcon = spread > 0 ? '<i class="fa-solid fa-arrow-trend-up"></i>' : (spread < 0 ? '<i class="fa-solid fa-arrow-trend-down"></i>' : '<i class="fa-solid fa-minus"></i>');
+
+                    tr.innerHTML = `
+                        <td style="padding: 12px 10px; font-weight: 600; color: var(--text-primary); border-left: 3px solid ${spreadColor};">${cfg.title}</td>
+                        <td style="padding: 12px 10px; color: var(--text-secondary);"><span style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">${fmtColName(chinaCol)}</span></td>
+                        <td style="padding: 12px 10px; color: var(--text-secondary);"><span style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">${fmtColName(europeCol)}</span></td>
+                        <td style="padding: 12px 10px; text-align: right; color: var(--text-primary); font-weight: 500;">${fmtVal(chinaConverted)}</td>
+                        <td style="padding: 12px 10px; text-align: right; color: var(--text-primary); font-weight: 500;">${fmtVal(europeConverted)}</td>
+                        <td style="padding: 12px 10px; text-align: right; color: ${spreadColor}; font-weight: 700;">${spreadIcon} ${spread >= 0 ? '+' : ''}${fmtVal(spread)}</td>
+                        <td style="padding: 12px 10px; text-align: right; color: var(--text-secondary);">${fmtVal(chinaMargin)}</td>
+                        <td style="padding: 12px 10px; text-align: right; color: var(--text-secondary);">${fmtVal(europeMargin)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
         });
     }
 
@@ -2290,63 +2554,157 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.downloadMatrixAsPDF = function() {
         const table = document.querySelector('.prices-table');
-        if (!table || typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-            alert("PDF libraries not loaded or table missing.");
+        if (!table || typeof window.jspdf === 'undefined') {
+            alert("PDF library not loaded or table missing.");
             return;
         }
 
-        // Clone the table to a temporary container appended to body to avoid clipping
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.top = '-9999px';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.width = '1200px'; // Give it a fixed width for good layout
-        tempContainer.style.backgroundColor = '#0f172a'; // Match theme
-        tempContainer.style.padding = '30px';
-        
-        // Add a title
-        const title = document.createElement('h2');
-        title.innerText = "Global Price Spreads Matrix";
-        title.style.color = '#fff';
-        title.style.fontFamily = 'sans-serif';
-        title.style.marginBottom = '20px';
-        tempContainer.appendChild(title);
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'pt', 'a4');
 
-        const clone = table.cloneNode(true);
-        tempContainer.appendChild(clone);
-        document.body.appendChild(tempContainer);
-        
-        html2canvas(tempContainer, {
-            scale: 2,
-            backgroundColor: '#0f172a'
-        }).then(canvas => {
-            document.body.removeChild(tempContainer);
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
 
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new window.jspdf.jsPDF('p', 'pt', 'a4'); // Portrait might fit better for long lists
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-            
-            let heightLeft = imgHeight;
-            let position = 0;
+        const rows = [];
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const cells = [];
+            tr.querySelectorAll('td').forEach(td => {
+                cells.push(td.textContent.trim());
+            });
+            rows.push(cells);
+        });
 
-            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-            heightLeft -= pageHeight;
+        // Column layout configuration (Total 760 pt of 842 pt landscape width)
+        // Product: 140, China Reg: 95, Europe Reg: 145, Prices: 70, 70, 70, Margins: 85, 85
+        const colWidths = [140, 95, 145, 70, 70, 70, 85, 85];
+        const colX = [];
+        let curX = 40;
+        colWidths.forEach(w => {
+            colX.push(curX);
+            curX += w;
+        });
 
-            // Add new pages if table is very long
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                heightLeft -= pageHeight;
+        let pageNum = 1;
+
+        function drawHeader(page) {
+            doc.setFont('Helvetica', 'Bold');
+            doc.setFontSize(14);
+            doc.setTextColor(79, 70, 229); // #4f46e5 (Accent Indigo)
+            doc.text("DAXX Pricing Intel", 40, 45);
+
+            doc.setFont('Helvetica', 'Normal');
+            doc.setFontSize(10);
+            doc.setTextColor(100, 116, 139); // #64748b
+            doc.text("Global Price Spreads Matrix Report", 40, 58);
+
+            const lastUpdatedEl = document.getElementById('last-updated-date');
+            const lastUpdated = lastUpdatedEl ? lastUpdatedEl.textContent.trim() : new Date().toISOString().split('T')[0];
+            doc.text(`Data Date: ${lastUpdated}`, 802, 45, { align: 'right' });
+            doc.text(`Exported on: ${new Date().toISOString().split('T')[0]}`, 802, 58, { align: 'right' });
+
+            // Line separator
+            doc.setDrawColor(226, 232, 240); // #e2e8f0
+            doc.setLineWidth(1);
+            doc.line(40, 68, 802, 68);
+        }
+
+        function drawFooter(page) {
+            doc.setFont('Helvetica', 'Normal');
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184); // #94a3b8
+            doc.text("CONFIDENTIAL - FOR INTERNAL USE ONLY", 40, 565);
+            doc.text(`Page ${page}`, 802, 565, { align: 'right' });
+        }
+
+        function drawTableHeader(yVal) {
+            // Draw background
+            doc.setFillColor(241, 245, 249); // #f1f5f9
+            doc.rect(40, yVal, 762, 24, 'F');
+
+            doc.setFont('Helvetica', 'Bold');
+            doc.setFontSize(9);
+            doc.setTextColor(71, 85, 105); // #475569
+
+            headers.forEach((h, i) => {
+                const align = (i >= 3) ? 'right' : 'left';
+                const xPos = (align === 'right') ? colX[i] + colWidths[i] - 10 : colX[i] + 10;
+                doc.text(h, xPos, yVal + 15, { align });
+            });
+
+            // Bottom border
+            doc.setDrawColor(203, 213, 225); // #cbd5e1
+            doc.line(40, yVal + 24, 802, yVal + 24);
+        }
+
+        drawHeader(pageNum);
+        let y = 85;
+        drawTableHeader(y);
+        y += 24;
+
+        rows.forEach((row, rowIndex) => {
+            if (y + 20 > 530) {
+                drawFooter(pageNum);
+                doc.addPage();
+                pageNum++;
+                drawHeader(pageNum);
+                y = 85;
+                drawTableHeader(y);
+                y += 24;
             }
 
-            pdf.save(`spreads_matrix_${new Date().toISOString().split('T')[0]}.pdf`);
-        }).catch(err => {
-            console.error("PDF generation failed:", err);
-            document.body.removeChild(tempContainer);
+            // Alternating backgrounds
+            if (rowIndex % 2 === 1) {
+                doc.setFillColor(248, 250, 252); // #f8fafc
+                doc.rect(40, y, 762, 20, 'F');
+            }
+
+            doc.setFont('Helvetica', 'Normal');
+            doc.setFontSize(9);
+            doc.setTextColor(15, 23, 42); // #0f172a
+
+            row.forEach((cell, i) => {
+                const align = (i >= 3) ? 'right' : 'left';
+                const xPos = (align === 'right') ? colX[i] + colWidths[i] - 10 : colX[i] + 10;
+
+                // Color coding for spread column (index 5)
+                if (i === 5) {
+                    doc.setFont('Helvetica', 'Bold');
+                    if (cell.includes('+')) {
+                        doc.setTextColor(16, 185, 129); // Green (#10b981)
+                    } else if (cell.includes('-')) {
+                        doc.setTextColor(244, 63, 94); // Red (#f43f5e)
+                    } else {
+                        doc.setTextColor(71, 85, 105);
+                    }
+                } else if (i === 0) {
+                    doc.setFont('Helvetica', 'Bold');
+                    doc.setTextColor(15, 23, 42);
+                } else {
+                    doc.setFont('Helvetica', 'Normal');
+                    doc.setTextColor(15, 23, 42);
+                }
+
+                // If cell starts with arrow icon characters, remove them
+                let cleanText = cell.replace(/[\u2191\u2192\u2193\u25B2\u25BC]/g, '').trim();
+                cleanText = cleanText.replace(/[\uE000-\uF8FF]/g, '').trim();
+                
+                // CRITICAL FIX: Replace non-breaking spaces (\u00a0) and narrow non-breaking spaces (\u202f) with standard spaces to avoid slashes in French localizations
+                cleanText = cleanText.replace(/[\s\u00a0\u202f]/g, ' ');
+                
+                doc.text(cleanText, xPos, y + 13, { align });
+            });
+
+            // Draw clean border
+            doc.setDrawColor(241, 245, 249); // #f1f5f9
+            doc.line(40, y + 20, 802, y + 20);
+
+            y += 20;
         });
+
+        drawFooter(pageNum);
+        doc.save(`spreads_matrix_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
     function updateCompareArbitrageDashboard() {
@@ -2354,7 +2712,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
         container.innerHTML = "";
 
-        if (rawPricesData.length === 0 || compareSelectedProducts.length === 0) {
+        if (rawPricesData.length === 0 || compareRows.length === 0) {
             container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 15px;">No products selected or no data available.</div>`;
             return;
         }
@@ -2372,52 +2730,20 @@ document.addEventListener("DOMContentLoaded", () => {
             eurToActive = eurUsd;
         }
 
-        compareSelectedProducts.forEach(productKey => {
-            let config = TARGET_CONFIGS[productKey];
-            let baseProd = "";
-            if (config) {
-                baseProd = config.precursors.butyl;
-            } else {
-                config = RAW_MATERIALS_CONFIGS[productKey];
-                if (config) baseProd = config.base;
-            }
+        compareRows.forEach(rowObj => {
+            const productKey = rowObj.product;
+            let config = TARGET_CONFIGS[productKey] || RAW_MATERIALS_CONFIGS[productKey];
             if (!config) return;
 
-            const chinaCol = compareActiveChinaSubregions[baseProd] || resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic') || resolveTargetColumn(baseProd, '华东');
-            const europeCol = compareActiveEuropeSubregions[baseProd] || resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE') || resolveTargetColumn(baseProd, 'Europe');
-
-            let incotermLabel = "FOB";
-            let defaultEuropeTransport = 90;
-            const upperCol = europeCol.toUpperCase();
-            if (upperCol.includes("FD") || upperCol.includes("DDP")) {
-                incotermLabel = "FD (Delivered)";
-                defaultEuropeTransport = 60;
-            } else if (upperCol.includes("FCA")) {
-                incotermLabel = "FCA (Free Carrier)";
-                defaultEuropeTransport = 85;
-            } else if (upperCol.includes("CIF")) {
-                incotermLabel = "CIF (Cost, Ins. & Freight)";
-                defaultEuropeTransport = 80;
+            let baseProd = '';
+            if (config.precursors) {
+                baseProd = config.precursors.butyl || config.precursors[Object.keys(config.precursors)[0]] || '';
+            } else {
+                baseProd = config.base || '';
             }
 
-            if (!compareCustomLogisticsCosts[productKey] || 
-                typeof compareCustomLogisticsCosts[productKey] !== 'object' || 
-                compareCustomLogisticsCosts[productKey].europeTransport === 70 ||
-                compareCustomLogisticsCosts[productKey].europeTransport === 76 ||
-                compareCustomLogisticsCosts[productKey].europeTransport === 550) {
-                
-                compareCustomLogisticsCosts[productKey] = {
-                    oceanFreight: 120,
-                    tariffPct: 5.5,
-                    chinaHandling: 25,
-                    europeTransport: defaultEuropeTransport
-                };
-            }
-            const logData = compareCustomLogisticsCosts[productKey];
-
-            const activeOceanFreight = logData.oceanFreight * eurToActive;
-            const activeChinaHandling = logData.chinaHandling * eurToActive;
-            const activeEuropeTransport = logData.europeTransport * eurToActive;
+            const chinaCol = rowObj.chinaSub || resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic');
+            const europeCol = rowObj.europeSub || resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE');
 
             const chinaVal = latestRow[chinaCol];
             const europeVal = latestRow[europeCol];
@@ -2428,162 +2754,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const chinaConverted = convertValue(chinaVal, latestRow.Date);
             const europeConverted = convertValue(europeVal, latestRow.Date);
-            
-            const chinaTariffVal = chinaConverted * (logData.tariffPct / 100);
-            const chinaDelivered = chinaConverted + activeOceanFreight + chinaTariffVal + activeChinaHandling;
-
-            const europeDelivered = europeConverted + activeEuropeTransport;
 
             const grossSpread = europeConverted - chinaConverted;
-            const pctGrossSpread = chinaConverted !== 0 ? (grossSpread / chinaConverted) * 100 : 0;
-            
-            const netSpread = europeDelivered - chinaDelivered;
-            const pctNetMargin = chinaDelivered !== 0 ? (netSpread / chinaDelivered) * 100 : 0;
+            const spreadColor = grossSpread > 0 ? "#10b981" : (grossSpread < 0 ? "#f43f5e" : "#94a3b8");
 
             const formattedChina = `${currencySymbol}${Math.round(chinaConverted).toLocaleString()}`;
             const formattedEurope = `${currencySymbol}${Math.round(europeConverted).toLocaleString()}`;
-            const formattedChinaDelivered = `${currencySymbol}${Math.round(chinaDelivered).toLocaleString()}`;
-            const formattedEuropeDelivered = `${currencySymbol}${Math.round(europeDelivered).toLocaleString()}`;
-            const formattedNet = `${netSpread >= 0 ? '+' : ''}${currencySymbol}${Math.round(netSpread).toLocaleString()}/t`;
-
-            const benefitColor = netSpread > 0 ? "#10b981" : (netSpread < 0 ? "#f43f5e" : "#94a3b8");
-            const benefitText = netSpread > 0 ? "China Sourcing Advantage" : "Europe Sourcing Advantage";
+            const formattedGrossSpread = `${grossSpread >= 0 ? '+' : ''}${currencySymbol}${Math.round(grossSpread).toLocaleString()}/t`;
 
             const item = document.createElement('div');
             item.className = "spread-comparison-item";
-            item.style.cssText = "background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 12px;";
+            item.style.cssText = "background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;";
 
             item.innerHTML = `
                 <!-- Product Header -->
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
-                    <strong style="color: var(--text-primary); font-size: 14px;">${config.title}</strong>
-                    <span style="font-size: 10px; font-weight: 700; color: ${benefitColor}; background: ${netSpread > 0 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(244, 63, 94, 0.12)'}; padding: 2px 8px; border-radius: 12px; text-transform: uppercase;">
-                        Net: ${pctNetMargin.toFixed(1)}%
-                    </span>
+                    <strong style="color: var(--text-primary); font-size: 1.05rem; font-family: var(--font-body);">${config.title}</strong>
                 </div>
                 
-                <!-- Base Prices & Incoterms info -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px;">
+                <!-- Base Prices -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9rem; font-family: var(--font-body);">
                     <div style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;">
-                        <span style="color: var(--text-muted); display: block; font-size: 10px; margin-bottom: 4px; font-weight: 500;">China Ex-Works / Domestic</span>
-                        <strong style="color: var(--text-primary); font-size: 13px;">${formattedChina}/t</strong>
-                        <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; font-style: italic;">(${fmtColName(chinaCol)})</div>
+                        <span style="color: var(--text-muted); display: block; font-size: 0.75rem; margin-bottom: 4px; font-weight: 500;">China Domestic</span>
+                        <strong style="color: var(--text-primary); font-size: 0.95rem;">${formattedChina}/t</strong>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; font-style: italic;">(${fmtColName(chinaCol)})</div>
                     </div>
                     <div style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;">
-                        <span style="color: var(--text-muted); display: block; font-size: 10px; margin-bottom: 4px; font-weight: 500;">Europe (${incotermLabel})</span>
-                        <strong style="color: var(--text-primary); font-size: 13px;">${formattedEurope}/t</strong>
-                        <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; font-style: italic;">(${fmtColName(europeCol)})</div>
+                        <span style="color: var(--text-muted); display: block; font-size: 0.75rem; margin-bottom: 4px; font-weight: 500;">Europe NWE</span>
+                        <strong style="color: var(--text-primary); font-size: 0.95rem;">${formattedEurope}/t</strong>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; font-style: italic;">(${fmtColName(europeCol)})</div>
                     </div>
                 </div>
 
-                <!-- Delivered Cost Breakdown Table -->
-                <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; font-size: 11px; display: flex; flex-direction: column; gap: 6px;">
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px; font-weight: 600; color: var(--text-primary);">
-                        <span>Delivered Cost Spain</span>
-                        <span>China</span>
-                        <span>Europe</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
-                        <span>Base price:</span>
-                        <span>${formattedChina}</span>
-                        <span>${formattedEurope}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
-                        <span>Ocean Freight:</span>
-                        <span style="color: #60a5fa;">+${currencySymbol}${Math.round(activeOceanFreight)}</span>
-                        <span style="color: var(--text-muted);">—</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
-                        <span>Import Duty (${logData.tariffPct}%):</span>
-                        <span style="color: #60a5fa;">+${currencySymbol}${Math.round(chinaTariffVal)}</span>
-                        <span style="color: var(--text-muted);">—</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
-                        <span>EU Handling & Clearance:</span>
-                        <span style="color: #60a5fa;">+${currencySymbol}${Math.round(activeChinaHandling)}</span>
-                        <span style="color: var(--text-muted);">—</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
-                        <span>Inland Logistics/Incoterm:</span>
-                        <span style="color: var(--text-muted);">—</span>
-                        <span style="color: #a78bfa;">+${currencySymbol}${Math.round(activeEuropeTransport)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 5px; font-weight: 700; color: var(--text-primary);">
-                        <span>Total Cost (DDP Spain):</span>
-                        <span style="color: #3b82f6;">${formattedChinaDelivered}</span>
-                        <span style="color: #8b5cf6;">${formattedEuropeDelivered}</span>
-                    </div>
-                </div>
-
-                <!-- Interactive Accordion for Logistics Parameters -->
-                <details style="border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 4px 8px; font-size: 11px;">
-                    <summary style="cursor: pointer; color: var(--text-muted); outline: none; user-select: none; font-size: 10px; font-weight: 600;">
-                        ⚙️ Adjust Logistics Parameters
-                    </summary>
-                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-secondary);">Ocean Freight (${currencySymbol}/t):</span>
-                            <input id="input-freight-${productKey}" type="number" value="${Math.round(activeOceanFreight)}" style="width: 60px; background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 1px 4px; text-align: right;">
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-secondary);">Import Duty Rate (%):</span>
-                            <input id="input-duty-${productKey}" type="number" value="${logData.tariffPct}" step="0.1" style="width: 60px; background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 1px 4px; text-align: right;">
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-secondary);">Customs Handling (${currencySymbol}/t):</span>
-                            <input id="input-handling-${productKey}" type="number" value="${Math.round(activeChinaHandling)}" style="width: 60px; background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 1px 4px; text-align: right;">
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-secondary);">EU Inland Transport (${currencySymbol}/t):</span>
-                            <input id="input-eu-trans-${productKey}" type="number" value="${Math.round(activeEuropeTransport)}" style="width: 60px; background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 1px 4px; text-align: right;">
-                        </div>
-                    </div>
-                </details>
-
-                <!-- Potential Benefit / Real Spread -->
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; font-size: 12px; margin-top: 2px;">
-                    <span style="color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                        <span>Potential Benefit:</span>
-                    </span>
-                    <strong style="color: ${benefitColor}; font-size: 15px; font-weight: 800;">${formattedNet}</strong>
-                </div>
-                <div style="font-size: 10px; color: var(--text-muted); text-align: right; margin-top: -4px;">
-                    ${benefitText}
+                <!-- Gross Spread -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; font-size: 0.9rem; font-family: var(--font-body); margin-top: 2px;">
+                    <span style="color: var(--text-secondary); font-weight: 600;">Spread (Europe - China):</span>
+                    <strong style="color: ${spreadColor}; font-size: 1.15rem; font-weight: 800;">${formattedGrossSpread}</strong>
                 </div>
             `;
             container.appendChild(item);
-
-            const oceanInput = document.getElementById(`input-freight-${productKey}`);
-            const dutyInput = document.getElementById(`input-duty-${productKey}`);
-            const handlingInput = document.getElementById(`input-handling-${productKey}`);
-            const euTransInput = document.getElementById(`input-eu-trans-${productKey}`);
-
-            if (oceanInput) {
-                oceanInput.addEventListener('change', (e) => {
-                    logData.oceanFreight = (parseFloat(e.target.value) || 0) / eurToActive;
-                    updateCompareArbitrageDashboard();
-                });
-            }
-            if (dutyInput) {
-                dutyInput.addEventListener('change', (e) => {
-                    logData.tariffPct = parseFloat(e.target.value) || 0;
-                    updateCompareArbitrageDashboard();
-                });
-            }
-            if (handlingInput) {
-                handlingInput.addEventListener('change', (e) => {
-                    logData.chinaHandling = (parseFloat(e.target.value) || 0) / eurToActive;
-                    updateCompareArbitrageDashboard();
-                });
-            }
-            if (euTransInput) {
-                euTransInput.addEventListener('change', (e) => {
-                    logData.europeTransport = (parseFloat(e.target.value) || 0) / eurToActive;
-                    updateCompareArbitrageDashboard();
-                });
-            }
         });
-
+        updateKPIs();
     }
 
     function calculateMargin(row, product, region) {
@@ -2910,19 +3121,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 { eu: '#e17055', es: '#ff7675' }  // Terracotta / Salmon
             ];
 
-            compareSelectedProducts.forEach((productKey, idx) => {
-                let config = TARGET_CONFIGS[productKey];
-                let baseProd = "";
-                if (config) {
-                    baseProd = config.precursors.butyl;
-                } else {
-                    config = RAW_MATERIALS_CONFIGS[productKey];
-                    if (config) baseProd = config.base;
-                }
+            compareRows.forEach((rowObj, idx) => {
+                const productKey = rowObj.product;
+                let config = TARGET_CONFIGS[productKey] || RAW_MATERIALS_CONFIGS[productKey];
                 if (!config) return;
 
-                const chinaCol = compareActiveChinaSubregions[baseProd] || resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic') || resolveTargetColumn(baseProd, '华东');
-                const europeCol = compareActiveEuropeSubregions[baseProd] || resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE') || resolveTargetColumn(baseProd, 'Europe');
+                let baseProd = "";
+                if (config.precursors) {
+                    baseProd = config.precursors.butyl || config.precursors[Object.keys(config.precursors)[0]] || '';
+                } else {
+                    baseProd = config.base || '';
+                }
+
+                const chinaCol = rowObj.chinaSub || resolveColumnForRegion(baseProd, '华东') || resolveColumnForRegion(baseProd, 'Domestic');
+                const europeCol = rowObj.europeSub || resolveColumnForRegion(baseProd, 'Europe') || resolveColumnForRegion(baseProd, 'NWE');
 
                 const colors = prodColors[idx % prodColors.length];
 
@@ -3186,6 +3398,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
         checkDataAvailability();
+        updateKPIs();
     }
 
     // ==========================================
@@ -3993,6 +4206,7 @@ document.addEventListener("DOMContentLoaded", () => {
             updateSidebarTabs();
             updateChemicalTree();
             updateCompareSubtabsDOM();
+            updateKPIs();
         });
     });
 
@@ -4827,6 +5041,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Run initial calculations
         updateBudgetCalculations();
+    }
+
+    // Initialize KPI Grid Scroll Controls
+    const scrollableGrid = document.getElementById('kpi-grid-scrollable');
+    const scrollLeftBtn = document.getElementById('kpi-scroll-left');
+    const scrollRightBtn = document.getElementById('kpi-scroll-right');
+    if (scrollableGrid && scrollLeftBtn && scrollRightBtn) {
+        scrollLeftBtn.addEventListener('click', () => {
+            scrollableGrid.scrollBy({ left: -280, behavior: 'smooth' });
+        });
+        scrollRightBtn.addEventListener('click', () => {
+            scrollableGrid.scrollBy({ left: 280, behavior: 'smooth' });
+        });
+        scrollableGrid.addEventListener('scroll', updateKPIArrows);
+        window.addEventListener('resize', updateKPIArrows);
     }
 
     // Error UI view if load fails

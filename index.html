@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=51">
+    <link rel="stylesheet" href="style.css?v=55">
     
     <!-- FontAwesome Icons for modern aesthetic -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -54,63 +54,69 @@
             </div>
         </header>
 
-        <!-- KPI / Metrics Grid -->
-        <section class="kpi-grid">
-            <div class="kpi-card" id="kpi-butyl">
-                <div class="kpi-info">
-                    <h3>Butyl Acetate (Target)</h3>
-                    <span class="kpi-market">Reference Market: East China (华东)</span>
-                    <div class="price-value" id="kpi-butyl-val">- ¥/t</div>
-                </div>
-                <div class="kpi-change" id="kpi-butyl-change">
-                    <span>-</span>
-                </div>
-            </div>
+        <!-- KPI / Metrics Grid Wrapper -->
+        <div class="kpi-carousel-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+            <button id="kpi-scroll-left" class="kpi-scroll-btn" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 100; display: none; background: var(--color-accent); border: none; border-radius: 50%; width: 38px; height: 38px; color: #ffffff; cursor: pointer; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: all 0.3s; box-shadow: 0 4px 14px rgba(99,102,241,0.4);"><i class="fa-solid fa-chevron-left"></i></button>
             
-            <div class="kpi-card" id="kpi-butanol">
-                <div class="kpi-info">
-                    <h3>n-Butanol (Feedstock)</h3>
-                    <span class="kpi-market">Reference Market: East China (华东)</span>
-                    <div class="price-value" id="kpi-butanol-val">- ¥/t</div>
+            <section class="kpi-grid" id="kpi-grid-scrollable" style="display: flex; overflow-x: auto; width: 100%; gap: 15px; scroll-behavior: smooth; scrollbar-width: none; -ms-overflow-style: none; padding: 5px 0;">
+                <div class="kpi-card" id="kpi-butyl">
+                    <div class="kpi-info">
+                        <h3>Butyl Acetate (Target)</h3>
+                        <span class="kpi-market">Reference Market: East China (华东)</span>
+                        <div class="price-value" id="kpi-butyl-val">- ¥/t</div>
+                    </div>
+                    <div class="kpi-change" id="kpi-butyl-change">
+                        <span>-</span>
+                    </div>
                 </div>
-                <div class="kpi-change" id="kpi-butanol-change">
-                    <span>-</span>
+                
+                <div class="kpi-card" id="kpi-butanol">
+                    <div class="kpi-info">
+                        <h3>n-Butanol (Feedstock)</h3>
+                        <span class="kpi-market">Reference Market: East China (华东)</span>
+                        <div class="price-value" id="kpi-butanol-val">- ¥/t</div>
+                    </div>
+                    <div class="kpi-change" id="kpi-butanol-change">
+                        <span>-</span>
+                    </div>
                 </div>
-            </div>
+                
+                <div class="kpi-card" id="kpi-acetic">
+                    <div class="kpi-info">
+                        <h3>Acetic Acid (Feedstock)</h3>
+                        <span class="kpi-market">Reference Market: East China (华东)</span>
+                        <div class="price-value" id="kpi-acetic-val">- ¥/t</div>
+                    </div>
+                    <div class="kpi-change" id="kpi-acetic-change">
+                        <span>-</span>
+                    </div>
+                </div>
+                
+                <div class="kpi-card" id="kpi-methanol">
+                    <div class="kpi-info">
+                        <h3>Methanol (Upstream)</h3>
+                        <span class="kpi-market">Reference Market: Shandong (山东)</span>
+                        <div class="price-value" id="kpi-methanol-val">- ¥/t</div>
+                    </div>
+                    <div class="kpi-change" id="kpi-methanol-change">
+                        <span>-</span>
+                    </div>
+                </div>
+    
+                <div class="kpi-card" id="kpi-gas">
+                    <div class="kpi-info">
+                        <h3>Natural Gas (Upstream)</h3>
+                        <span class="kpi-market">Reference Market: Europe (TTF)</span>
+                        <div class="price-value" id="kpi-gas-val">- $/MWh</div>
+                    </div>
+                    <div class="kpi-change" id="kpi-gas-change">
+                        <span>-</span>
+                    </div>
+                </div>
+            </section>
             
-            <div class="kpi-card" id="kpi-acetic">
-                <div class="kpi-info">
-                    <h3>Acetic Acid (Feedstock)</h3>
-                    <span class="kpi-market">Reference Market: East China (华东)</span>
-                    <div class="price-value" id="kpi-acetic-val">- ¥/t</div>
-                </div>
-                <div class="kpi-change" id="kpi-acetic-change">
-                    <span>-</span>
-                </div>
-            </div>
-            
-            <div class="kpi-card" id="kpi-methanol">
-                <div class="kpi-info">
-                    <h3>Methanol (Upstream)</h3>
-                    <span class="kpi-market">Reference Market: Shandong (山东)</span>
-                    <div class="price-value" id="kpi-methanol-val">- ¥/t</div>
-                </div>
-                <div class="kpi-change" id="kpi-methanol-change">
-                    <span>-</span>
-                </div>
-            </div>
-
-            <div class="kpi-card" id="kpi-gas">
-                <div class="kpi-info">
-                    <h3>Natural Gas (Upstream)</h3>
-                    <span class="kpi-market">Reference Market: Europe (TTF)</span>
-                    <div class="price-value" id="kpi-gas-val">- $/MWh</div>
-                </div>
-                <div class="kpi-change" id="kpi-gas-change">
-                    <span>-</span>
-                </div>
-            </div>
-        </section>
+            <button id="kpi-scroll-right" class="kpi-scroll-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 100; display: none; background: var(--color-accent); border: none; border-radius: 50%; width: 38px; height: 38px; color: #ffffff; cursor: pointer; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: all 0.3s; box-shadow: 0 4px 14px rgba(99,102,241,0.4);"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
 
         <!-- Main Workspace: Chart & Sidebar -->
         <main class="main-workspace">
@@ -219,33 +225,16 @@
                 </div>
 
                 <div class="series-selector-container" id="compare-products-selector-container" style="display: none; padding: 15px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; margin-bottom: 15px;">
-                    <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
-                        <div style="flex: 1; min-width: 200px;">
-                            <label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; font-weight: 500; text-transform: uppercase;">Product</label>
-                            <select id="compare-product-select" class="target-select" style="width: 100%;">
-                                <!-- Filled dynamically -->
-                            </select>
-                        </div>
-                        <div style="flex: 1; min-width: 180px;">
-                            <label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; font-weight: 500; text-transform: uppercase;">China Subregion</label>
-                            <select id="compare-china-subregion-select" class="target-select" style="width: 100%;">
-                                <!-- Filled dynamically -->
-                            </select>
-                        </div>
-                        <div style="flex: 1; min-width: 180px;">
-                            <label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; font-weight: 500; text-transform: uppercase;">Europe Subregion</label>
-                            <select id="compare-europe-subregion-select" class="target-select" style="width: 100%;">
-                                <!-- Filled dynamically -->
-                            </select>
-                        </div>
+                    <!-- Dynamic rows will be inserted here -->
+                    <div id="compare-rows-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%;"></div>
+                    
+                    <!-- Add row button area -->
+                    <div style="margin-top: 15px; display: flex; align-items: center; justify-content: flex-start;">
+                        <button id="btn-add-compare-row" class="btn-range" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px dashed rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.02);">
+                            <i class="fa-solid fa-plus"></i> Add Product Comparison
+                        </button>
                     </div>
-                    <!-- Legend container -->
-                    <div id="compare-legend-container" style="display: none; gap: 15px; flex-wrap: wrap; margin-top: 15px; font-size: 11px; padding: 10px 14px; background: rgba(255,255,255,0.015); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); align-items: center;"></div>
                 </div>
-
-
-
-                
                 
                 <div class="chart-container-inner">
                     <div id="chart-loader" class="loader-container">
@@ -263,17 +252,17 @@
                             <table class="prices-table" style="width: 100%; border-collapse: collapse; text-align: left; min-width: 800px;">
                                 <thead>
                                     <tr style="border-bottom: 2px solid var(--border-color);">
-                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Product</th>
-                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">China Region</th>
-                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Europe Region</th>
-                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">China Price</th>
-                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Europe Price</th>
-                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Price Spread</th>
-                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Margin (China)</th>
-                                        <th style="padding: 10px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Margin (Europe)</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Product</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">China Region</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Europe Region</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">China Price</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Europe Price</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Price Spread</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Margin (China)</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Margin (Europe)</th>
                                     </tr>
                                 </thead>
-                                <tbody id="compare-matrix-tbody" style="font-size: 0.85rem; color: var(--text-secondary);">
+                                <tbody id="compare-matrix-tbody" style="font-size: 0.95rem; color: var(--text-secondary); font-family: var(--font-body);">
                                     <!-- Filled dynamically by JavaScript -->
                                 </tbody>
                             </table>
@@ -637,6 +626,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <!-- Custom Application Logic -->
-    <script src="app.js?v=265"></script>
+    <script src="app.js?v=271"></script>
 </body>
 </html>

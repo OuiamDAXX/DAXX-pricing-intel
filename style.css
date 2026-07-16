@@ -881,9 +881,17 @@ body {
 
 /* Update KPI Grid columns to fit 5 items */
 .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    display: flex !important;
+    overflow-x: auto !important;
+    width: 100%;
     gap: 15px;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 5px 0;
+}
+.kpi-grid::-webkit-scrollbar {
+    display: none;
 }
 
 #kpi-margin {
@@ -2048,4 +2056,38 @@ body.light-theme .node-icon {
     background: rgba(99, 102, 241, 0.15) !important;
     border-color: var(--color-accent) !important;
     color: var(--text-primary) !important;
+}
+
+.kpi-scroll-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--glass-border-hover) !important;
+    transform: scale(1.08);
+}
+.kpi-scroll-btn:active {
+    transform: scale(0.95);
+}
+
+/* KPI Scroll Layout Sizing */
+.kpi-grid .kpi-card {
+    flex: 0 0 calc(25% - 11.25px) !important;
+    min-width: calc(25% - 11.25px) !important;
+    box-sizing: border-box;
+}
+@media (max-width: 1400px) {
+    .kpi-grid .kpi-card {
+        flex: 0 0 calc(33.33% - 10px) !important;
+        min-width: calc(33.33% - 10px) !important;
+    }
+}
+@media (max-width: 900px) {
+    .kpi-grid .kpi-card {
+        flex: 0 0 calc(50% - 7.5px) !important;
+        min-width: calc(50% - 7.5px) !important;
+    }
+}
+@media (max-width: 600px) {
+    .kpi-grid .kpi-card {
+        flex: 0 0 100% !important;
+        min-width: 100% !important;
+    }
 }
