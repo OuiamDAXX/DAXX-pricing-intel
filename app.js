@@ -780,7 +780,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         'MEK': {
-            title: "Methyl Ethyl Ketone (MEK) Route 1",
+            title: "Methyl Ethyl Ketone (MEK)",
             precursors: {
                 butyl: 'MEK',
                 butanol: '2_Butene',
