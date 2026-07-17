@@ -18,3 +18,12 @@ csv_to_excel.py
 oilchem_overleaf_report.tex
 verification_produits.tex
 verification_produits.pdf
+
+# Large data files
+oilchem_all_data.xlsx
+
+# Generated PDFs
+lista_productos_oilchem.pdf
+arboles_DAXX_FINAL_totale.pdf
+arboles_DAXX_FINAL_totale_BACKUP.pdf
+catalogo_productos_oilchem.pdf
