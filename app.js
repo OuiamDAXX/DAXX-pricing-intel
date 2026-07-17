@@ -4065,9 +4065,10 @@ document.addEventListener("DOMContentLoaded", () => {
             displayHeaders.push(currentTarget);
         }
         displayHeaders = displayHeaders.concat(selectedSeries.slice(0, 5));
-        // Add USD_CNY_Rate and EUR_USD_Rate to the columns displayed in the table
-        displayHeaders.push('USD_CNY_Rate');
-        if (getMainRegionForSubRegion(currentRegion) !== 'Chine') {
+        // Add USD_CNY_Rate or EUR_USD_Rate depending on the selected region
+        if (getMainRegionForSubRegion(currentRegion) === 'Chine') {
+            displayHeaders.push('USD_CNY_Rate');
+        } else {
             displayHeaders.push('EUR_USD_Rate');
         }
         displayHeaders = [...new Set(displayHeaders)];
