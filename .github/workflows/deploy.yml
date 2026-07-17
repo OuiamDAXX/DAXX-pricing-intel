@@ -30,7 +30,7 @@ jobs:
       - name: Build Dist Folder
         run: |
           mkdir dist
-          cp index.html style.css app.js dist/
+          cp index.html style.css app.js logo.png dist/
           cp oilchem_aligned_prices.csv oilchem_lead_lag_results.csv dist/
           cp oilchem_financial_forecasts.json oilchem_backtest_results.json dist/
 
