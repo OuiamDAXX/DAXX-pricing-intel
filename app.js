@@ -3,6 +3,56 @@
    ========================================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
+    // --- DAXX SSO USER INTEGRATION ---
+    const ssoToken = sessionStorage.getItem('daxx_sso_token');
+    const userDisplayName = document.getElementById('user-display-name');
+    const userDisplayRole = document.getElementById('user-display-role');
+    const userProfileWidget = document.getElementById('user-profile-widget');
+    const userDropdownMenu = document.getElementById('user-dropdown-menu');
+    const btnSsoLogout = document.getElementById('btn-sso-logout');
+
+    function parseJwt(token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    if (ssoToken) {
+        const userData = parseJwt(ssoToken);
+        if (userData) {
+            if (userDisplayName) userDisplayName.textContent = userData.name || 'User';
+            if (userDisplayRole) userDisplayRole.textContent = (userData.role || 'Sales').toLowerCase();
+        }
+    }
+
+    if (userProfileWidget && userDropdownMenu) {
+        userProfileWidget.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = userDropdownMenu.style.display === 'block';
+            userDropdownMenu.style.display = isOpen ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', () => {
+            userDropdownMenu.style.display = 'none';
+        });
+    }
+
+    if (btnSsoLogout) {
+        btnSsoLogout.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.removeItem('daxx_sso_token');
+            window.location.href = 'http://localhost:3000/login';
+        });
+    }
+    // --- END DAXX SSO USER INTEGRATION ---
+
     // API data paths
     const PRICES_CSV_PATH = "oilchem_aligned_prices.csv?t=" + new Date().getTime();
     const LEAD_LAG_CSV_PATH = "oilchem_lead_lag_results.csv?t=" + new Date().getTime();
@@ -145,12 +195,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Theme Management (Dark/Light mode)
     const themeToggleBtn = document.getElementById('theme-toggle');
-    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const savedTheme = localStorage.getItem('theme') || 'light';
 
     if (savedTheme === 'light') {
         document.body.classList.add('light-theme');
         if (themeToggleBtn) {
             themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+        }
+    } else {
+        document.body.classList.remove('light-theme');
+        if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
         }
     }
 
@@ -974,9 +1029,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Color palette for chart series (matching glassmorphism design)
     const CHART_COLORS = [
-        '#06b6d4', // Electric Cyan (Target)
-        '#6366f1', // Indigo (n-Butanol / Ethanol)
-        '#10b981', // Emerald (Acetic Acid)
+        '#009CDE', // DAXX Cyan (Target)
+        '#004B87', // DAXX Blue (n-Butanol / Ethanol)
+        '#006838', // DAXX Green (Acetic Acid)
         '#f59e0b', // Amber (Methanol)
         '#f43f5e', // Rose (Propylene / Ethylene)
         '#a855f7', // Purple
@@ -2514,7 +2569,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         return `${curr}${formatted}/t`;
                     };
 
-                    const spreadColor = spread > 0 ? '#10b981' : (spread < 0 ? '#f43f5e' : '#94a3b8');
+                    const spreadColor = spread > 0 ? '#006838' : (spread < 0 ? '#f43f5e' : '#94a3b8');
                     const spreadIcon = spread > 0 ? '<i class="fa-solid fa-arrow-trend-up"></i>' : (spread < 0 ? '<i class="fa-solid fa-arrow-trend-down"></i>' : '<i class="fa-solid fa-minus"></i>');
 
                     tr.innerHTML = `
@@ -2672,7 +2727,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (i === 5) {
                     doc.setFont('Helvetica', 'Bold');
                     if (cell.includes('+')) {
-                        doc.setTextColor(16, 185, 129); // Green (#10b981)
+                        doc.setTextColor(0, 104, 56); // Green (#006838)
                     } else if (cell.includes('-')) {
                         doc.setTextColor(244, 63, 94); // Red (#f43f5e)
                     } else {
@@ -2756,7 +2811,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const europeConverted = convertValue(europeVal, latestRow.Date);
 
             const grossSpread = europeConverted - chinaConverted;
-            const spreadColor = grossSpread > 0 ? "#10b981" : (grossSpread < 0 ? "#f43f5e" : "#94a3b8");
+            const spreadColor = grossSpread > 0 ? "#006838" : (grossSpread < 0 ? "#f43f5e" : "#94a3b8");
 
             const formattedChina = `${currencySymbol}${Math.round(chinaConverted).toLocaleString()}`;
             const formattedEurope = `${currencySymbol}${Math.round(europeConverted).toLocaleString()}`;
@@ -3088,8 +3143,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (currentCompareSubtab === 'custom') {
                 const colors = [
-                    '#10b981', '#6366f1', '#f59e0b', '#f43f5e', '#a855f7',
-                    '#06b6d4', '#ec4899', '#e17055', '#3b82f6', '#14b8a6'
+                    '#006838', '#004B87', '#f59e0b', '#f43f5e', '#a855f7',
+                    '#009CDE', '#ec4899', '#e17055', '#3b82f6', '#14b8a6'
                 ];
                 customCompareSelectedSeries.forEach((header, idx) => {
                     if (!priceHeaders.includes(header)) return;
@@ -3111,8 +3166,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const prodColors = [
-                { eu: '#10b981', es: '#34d399' }, // Emerald / Mint
-                { eu: '#6366f1', es: '#818cf8' }, // Indigo / Light Indigo
+                { eu: '#006838', es: '#009CDE' }, // DAXX Green / DAXX Cyan
+                { eu: '#004B87', es: '#009CDE' }, // DAXX Blue / DAXX Cyan
                 { eu: '#f59e0b', es: '#fbbf24' }, // Amber / Yellow
                 { eu: '#f43f5e', es: '#fb7185' }, // Rose / Pink
                 { eu: '#a855f7', es: '#c084fc' }, // Purple / Light Purple
@@ -3227,10 +3282,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const series = [];
-        const targetColor = '#06b6d4'; // Target product color (Cyan)
+        const targetColor = '#009CDE'; // Target product color (Cyan)
         const compColors = [
-            '#6366f1', // Indigo
-            '#10b981', // Emerald
+            '#004B87', // DAXX Blue
+            '#006838', // DAXX Green
             '#f59e0b', // Amber
             '#f43f5e', // Rose
             '#a855f7', // Purple
@@ -3892,7 +3947,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="flow-connectors-row-1">
                     <div class="connector-wrapper">
                         <svg viewBox="0 0 20 40" class="connector-line">
-                            <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uA) ? 'animated-path' : ''}" />
+                            <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" class="${isSelected(uA) ? 'animated-path' : ''}" />
                             <polygon points="10,40 7,33 13,33" fill="var(--color-emerald)" />
                         </svg>
                     </div>
@@ -3958,13 +4013,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="flow-connectors-row-1">
                     <div class="connector-wrapper left-connector ${uA ? '' : 'invisible'}">
                         <svg viewBox="0 0 20 40" class="connector-line">
-                            <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uA) ? 'animated-path' : ''}" />
+                            <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" class="${isSelected(uA) ? 'animated-path' : ''}" />
                             <polygon points="10,40 7,33 13,33" fill="var(--color-emerald)" />
                         </svg>
                     </div>
                     <div class="connector-wrapper right-connector ${uB ? '' : 'invisible'}">
                         <svg viewBox="0 0 20 40" class="connector-line">
-                            <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-dasharray="4,4" class="${isSelected(uB) ? 'animated-path' : ''}" />
+                            <path d="M 10 0 L 10 40" fill="none" stroke="var(--color-emerald)" stroke-width="2" class="${isSelected(uB) ? 'animated-path' : ''}" />
                             <polygon points="10,40 7,33 13,33" fill="var(--color-emerald)" />
                         </svg>
                     </div>
@@ -4172,7 +4227,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (compareProductsEl) compareProductsEl.style.display = 'block';
                 if (compareSubtabsEl) compareSubtabsEl.style.display = 'flex';
                 if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'none';
-                if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
+                if (sidebarContainerEl) sidebarContainerEl.style.display = 'flex';
                 if (mainWorkspaceEl) {
                     mainWorkspaceEl.classList.remove('full-width');
                     mainWorkspaceEl.classList.add('compare-view');
@@ -4184,7 +4239,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (compareProductsEl) compareProductsEl.style.display = 'none';
                 if (compareSubtabsEl) compareSubtabsEl.style.display = 'none';
                 if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'flex';
-                if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
+                if (sidebarContainerEl) sidebarContainerEl.style.display = 'flex';
                 if (mainWorkspaceEl) {
                     mainWorkspaceEl.classList.remove('full-width');
                     mainWorkspaceEl.classList.remove('compare-view');
@@ -4196,7 +4251,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (compareProductsEl) compareProductsEl.style.display = 'none';
                 if (compareSubtabsEl) compareSubtabsEl.style.display = 'none';
                 if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'flex';
-                if (sidebarContainerEl) sidebarContainerEl.style.display = 'block';
+                if (sidebarContainerEl) sidebarContainerEl.style.display = 'flex';
                 if (mainWorkspaceEl) {
                     mainWorkspaceEl.classList.remove('full-width');
                     mainWorkspaceEl.classList.remove('compare-view');
@@ -4442,15 +4497,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (mode === 'margin') {
                 modeBadge.textContent = 'Margin Spread Mode';
                 modeBadge.style.background = 'rgba(16, 185, 129, 0.15)';
-                modeBadge.style.color = '#10b981';
+                modeBadge.style.color = '#006838';
                 modeBadge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
                 if (spreadLabel) spreadLabel.textContent = 'Spread';
                 if (bbLabel) bbLabel.textContent = 'Bollinger Margin Position (60d)';
             } else if (mode === 'price') {
                 modeBadge.textContent = 'Absolute Price Mode';
-                modeBadge.style.background = 'rgba(99, 102, 241, 0.15)';
-                modeBadge.style.color = '#6366f1';
-                modeBadge.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+                modeBadge.style.background = 'rgba(0, 156, 222, 0.15)';
+                modeBadge.style.color = '#009CDE';
+                modeBadge.style.borderColor = 'rgba(0, 156, 222, 0.3)';
                 if (spreadLabel) spreadLabel.textContent = 'Price';
                 if (bbLabel) bbLabel.textContent = 'Bollinger Price Position (60d)';
             } else if (mode === 'feedstock_index') {
@@ -4526,8 +4581,8 @@ document.addEventListener("DOMContentLoaded", () => {
             percent = Math.max(0, Math.min(100, percent));
             pointerDot.style.left = `${percent}%`;
             
-            let color = '#6366f1';
-            if (percent < 15) color = '#10b981';
+            let color = '#004B87';
+            if (percent < 15) color = '#006838';
             else if (percent > 85) color = '#ef4444';
             pointerDot.style.background = color;
             pointerDot.style.boxShadow = `0 0 8px ${color}`;
@@ -4549,7 +4604,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 riskLevelBadge.style.background = 'rgba(245, 158, 11, 0.15)';
                 riskLevelBadge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
             } else {
-                riskLevelBadge.style.color = '#10b981';
+                riskLevelBadge.style.color = '#006838';
                 riskLevelBadge.style.background = 'rgba(16, 185, 129, 0.15)';
                 riskLevelBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
             }
@@ -4579,7 +4634,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (backtest) {
                 if (backtestMetricPrecision) {
                     backtestMetricPrecision.textContent = `${backtest.precision_pct}%`;
-                    if (backtest.precision_pct > 95) backtestMetricPrecision.style.color = '#10b981';
+                    if (backtest.precision_pct > 95) backtestMetricPrecision.style.color = '#006838';
                     else if (backtest.precision_pct < 90) backtestMetricPrecision.style.color = '#ef4444';
                     else backtestMetricPrecision.style.color = 'var(--text-primary)';
                 }
@@ -4589,7 +4644,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 if (backtestMetricSavings) {
                     backtestMetricSavings.textContent = `${backtest.savings_pct > 0 ? '+' : ''}${backtest.savings_pct}% (${formatVal(backtest.savings_per_ton, 0)})`;
-                    if (backtest.savings_pct > 0) backtestMetricSavings.style.color = '#10b981';
+                    if (backtest.savings_pct > 0) backtestMetricSavings.style.color = '#006838';
                     else backtestMetricSavings.style.color = 'var(--text-primary)';
                 }
             }
