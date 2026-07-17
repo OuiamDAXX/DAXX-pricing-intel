@@ -27,9 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ssoToken) {
         const userData = parseJwt(ssoToken);
         if (userData) {
-            if (userData.daxxUrl) {
-                sessionStorage.setItem('daxx_url', userData.daxxUrl);
-            }
             if (userDisplayName) userDisplayName.textContent = userData.name || 'User';
             if (userDisplayRole) userDisplayRole.textContent = (userData.role || 'Sales').toLowerCase();
         }
@@ -50,9 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnSsoLogout) {
         btnSsoLogout.addEventListener('click', (e) => {
             e.preventDefault();
-            const daxxUrl = sessionStorage.getItem('daxx_url') || 'http://localhost:3000';
             sessionStorage.removeItem('daxx_sso_token');
-            window.location.href = `${daxxUrl}/login`;
+            window.location.href = 'http://localhost:3000/login';
         });
     }
     // --- END DAXX SSO USER INTEGRATION ---
