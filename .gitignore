@@ -13,6 +13,8 @@ scratch/
 test_*.py
 check_bts.py
 csv_to_excel.py
+generate_pdf.py
+generate_pdf_spanish.py
 
 # Personal and confidential reports
 oilchem_overleaf_report.tex
