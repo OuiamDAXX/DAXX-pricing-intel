@@ -1,5 +1,5 @@
 {
-  "name": "oilchem-report-scheduler",
+  "name": "daxx-pricing-intel",
   "version": "1.0.0",
   "description": "Scheduler for OilChem Spreads Matrix Email Reports",
   "main": "report-scheduler.js",
