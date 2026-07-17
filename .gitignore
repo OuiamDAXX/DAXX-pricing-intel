@@ -18,6 +18,7 @@ csv_to_excel.py
 oilchem_overleaf_report.tex
 verification_produits.tex
 verification_produits.pdf
+choix_regions_reference.tex
 
 # Large data files
 oilchem_all_data.xlsx
