@@ -11,11 +11,17 @@ def upload():
 
     payload = {}
 
-    # 1. Aligned Prices CSV
+    # 1. Aligned Prices CSV (Optimized: only upload the last 10 rows for daily syncs)
     if os.path.exists("oilchem_aligned_prices.csv"):
-        print("Reading oilchem_aligned_prices.csv...")
+        print("Reading and slicing oilchem_aligned_prices.csv...")
         with open("oilchem_aligned_prices.csv", "r", encoding="utf-8") as f:
-            payload["aligned_prices_csv"] = f.read()
+            lines = f.readlines()
+        if len(lines) > 11:
+            header = lines[0]
+            last_lines = lines[-10:]
+            payload["aligned_prices_csv"] = header + "".join(last_lines)
+        else:
+            payload["aligned_prices_csv"] = "".join(lines)
 
     # 2. Lead Lag CSV
     if os.path.exists("oilchem_lead_lag_results.csv"):
