@@ -6,7 +6,7 @@ def upload():
     print("=== Uploading Pipeline Outputs to Next.js API ===")
     
     # API Configurations
-    api_url = os.environ.get("PRICING_INTEL_UPLOAD_API_URL", "https://app-sales.vercel.app/api/pricing-intel/upload")
+    api_url = os.environ.get("PRICING_INTEL_UPLOAD_API_URL", "https://www.daxx.club/api/pricing-intel/upload")
     api_key = os.environ.get("PRICING_INTEL_API_KEY", "default_pricing_intel_pipeline_api_key")
 
     payload = {}
