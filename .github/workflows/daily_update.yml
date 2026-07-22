@@ -44,6 +44,13 @@ jobs:
       run: |
         python "lead_lag_analysis.py"
 
+    - name: Upload outputs to Neon Database via API
+      env:
+        PRICING_INTEL_UPLOAD_API_URL: ${{ secrets.PRICING_INTEL_UPLOAD_API_URL }}
+        PRICING_INTEL_API_KEY: ${{ secrets.PRICING_INTEL_API_KEY }}
+      run: |
+        python "upload_outputs.py"
+
     - name: Commit and Push Changes
       run: |
         git config --global user.name "github-actions[bot]"
