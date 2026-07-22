@@ -3,55 +3,7 @@
    ========================================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
-    // --- DAXX SSO USER INTEGRATION ---
-    const ssoToken = sessionStorage.getItem('daxx_sso_token');
-    const userDisplayName = document.getElementById('user-display-name');
-    const userDisplayRole = document.getElementById('user-display-role');
-    const userProfileWidget = document.getElementById('user-profile-widget');
-    const userDropdownMenu = document.getElementById('user-dropdown-menu');
-    const btnSsoLogout = document.getElementById('btn-sso-logout');
 
-    function parseJwt(token) {
-        try {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        } catch (e) {
-            return null;
-        }
-    }
-
-    if (ssoToken) {
-        const userData = parseJwt(ssoToken);
-        if (userData) {
-            if (userDisplayName) userDisplayName.textContent = userData.name || 'User';
-            if (userDisplayRole) userDisplayRole.textContent = (userData.role || 'Sales').toLowerCase();
-        }
-    }
-
-    if (userProfileWidget && userDropdownMenu) {
-        userProfileWidget.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isOpen = userDropdownMenu.style.display === 'block';
-            userDropdownMenu.style.display = isOpen ? 'none' : 'block';
-        });
-
-        document.addEventListener('click', () => {
-            userDropdownMenu.style.display = 'none';
-        });
-    }
-
-    if (btnSsoLogout) {
-        btnSsoLogout.addEventListener('click', (e) => {
-            e.preventDefault();
-            sessionStorage.removeItem('daxx_sso_token');
-            window.location.href = 'http://localhost:3000/login';
-        });
-    }
-    // --- END DAXX SSO USER INTEGRATION ---
 
     // API data paths
     const PRICES_CSV_PATH = "oilchem_aligned_prices.csv?t=" + new Date().getTime();
