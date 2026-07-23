@@ -128,58 +128,27 @@
             <div class="chart-column">
                 <!-- Chart Container Card -->
                 <section class="chart-workspace-card">
-                <div class="card-header">
+                <div class="card-header" style="margin-bottom: 10px;">
                     <div class="header-titles">
                         <h2>Price Series Trend</h2>
-                        <div class="target-select-wrapper">
-                            <span class="target-select-label"><i class="fa-solid fa-crosshairs"></i> Target Product:</span>
-                            <select id="target-product-select" class="target-select">
-                                <option value="2_EHA">2-Ethylhexyl Acrylate (2-EHA)</option>
-                                <option value="Acetone_V1">Acetone (Route 1)</option>
-                                <option value="Acetone_V2">Acetone (Route 2)</option>
-                                <option value="Acrylic_Acid">Acrylic Acid</option>
-                                <option value="Brent">Brent Crude</option>
-                                <option value="Butyl_Acetate" selected>Butyl Acetate</option>
-                                <option value="Butyl_Acrylate">Butyl Acrylate</option>
-                                <option value="Dibasic_Ester">Dibasic Ester (DBE)</option>
-                                <option value="Ethyl_Acetate">Ethyl Acetate</option>
-                                <option value="Ethyl_Acrylate">Ethyl Acrylate</option>
-                                <option value="Isobutanol">Isobutanol</option>
-                                <option value="Isophthalic_Acid">Isophthalic Acid (PIA)</option>
-                                <option value="Isopropyl_Acetate_Proxy">Isopropyl Acetate</option>
-                                <option value="Isopropanol">Isopropyl Alcohol (IPA)</option>
-                                <option value="Maleic_Anhydride">Maleic Anhydride</option>
-                                <option value="PM">Methoxy propanol (PM)</option>
-                                <option value="PMA">Methoxy propyl acetate (MPA)</option>
-                                <option value="MEK">Methyl Ethyl Ketone (MEK)</option>
-                                <option value="MMA">Methyl Methacrylate (MMA)</option>
-                                <option value="n_Butanol">n-Butanol</option>
-                                <option value="Phthalic_Anhydride">Phthalic Anhydride</option>
-                                <option value="n_Propyl_Acetate">Propyl Acetate</option>
-                                <option value="PTA">Purified Terephthalic Acid (PTA)</option>
-                                <option value="Xylene">Mixed Xylene (Xileno)</option>
-                                <option value="Styrene">Styrene</option>
-                                <option value="Toluene">Toluene</option>
-                                <option value="MEG">Monoethylene Glycol (MEG)</option>
-                                <option value="DEG">Diethylene Glycol (DEG)</option>
-                                <option value="PG">Propylene Glycol (PG)</option>
-                                <option value="VAM">Vinyl Acetate Monomer (VAM)</option>
-                            </select>
-                            
-                            <span class="target-select-label" style="margin-left: 15px;"><i class="fa-solid fa-earth-europe"></i> Region:</span>
-                            <select id="market-main-region-select" class="target-select">
-                                <!-- Populated dynamically by JavaScript -->
-                            </select>
-                            
-                            <span class="target-select-label" id="market-subregion-label" style="margin-left: 15px;"><i class="fa-solid fa-map-location-dot"></i> Sub-Region:</span>
-                            <select id="market-region-select" class="target-select">
-                                <!-- Populated dynamically by JavaScript -->
-                            </select>
+                    </div>
+                </div>
+                
+                <div class="controls-row" style="display: flex; justify-content: space-between; align-items: center; margin: 0 20px 15px 20px; flex-wrap: wrap; gap: 15px;">
+                    <!-- LEFT SIDE: Period Selector -->
+                    <div class="left-controls" style="display: flex; align-items: center; gap: 10px;">
+                        <div class="chart-controls" id="time-range-controls" style="display: flex; margin: 0; width: fit-content;">
+                            <button class="btn-range active" data-days="all">All</button>
+                            <button class="btn-range" data-days="365">1 Year</button>
+                            <button class="btn-range" data-days="180">6 Months</button>
+                            <button class="btn-range" data-days="90">3 Months</button>
                         </div>
                     </div>
                     
-                    <div class="chart-controls-wrapper" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                        <div class="view-toggle-group" id="main-view-toggle-group">
+                    <!-- RIGHT SIDE: Tabs & Subtabs -->
+                    <div class="right-controls" style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                        <!-- Main View Toggles (Trend, Seasonal, Compare) -->
+                        <div class="view-toggle-group" id="main-view-toggle-group" style="margin: 0; display: flex; gap: 6px;">
                             <button class="btn-view-toggle active" id="btn-view-trend" data-view="trend" title="Multi-year trend analysis">
                                 <i class="fa-solid fa-chart-line"></i> Trend
                             </button>
@@ -191,7 +160,31 @@
                             </button>
                         </div>
 
-                        <div class="metric-toggle-group" id="seasonal-metric-toggle" style="display: none;">
+                        <!-- Trend sub-tabs group (Chart, Trend Table) -->
+                        <div class="view-toggle-group" id="trend-subtabs-container" style="display: flex; width: fit-content; margin: 0; gap: 6px;">
+                            <button class="btn-view-toggle active" data-subtab="chart" title="Standard chart view">
+                                <i class="fa-solid fa-chart-area"></i> Chart
+                            </button>
+                            <button class="btn-view-toggle" data-subtab="table" title="Regional Trend Table">
+                                <i class="fa-solid fa-table"></i> Trend Table
+                            </button>
+                        </div>
+
+                        <!-- Compare sub-tabs group (Standard, Multi-Region, Matrix) -->
+                        <div class="view-toggle-group" id="compare-subtabs-container" style="display: none; width: fit-content; margin: 0; gap: 6px;">
+                            <button class="btn-view-toggle active" data-subtab="standard" title="Standard comparison view">
+                                <i class="fa-solid fa-scale-balanced"></i> Standard
+                            </button>
+                            <button class="btn-view-toggle" data-subtab="custom" title="Freely compare any series from any region">
+                                <i class="fa-solid fa-earth-americas"></i> Multi-Region Select
+                            </button>
+                            <button class="btn-view-toggle" data-subtab="matrix" title="Global spread and margin matrix recap">
+                                <i class="fa-solid fa-table-cells"></i> Spreads Matrix
+                            </button>
+                        </div>
+
+                        <!-- Seasonal Metric Toggle (Price, Margin) -->
+                        <div class="metric-toggle-group" id="seasonal-metric-toggle" style="display: none; margin: 0; gap: 6px;">
                             <button class="btn-metric-toggle active" id="btn-metric-price" data-metric="price" title="Show Price Seasonality">
                                 Price
                             </button>
@@ -199,14 +192,54 @@
                                 Margin
                             </button>
                         </div>
-
-                        <div class="chart-controls" id="time-range-controls">
-                            <button class="btn-range active" data-days="all">All</button>
-                            <button class="btn-range" data-days="365">1 Year</button>
-                            <button class="btn-range" data-days="180">6 Months</button>
-                            <button class="btn-range" data-days="90">3 Months</button>
-                        </div>
                     </div>
+                </div>
+
+                <div class="target-select-wrapper" style="margin: 0 20px 15px 20px; display: flex; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <span class="target-select-label"><i class="fa-solid fa-crosshairs"></i> Target Product:</span>
+                    <select id="target-product-select" class="target-select">
+                        <option value="2_EHA">2-Ethylhexyl Acrylate (2-EHA)</option>
+                        <option value="Acetone_V1">Acetone (Route 1)</option>
+                        <option value="Acetone_V2">Acetone (Route 2)</option>
+                        <option value="Acrylic_Acid">Acrylic Acid</option>
+                        <option value="Brent">Brent Crude</option>
+                        <option value="Butyl_Acetate" selected>Butyl Acetate</option>
+                        <option value="Butyl_Acrylate">Butyl Acrylate</option>
+                        <option value="OpenPredict">Decision Predict (DBE)</option>
+                        <option value="Dibasic_Ester">Dibasic Ester (DBE)</option>
+                        <option value="Ethyl_Acetate">Ethyl Acetate</option>
+                        <option value="Ethyl_Acrylate">Ethyl Acrylate</option>
+                        <option value="Isobutanol">Isobutanol</option>
+                        <option value="Isophthalic_Acid">Isophthalic Acid (PIA)</option>
+                        <option value="Isopropyl_Acetate_Proxy">Isopropyl Acetate</option>
+                        <option value="Isopropanol">Isopropyl Alcohol (IPA)</option>
+                        <option value="Maleic_Anhydride">Maleic Anhydride</option>
+                        <option value="PM">Methoxy propanol (PM)</option>
+                        <option value="PMA">Methoxy propyl acetate (MPA)</option>
+                        <option value="MEK">Methyl Ethyl Ketone (MEK)</option>
+                        <option value="MMA">Methyl Methacrylate (MMA)</option>
+                        <option value="n_Butanol">n-Butanol</option>
+                        <option value="Phthalic_Anhydride">Phthalic Anhydride</option>
+                        <option value="n_Propyl_Acetate">Propyl Acetate</option>
+                        <option value="PTA">Purified Terephthalic Acid (PTA)</option>
+                        <option value="Xylene">Mixed Xylene (Xileno)</option>
+                        <option value="Styrene">Styrene</option>
+                        <option value="Toluene">Toluene</option>
+                        <option value="MEG">Monoethylene Glycol (MEG)</option>
+                        <option value="DEG">Diethylene Glycol (DEG)</option>
+                        <option value="PG">Propylene Glycol (PG)</option>
+                        <option value="VAM">Vinyl Acetate Monomer (VAM)</option>
+                    </select>
+                    
+                    <span class="target-select-label" style="margin-left: 15px;"><i class="fa-solid fa-earth-europe"></i> Region:</span>
+                    <select id="market-main-region-select" class="target-select">
+                        <!-- Populated dynamically by JavaScript -->
+                    </select>
+                    
+                    <span class="target-select-label" id="market-subregion-label" style="margin-left: 15px;"><i class="fa-solid fa-map-location-dot"></i> Sub-Region:</span>
+                    <select id="market-region-select" class="target-select">
+                        <!-- Populated dynamically by JavaScript -->
+                    </select>
                 </div>
                 
                 <div class="series-selector-container">
@@ -216,18 +249,6 @@
                     </div>
                 </div>
 
-                <!-- Compare sub-tabs group (styled exactly like main view toggles) -->
-                <div class="view-toggle-group" id="compare-subtabs-container" style="display: none; width: fit-content; margin-bottom: 15px;">
-                    <button class="btn-view-toggle active" data-subtab="standard" title="Standard comparison view">
-                        <i class="fa-solid fa-scale-balanced"></i> Standard
-                    </button>
-                    <button class="btn-view-toggle" data-subtab="custom" title="Freely compare any series from any region">
-                        <i class="fa-solid fa-earth-americas"></i> Multi-Region Select
-                    </button>
-                    <button class="btn-view-toggle" data-subtab="matrix" title="Global spread and margin matrix recap">
-                        <i class="fa-solid fa-table-cells"></i> Spreads Matrix
-                    </button>
-                </div>
 
                 <div class="series-selector-container" id="compare-products-selector-container" style="display: none; padding: 15px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; margin-bottom: 15px;">
                     <!-- Dynamic rows will be inserted here -->
@@ -247,6 +268,34 @@
                         <p>Loading charts...</p>
                     </div>
                     <div id="main-chart"></div>
+
+                    <!-- Trend Table View -->
+                    <div id="trend-table-container" style="display: none; background: rgba(20,20,20,0.4); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; width: 100%; box-sizing: border-box; overflow-y: auto; max-height: 500px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="display: block; font-size: 1rem; font-weight: 600; color: var(--accent-blue);"><i class="fa-solid fa-table"></i> Regional Trend Overview (7 Days & 1 Month)</span>
+                            <button onclick="downloadTrendTableAsPDF()" style="background: var(--glass-border); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-primary); border-radius: 4px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-file-pdf"></i> Download PDF
+                            </button>
+                        </div>
+                        <div style="overflow-x: auto; width: 100%;" id="trend-table-wrapper">
+                            <table class="prices-table" id="trend-prices-table" style="width: 100%; border-collapse: collapse; text-align: left; min-width: 800px;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid var(--border-color);">
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Product</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">China Region</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">China 7d</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">China 1m</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Europe Region</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Europe 7d</th>
+                                        <th style="padding: 12px 10px; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; text-align: right;">Europe 1m</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trend-table-tbody" style="font-size: 0.95rem; color: var(--text-secondary); font-family: var(--font-body);">
+                                    <!-- Filled dynamically by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
                     <!-- Spreads & Arbitrage Matrix View -->
                     <div id="compare-matrix-container" style="display: none; background: rgba(20,20,20,0.4); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; width: 100%; box-sizing: border-box; overflow-y: auto; max-height: 500px;">

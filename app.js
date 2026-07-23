@@ -1010,6 +1010,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
     let compareCustomLogisticsCosts = {};     // productKey -> custom freight cost (EUR/t)
     let currentCompareSubtab = 'standard';
+    let currentTrendSubtab = 'chart';
     let customCompareSelectedSeries = [];
     let activeCustomCompareGroup = 'targets';
     
@@ -1722,6 +1723,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateKPIs();
         createSeriesSelectors();
         createCompareProductSelectors();
+        updateTrendSubtabsDOM();
         initializeChart();
         renderTable();
         
@@ -2228,6 +2230,336 @@ document.addEventListener("DOMContentLoaded", () => {
             renderCompareMatrix();
         }
     }
+
+    function updateTrendSubtabsDOM() {
+        const trendSubtabsEl = document.getElementById('trend-subtabs-container');
+        const trendTableContainer = document.getElementById('trend-table-container');
+        const mainChart = document.getElementById('main-chart');
+        const timeRangeEl = document.getElementById('time-range-controls');
+        const selectorContainerEl = document.querySelector('.series-selector-container');
+        const mainTargetSelectEl = document.querySelector('.target-select-wrapper');
+
+        if (currentChartView !== 'trend') {
+            if (trendSubtabsEl) trendSubtabsEl.style.display = 'none';
+            if (trendTableContainer) trendTableContainer.style.display = 'none';
+            return;
+        }
+
+        if (trendSubtabsEl) trendSubtabsEl.style.display = 'flex';
+
+        if (currentTrendSubtab === 'chart') {
+            if (trendTableContainer) trendTableContainer.style.display = 'none';
+            if (mainChart) mainChart.style.display = 'block';
+            if (timeRangeEl) timeRangeEl.style.display = 'flex';
+            if (selectorContainerEl) selectorContainerEl.style.display = 'block';
+            if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'flex';
+        } else if (currentTrendSubtab === 'table') {
+            if (trendTableContainer) trendTableContainer.style.display = 'block';
+            if (mainChart) mainChart.style.display = 'none';
+            if (timeRangeEl) timeRangeEl.style.display = 'none';
+            if (selectorContainerEl) selectorContainerEl.style.display = 'none';
+            if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'none';
+
+            renderTrendTable();
+        }
+    }
+
+    function renderTrendTable() {
+        const tbody = document.getElementById('trend-table-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (rawPricesData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No data available</td></tr>';
+            return;
+        }
+
+        const latestRow = rawPricesData[rawPricesData.length - 1];
+        const allProducts = { ...TARGET_CONFIGS, ...RAW_MATERIALS_CONFIGS };
+
+        function getPriceAtTimeAgo(colName, daysAgo) {
+            const latestDate = new Date(latestRow.Date);
+            const targetTime = latestDate.getTime() - daysAgo * 24 * 60 * 60 * 1000;
+            let closestRow = null;
+            for (let i = rawPricesData.length - 1; i >= 0; i--) {
+                const rowDate = new Date(rawPricesData[i].Date);
+                if (rowDate.getTime() <= targetTime) {
+                    closestRow = rawPricesData[i];
+                    break;
+                }
+            }
+            if (!closestRow) closestRow = rawPricesData[0];
+            return closestRow ? parseFloat(closestRow[colName]) : null;
+        }
+
+        function getRegionFromHeader(colName, baseProd) {
+            let suffix = colName.replace(baseProd + '_', '');
+            if (suffix.startsWith('Domestic_')) return suffix.replace('Domestic_', '');
+            if (suffix.startsWith('Europe_')) return suffix.replace('Europe_', '');
+            return suffix;
+        }
+
+        function getTrendBadgeHTML(currentVal, pastVal) {
+            if (currentVal === null || currentVal === undefined || pastVal === null || pastVal === undefined || pastVal === 0 || isNaN(currentVal) || isNaN(pastVal)) {
+                return '<span class="kpi-trend-badge neutral">-</span>';
+            }
+            const pctChange = ((currentVal - pastVal) / pastVal) * 100;
+            if (pctChange > 0.05) {
+                return `<span class="kpi-trend-badge positive"><i class="fa-solid fa-arrow-trend-up"></i> +${pctChange.toFixed(2)}%</span>`;
+            } else if (pctChange < -0.05) {
+                return `<span class="kpi-trend-badge negative"><i class="fa-solid fa-arrow-trend-down"></i> ${pctChange.toFixed(2)}%</span>`;
+            } else {
+                return `<span class="kpi-trend-badge neutral"><i class="fa-solid fa-minus"></i> 0.00%</span>`;
+            }
+        }
+
+        Object.entries(allProducts).forEach(([key, cfg]) => {
+            let baseProd = '';
+            if (cfg.precursors) {
+                baseProd = cfg.precursors.butyl || cfg.precursors[Object.keys(cfg.precursors)[0]] || '';
+            } else {
+                baseProd = cfg.base || '';
+            }
+
+            const cleanBase = baseProd.replace(/-/g, '_');
+            const productCols = priceHeaders.filter(h => 
+                h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_') || h === baseProd || h === cleanBase
+            );
+
+            const europeCols = productCols.filter(h => {
+                const lh = h.toLowerCase();
+                return lh.includes('europe') || lh.includes('rotterdam') || lh.includes('nwe') || lh.includes('ara') || lh.includes('ttf') || lh.includes('global');
+            });
+
+            const chinaCols = productCols.filter(h => !europeCols.includes(h));
+
+            const priorityRegions = ['华东', 'East_China', '山东', 'Shandong', '华南', 'South_China', '江苏', 'Jiangsu', 'Domestic'];
+            chinaCols.sort((a, b) => {
+                let indexA = priorityRegions.findIndex(r => a.includes(r));
+                let indexB = priorityRegions.findIndex(r => b.includes(r));
+                if (indexA === -1) indexA = 999;
+                if (indexB === -1) indexB = 999;
+                return indexA - indexB;
+            });
+
+            europeCols.forEach(europeCol => {
+                chinaCols.forEach(chinaCol => {
+                    const chinaVal = latestRow[chinaCol];
+                    const europeVal = latestRow[europeCol];
+
+                    if (chinaVal === undefined || chinaVal === null || europeVal === undefined || europeVal === null) return;
+
+                    const chinaReg = getRegionFromHeader(chinaCol, baseProd);
+                    const europeReg = getRegionFromHeader(europeCol, baseProd);
+
+                    let chinaPriceNow = parseFloat(chinaVal);
+                    let chinaPrice7d = getPriceAtTimeAgo(chinaCol, 7);
+                    let chinaPrice30d = getPriceAtTimeAgo(chinaCol, 30);
+
+                    let europePriceNow = parseFloat(europeVal);
+                    let europePrice7d = getPriceAtTimeAgo(europeCol, 7);
+                    let europePrice30d = getPriceAtTimeAgo(europeCol, 30);
+
+                    const tr = document.createElement('tr');
+                    tr.style.cssText = 'border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;';
+                    tr.onmouseenter = () => tr.style.background = 'rgba(255,255,255,0.02)';
+                    tr.onmouseleave = () => tr.style.background = 'transparent';
+
+                    // Product cell
+                    const tdProd = document.createElement('td');
+                    tdProd.style.padding = '12px 10px';
+                    tdProd.style.fontWeight = '600';
+                    tdProd.style.color = 'var(--text-primary)';
+                    tdProd.textContent = cfg.title || key.replace(/_/g, ' ');
+                    tr.appendChild(tdProd);
+
+                    // China Region cell
+                    const tdChinaReg = document.createElement('td');
+                    tdChinaReg.style.padding = '12px 10px';
+                    tdChinaReg.textContent = translateTextRegions(chinaReg).replace(/_/g, ' ');
+                    tr.appendChild(tdChinaReg);
+
+                    // China 7d cell
+                    const tdChina7d = document.createElement('td');
+                    tdChina7d.style.padding = '12px 10px';
+                    tdChina7d.style.textAlign = 'right';
+                    tdChina7d.innerHTML = getTrendBadgeHTML(chinaPriceNow, chinaPrice7d);
+                    tr.appendChild(tdChina7d);
+
+                    // China 30d cell
+                    const tdChina30d = document.createElement('td');
+                    tdChina30d.style.padding = '12px 10px';
+                    tdChina30d.style.textAlign = 'right';
+                    tdChina30d.innerHTML = getTrendBadgeHTML(chinaPriceNow, chinaPrice30d);
+                    tr.appendChild(tdChina30d);
+
+                    // Europe Region cell
+                    const tdEuropeReg = document.createElement('td');
+                    tdEuropeReg.style.padding = '12px 10px';
+                    tdEuropeReg.style.borderLeft = '1px solid rgba(255,255,255,0.05)';
+                    tdEuropeReg.textContent = translateTextRegions(europeReg).replace(/_/g, ' ');
+                    tr.appendChild(tdEuropeReg);
+
+                    // Europe 7d cell
+                    const tdEurope7d = document.createElement('td');
+                    tdEurope7d.style.padding = '12px 10px';
+                    tdEurope7d.style.textAlign = 'right';
+                    tdEurope7d.innerHTML = getTrendBadgeHTML(europePriceNow, europePrice7d);
+                    tr.appendChild(tdEurope7d);
+
+                    // Europe 30d cell
+                    const tdEurope30d = document.createElement('td');
+                    tdEurope30d.style.padding = '12px 10px';
+                    tdEurope30d.style.textAlign = 'right';
+                    tdEurope30d.innerHTML = getTrendBadgeHTML(europePriceNow, europePrice30d);
+                    tr.appendChild(tdEurope30d);
+
+                    tbody.appendChild(tr);
+                });
+            });
+        });
+    }
+
+    window.downloadTrendTableAsPDF = function() {
+        const table = document.getElementById('trend-prices-table');
+        if (!table || typeof window.jspdf === 'undefined') {
+            alert("PDF library not loaded or table missing.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'pt', 'a4');
+
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+
+        const rows = [];
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const cells = [];
+            tr.querySelectorAll('td').forEach(td => {
+                cells.push(td.textContent.trim());
+            });
+            rows.push(cells);
+        });
+
+        // Column widths for 7 columns (Landscape A4: 842 pt total width, 760 pt usable content width)
+        // Product: 150, China Reg: 100, China 7d: 80, China 1m: 80, Europe Reg: 150, Europe 7d: 80, Europe 1m: 80
+        const colWidths = [150, 100, 80, 80, 150, 80, 80];
+        const colX = [];
+        let curX = 60;
+        colWidths.forEach(w => {
+            colX.push(curX);
+            curX += w;
+        });
+
+        let pageNum = 1;
+
+        const drawHeader = () => {
+            doc.setFillColor(15, 23, 42); // slate 900
+            doc.rect(0, 0, 842, 60, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.text("DAXX Pricing Intelligence - Regional Price Trend Report", 40, 36);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(148, 163, 184); // slate 400
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 620, 35);
+
+            // Table Header Background
+            doc.setFillColor(30, 41, 59); // slate 800
+            doc.rect(40, 70, 762, 25, 'F');
+
+            // Table Header Labels
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+
+            headers.forEach((h, idx) => {
+                const alignRight = idx === 2 || idx === 3 || idx === 5 || idx === 6;
+                if (alignRight) {
+                    doc.text(h, colX[idx] + colWidths[idx] - 10, 86, { align: 'right' });
+                } else {
+                    doc.text(h, colX[idx], 86);
+                }
+            });
+        };
+
+        const drawFooter = () => {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+            doc.text("CONFIDENTIAL - FOR INTERNAL USE ONLY", 40, 565);
+            doc.text(`Page ${pageNum}`, 780, 565, { align: 'right' });
+        };
+
+        drawHeader();
+        drawFooter();
+
+        let curY = 110;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+
+        rows.forEach((row, rowIndex) => {
+            if (curY > 520) {
+                doc.addPage();
+                pageNum++;
+                drawHeader();
+                drawFooter();
+                curY = 110;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+            }
+
+            // Alternating backgrounds
+            if (rowIndex % 2 === 1) {
+                doc.setFillColor(248, 250, 252);
+                doc.rect(40, curY - 12, 762, 18, 'F');
+            }
+
+            // Row line
+            doc.setDrawColor(241, 245, 249);
+            doc.setLineWidth(0.5);
+            doc.line(40, curY + 6, 802, curY + 6);
+
+            doc.setTextColor(15, 23, 42); // Default text color dark
+            row.forEach((cell, idx) => {
+                const alignRight = idx === 2 || idx === 3 || idx === 5 || idx === 6;
+                
+                if (alignRight) {
+                    if (cell.includes('+')) {
+                        doc.setTextColor(16, 185, 129); // Green #10b981
+                    } else if (cell.includes('-') && !cell.startsWith('- ')) {
+                        if (cell !== '-' && !cell.includes('0.00%')) {
+                            doc.setTextColor(244, 63, 94); // Red #f43f5e
+                        } else {
+                            doc.setTextColor(148, 163, 184); // Slate 400
+                        }
+                    } else {
+                        doc.setTextColor(148, 163, 184); // Slate 400
+                    }
+                    doc.text(cell, colX[idx] + colWidths[idx] - 10, curY, { align: 'right' });
+                } else {
+                    if (idx === 0) {
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(15, 23, 42);
+                    } else {
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(51, 65, 85); // dark gray
+                    }
+                    doc.text(cell, colX[idx], curY);
+                }
+            });
+
+            curY += 18;
+        });
+
+        doc.save(`regional_price_trends_${new Date().toISOString().split('T')[0]}.pdf`);
+    };
 
     function populateCustomCompareSelectors() {
         const container = document.getElementById('custom-compare-checkboxes-grid');
@@ -4214,7 +4546,20 @@ document.addEventListener("DOMContentLoaded", () => {
             updateSidebarTabs();
             updateChemicalTree();
             updateCompareSubtabsDOM();
+            updateTrendSubtabsDOM();
             updateKPIs();
+        });
+    });
+
+    // Sub-view toggle buttons under Trend tab
+    document.querySelectorAll('#trend-subtabs-container .btn-view-toggle').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            document.querySelectorAll('#trend-subtabs-container .btn-view-toggle').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            currentTrendSubtab = btn.getAttribute('data-subtab');
+            updateTrendSubtabsDOM();
         });
     });
 
