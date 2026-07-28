@@ -3,11 +3,59 @@
    ========================================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
+    // --- DAXX SSO USER INTEGRATION ---
+    const ssoToken = sessionStorage.getItem('daxx_sso_token');
+    const userDisplayName = document.getElementById('user-display-name');
+    const userDisplayRole = document.getElementById('user-display-role');
+    const userProfileWidget = document.getElementById('user-profile-widget');
+    const userDropdownMenu = document.getElementById('user-dropdown-menu');
+    const btnSsoLogout = document.getElementById('btn-sso-logout');
 
+    function parseJwt(token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    if (ssoToken) {
+        const userData = parseJwt(ssoToken);
+        if (userData) {
+            if (userDisplayName) userDisplayName.textContent = userData.name || 'User';
+            if (userDisplayRole) userDisplayRole.textContent = (userData.role || 'Sales').toLowerCase();
+        }
+    }
+
+    if (userProfileWidget && userDropdownMenu) {
+        userProfileWidget.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = userDropdownMenu.style.display === 'block';
+            userDropdownMenu.style.display = isOpen ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', () => {
+            userDropdownMenu.style.display = 'none';
+        });
+    }
+
+    if (btnSsoLogout) {
+        btnSsoLogout.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.removeItem('daxx_sso_token');
+            window.location.href = 'http://localhost:3000/login';
+        });
+    }
+    // --- END DAXX SSO USER INTEGRATION ---
 
     // API data paths
-    const PRICES_CSV_PATH = "oilchem_aligned_prices.csv?t=" + new Date().getTime();
-    const LEAD_LAG_CSV_PATH = "oilchem_lead_lag_results.csv?t=" + new Date().getTime();
+    const PRICES_CSV_PATH = "/api/pricing-intel/prices?t=" + new Date().getTime();
+    const LEAD_LAG_CSV_PATH = "/api/pricing-intel/lead-lag?t=" + new Date().getTime();
 
     // Currency conversion variables and state
     let exchangeRates = { USD: 1, CNY: 7.25 };
@@ -81,52 +129,120 @@ document.addEventListener("DOMContentLoaded", () => {
         if (rateIndicatorBox) {
             rateIndicatorBox.style.display = 'flex';
         }
+        
+        sendInfoToParent();
     }
 
-    function convertValue(valInCNY, date = null) {
-        if (typeof valInCNY !== 'number') {
-            valInCNY = parseFloat(valInCNY);
+    function sendInfoToParent() {
+        let lastDate = "";
+        const lastUpdatedEl = document.getElementById('last-updated-date');
+        if (lastUpdatedEl) {
+            lastDate = lastUpdatedEl.textContent;
         }
-        if (isNaN(valInCNY)) return 0;
-        if (currentCurrency === 'CNY') {
-            return valInCNY;
-        } else if (currentCurrency === 'USD') {
-            let rate = exchangeRates.CNY || 7.25;
-            if (date && rawPricesData && rawPricesData.length > 0) {
-                const row = rawPricesData.find(r => r.Date === date);
-                if (row && row.USD_CNY_Rate) {
-                    rate = parseFloat(row.USD_CNY_Rate) || rate;
-                }
-            } else if (rawPricesData && rawPricesData.length > 0) {
-                const lastRow = rawPricesData[rawPricesData.length - 1];
-                if (lastRow && lastRow.USD_CNY_Rate) {
-                    rate = parseFloat(lastRow.USD_CNY_Rate) || rate;
-                }
+        
+        let usdCny = exchangeRates.CNY || 7.25;
+        if (rawPricesData && rawPricesData.length > 0) {
+            const lastRowWithRate = rawPricesData.slice().reverse().find(r => r.USD_CNY_Rate);
+            if (lastRowWithRate && lastRowWithRate.USD_CNY_Rate) {
+                usdCny = parseFloat(lastRowWithRate.USD_CNY_Rate) || usdCny;
             }
-            return valInCNY / rate;
-        } else if (currentCurrency === 'EUR') {
-            let rateCNY = exchangeRates.CNY || 7.25;
-            let rateEUR = exchangeRates.EUR || 0.92;
-            if (date && rawPricesData && rawPricesData.length > 0) {
-                const row = rawPricesData.find(r => r.Date === date);
-                if (row && row.USD_CNY_Rate) {
-                    rateCNY = parseFloat(row.USD_CNY_Rate) || rateCNY;
-                }
-                if (row && row.EUR_USD_Rate) {
-                    rateEUR = parseFloat(row.EUR_USD_Rate) || rateEUR;
-                }
-            } else if (rawPricesData && rawPricesData.length > 0) {
-                const lastRow = rawPricesData[rawPricesData.length - 1];
-                if (lastRow && lastRow.USD_CNY_Rate) {
-                    rateCNY = parseFloat(lastRow.USD_CNY_Rate) || rateCNY;
-                }
-                if (lastRow && lastRow.EUR_USD_Rate) {
-                    rateEUR = parseFloat(lastRow.EUR_USD_Rate) || rateEUR;
-                }
-            }
-            return (valInCNY / rateCNY) * rateEUR;
         }
-        return valInCNY;
+        
+        const eurUsd = exchangeRates.EUR ? (1 / exchangeRates.EUR) : 1.08;
+        
+        window.parent.postMessage({
+            type: 'PRICING_INTEL_INFO',
+            lastUpdatedDate: lastDate,
+            usdCny: usdCny,
+            eurUsd: eurUsd,
+            currency: currentCurrency
+        }, '*');
+    }
+
+    window.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'SET_CURRENCY') {
+            currentCurrency = e.data.currency;
+            localStorage.setItem('currency', currentCurrency);
+            const selectEl = document.getElementById('currency-select');
+            if (selectEl) selectEl.value = currentCurrency;
+            
+            updateKPIs();
+            if (typeof initializeChart === 'function') initializeChart();
+            if (typeof updateChemicalTree === 'function') updateChemicalTree();
+            if (typeof updateFinancialSignals === 'function') updateFinancialSignals();
+            if (typeof updateSidebarTabs === 'function') updateSidebarTabs();
+            if (typeof renderTable === 'function') renderTable();
+            
+            sendInfoToParent();
+        }
+    });
+
+    function convertValue(val, date = null, seriesName = '') {
+        if (val === null || val === undefined || val === 0 || val === '0' || val === '') return null;
+        let valNum = typeof val !== 'number' ? parseFloat(val) : val;
+        if (isNaN(valNum) || valNum === 0) return null;
+
+        // Fetch exchange rates for the given date
+        let rateCNY = exchangeRates.CNY || 7.25;
+        let rateEUR = exchangeRates.EUR || 0.92;
+
+        if (date && rawPricesData && rawPricesData.length > 0) {
+            const row = rawPricesData.find(r => r.Date === date);
+            if (row) {
+                if (row.USD_CNY_Rate) rateCNY = parseFloat(row.USD_CNY_Rate) || rateCNY;
+                if (row.EUR_USD_Rate) rateEUR = parseFloat(row.EUR_USD_Rate) || rateEUR;
+            }
+        } else if (rawPricesData && rawPricesData.length > 0) {
+            const lastRow = rawPricesData[rawPricesData.length - 1];
+            if (lastRow) {
+                if (lastRow.USD_CNY_Rate) rateCNY = parseFloat(lastRow.USD_CNY_Rate) || rateCNY;
+                if (lastRow.EUR_USD_Rate) rateEUR = parseFloat(lastRow.EUR_USD_Rate) || rateEUR;
+            }
+        }
+
+        // Brent normalization to USD/bbl and dynamic conversion
+        if (seriesName && (seriesName.includes('Brent_Domestic_Global') || seriesName.includes('Brent_Crude') || seriesName === 'Brent')) {
+            let normalizedUSD_bbl = valNum;
+            if (valNum > 1000000) {
+                normalizedUSD_bbl = (valNum / rateCNY) / 7330;
+            } else if (valNum > 1000) {
+                normalizedUSD_bbl = valNum / 7330;
+            }
+            
+            if (currentCurrency === 'CNY') {
+                return normalizedUSD_bbl * rateCNY;
+            } else if (currentCurrency === 'EUR') {
+                return normalizedUSD_bbl * rateEUR;
+            } else {
+                return normalizedUSD_bbl; // USD
+            }
+        }
+
+        // Determine base currency of the series
+        const isUSD = seriesName && (seriesName.includes('_Europe_') || seriesName.includes('_Europe') || seriesName.includes('Brent'));
+        const baseCurrency = isUSD ? 'USD' : 'CNY';
+
+        if (currentCurrency === baseCurrency) {
+            return valNum;
+        }
+
+        if (baseCurrency === 'CNY') {
+            // Base is CNY
+            if (currentCurrency === 'USD') {
+                return valNum / rateCNY;
+            } else if (currentCurrency === 'EUR') {
+                return (valNum / rateCNY) * rateEUR;
+            }
+        } else {
+            // Base is USD (Europe)
+            if (currentCurrency === 'CNY') {
+                return valNum * rateCNY;
+            } else if (currentCurrency === 'EUR') {
+                return valNum * rateEUR;
+            }
+        }
+
+        return valNum;
     }
 
     function getCurrencySymbol() {
@@ -1022,8 +1138,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let backtestResultsData = null;
     let whatIfState = {};
     let simulatedForecastPoints = null;
-    const FORECAST_JSON_PATH = "oilchem_financial_forecasts.json?t=" + new Date().getTime();
-    const BACKTEST_JSON_PATH = "oilchem_backtest_results.json?t=" + new Date().getTime();
+    const FORECAST_JSON_PATH = "/api/pricing-intel/forecasts?t=" + new Date().getTime();
+    const BACKTEST_JSON_PATH = "/api/pricing-intel/backtests?t=" + new Date().getTime();
 
     // ==========================================
     // INITIALIZATION & LOADING
@@ -1723,7 +1839,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateKPIs();
         createSeriesSelectors();
         createCompareProductSelectors();
-        updateTrendSubtabsDOM();
         initializeChart();
         renderTable();
         
@@ -1733,7 +1848,9 @@ document.addEventListener("DOMContentLoaded", () => {
         
         updateFinancialSignals();
         updateChemicalTree();
+        updateTrendSubtabsDOM();
         checkDataAvailability();
+        sendInfoToParent();
     }
 
     // ==========================================
@@ -2231,336 +2348,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function updateTrendSubtabsDOM() {
-        const trendSubtabsEl = document.getElementById('trend-subtabs-container');
-        const trendTableContainer = document.getElementById('trend-table-container');
-        const mainChart = document.getElementById('main-chart');
-        const timeRangeEl = document.getElementById('time-range-controls');
-        const selectorContainerEl = document.querySelector('.series-selector-container');
-        const mainTargetSelectEl = document.querySelector('.target-select-wrapper');
-
-        if (currentChartView !== 'trend') {
-            if (trendSubtabsEl) trendSubtabsEl.style.display = 'none';
-            if (trendTableContainer) trendTableContainer.style.display = 'none';
-            return;
-        }
-
-        if (trendSubtabsEl) trendSubtabsEl.style.display = 'flex';
-
-        if (currentTrendSubtab === 'chart') {
-            if (trendTableContainer) trendTableContainer.style.display = 'none';
-            if (mainChart) mainChart.style.display = 'block';
-            if (timeRangeEl) timeRangeEl.style.display = 'flex';
-            if (selectorContainerEl) selectorContainerEl.style.display = 'block';
-            if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'flex';
-        } else if (currentTrendSubtab === 'table') {
-            if (trendTableContainer) trendTableContainer.style.display = 'block';
-            if (mainChart) mainChart.style.display = 'none';
-            if (timeRangeEl) timeRangeEl.style.display = 'none';
-            if (selectorContainerEl) selectorContainerEl.style.display = 'none';
-            if (mainTargetSelectEl) mainTargetSelectEl.style.display = 'none';
-
-            renderTrendTable();
-        }
-    }
-
-    function renderTrendTable() {
-        const tbody = document.getElementById('trend-table-tbody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-
-        if (rawPricesData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No data available</td></tr>';
-            return;
-        }
-
-        const latestRow = rawPricesData[rawPricesData.length - 1];
-        const allProducts = { ...TARGET_CONFIGS, ...RAW_MATERIALS_CONFIGS };
-
-        function getPriceAtTimeAgo(colName, daysAgo) {
-            const latestDate = new Date(latestRow.Date);
-            const targetTime = latestDate.getTime() - daysAgo * 24 * 60 * 60 * 1000;
-            let closestRow = null;
-            for (let i = rawPricesData.length - 1; i >= 0; i--) {
-                const rowDate = new Date(rawPricesData[i].Date);
-                if (rowDate.getTime() <= targetTime) {
-                    closestRow = rawPricesData[i];
-                    break;
-                }
-            }
-            if (!closestRow) closestRow = rawPricesData[0];
-            return closestRow ? parseFloat(closestRow[colName]) : null;
-        }
-
-        function getRegionFromHeader(colName, baseProd) {
-            let suffix = colName.replace(baseProd + '_', '');
-            if (suffix.startsWith('Domestic_')) return suffix.replace('Domestic_', '');
-            if (suffix.startsWith('Europe_')) return suffix.replace('Europe_', '');
-            return suffix;
-        }
-
-        function getTrendBadgeHTML(currentVal, pastVal) {
-            if (currentVal === null || currentVal === undefined || pastVal === null || pastVal === undefined || pastVal === 0 || isNaN(currentVal) || isNaN(pastVal)) {
-                return '<span class="kpi-trend-badge neutral">-</span>';
-            }
-            const pctChange = ((currentVal - pastVal) / pastVal) * 100;
-            if (pctChange > 0.05) {
-                return `<span class="kpi-trend-badge positive"><i class="fa-solid fa-arrow-trend-up"></i> +${pctChange.toFixed(2)}%</span>`;
-            } else if (pctChange < -0.05) {
-                return `<span class="kpi-trend-badge negative"><i class="fa-solid fa-arrow-trend-down"></i> ${pctChange.toFixed(2)}%</span>`;
-            } else {
-                return `<span class="kpi-trend-badge neutral"><i class="fa-solid fa-minus"></i> 0.00%</span>`;
-            }
-        }
-
-        Object.entries(allProducts).forEach(([key, cfg]) => {
-            let baseProd = '';
-            if (cfg.precursors) {
-                baseProd = cfg.precursors.butyl || cfg.precursors[Object.keys(cfg.precursors)[0]] || '';
-            } else {
-                baseProd = cfg.base || '';
-            }
-
-            const cleanBase = baseProd.replace(/-/g, '_');
-            const productCols = priceHeaders.filter(h => 
-                h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_') || h === baseProd || h === cleanBase
-            );
-
-            const europeCols = productCols.filter(h => {
-                const lh = h.toLowerCase();
-                return lh.includes('europe') || lh.includes('rotterdam') || lh.includes('nwe') || lh.includes('ara') || lh.includes('ttf') || lh.includes('global');
-            });
-
-            const chinaCols = productCols.filter(h => !europeCols.includes(h));
-
-            const priorityRegions = ['华东', 'East_China', '山东', 'Shandong', '华南', 'South_China', '江苏', 'Jiangsu', 'Domestic'];
-            chinaCols.sort((a, b) => {
-                let indexA = priorityRegions.findIndex(r => a.includes(r));
-                let indexB = priorityRegions.findIndex(r => b.includes(r));
-                if (indexA === -1) indexA = 999;
-                if (indexB === -1) indexB = 999;
-                return indexA - indexB;
-            });
-
-            europeCols.forEach(europeCol => {
-                chinaCols.forEach(chinaCol => {
-                    const chinaVal = latestRow[chinaCol];
-                    const europeVal = latestRow[europeCol];
-
-                    if (chinaVal === undefined || chinaVal === null || europeVal === undefined || europeVal === null) return;
-
-                    const chinaReg = getRegionFromHeader(chinaCol, baseProd);
-                    const europeReg = getRegionFromHeader(europeCol, baseProd);
-
-                    let chinaPriceNow = parseFloat(chinaVal);
-                    let chinaPrice7d = getPriceAtTimeAgo(chinaCol, 7);
-                    let chinaPrice30d = getPriceAtTimeAgo(chinaCol, 30);
-
-                    let europePriceNow = parseFloat(europeVal);
-                    let europePrice7d = getPriceAtTimeAgo(europeCol, 7);
-                    let europePrice30d = getPriceAtTimeAgo(europeCol, 30);
-
-                    const tr = document.createElement('tr');
-                    tr.style.cssText = 'border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;';
-                    tr.onmouseenter = () => tr.style.background = 'rgba(255,255,255,0.02)';
-                    tr.onmouseleave = () => tr.style.background = 'transparent';
-
-                    // Product cell
-                    const tdProd = document.createElement('td');
-                    tdProd.style.padding = '12px 10px';
-                    tdProd.style.fontWeight = '600';
-                    tdProd.style.color = 'var(--text-primary)';
-                    tdProd.textContent = cfg.title || key.replace(/_/g, ' ');
-                    tr.appendChild(tdProd);
-
-                    // China Region cell
-                    const tdChinaReg = document.createElement('td');
-                    tdChinaReg.style.padding = '12px 10px';
-                    tdChinaReg.textContent = translateTextRegions(chinaReg).replace(/_/g, ' ');
-                    tr.appendChild(tdChinaReg);
-
-                    // China 7d cell
-                    const tdChina7d = document.createElement('td');
-                    tdChina7d.style.padding = '12px 10px';
-                    tdChina7d.style.textAlign = 'right';
-                    tdChina7d.innerHTML = getTrendBadgeHTML(chinaPriceNow, chinaPrice7d);
-                    tr.appendChild(tdChina7d);
-
-                    // China 30d cell
-                    const tdChina30d = document.createElement('td');
-                    tdChina30d.style.padding = '12px 10px';
-                    tdChina30d.style.textAlign = 'right';
-                    tdChina30d.innerHTML = getTrendBadgeHTML(chinaPriceNow, chinaPrice30d);
-                    tr.appendChild(tdChina30d);
-
-                    // Europe Region cell
-                    const tdEuropeReg = document.createElement('td');
-                    tdEuropeReg.style.padding = '12px 10px';
-                    tdEuropeReg.style.borderLeft = '1px solid rgba(255,255,255,0.05)';
-                    tdEuropeReg.textContent = translateTextRegions(europeReg).replace(/_/g, ' ');
-                    tr.appendChild(tdEuropeReg);
-
-                    // Europe 7d cell
-                    const tdEurope7d = document.createElement('td');
-                    tdEurope7d.style.padding = '12px 10px';
-                    tdEurope7d.style.textAlign = 'right';
-                    tdEurope7d.innerHTML = getTrendBadgeHTML(europePriceNow, europePrice7d);
-                    tr.appendChild(tdEurope7d);
-
-                    // Europe 30d cell
-                    const tdEurope30d = document.createElement('td');
-                    tdEurope30d.style.padding = '12px 10px';
-                    tdEurope30d.style.textAlign = 'right';
-                    tdEurope30d.innerHTML = getTrendBadgeHTML(europePriceNow, europePrice30d);
-                    tr.appendChild(tdEurope30d);
-
-                    tbody.appendChild(tr);
-                });
-            });
-        });
-    }
-
-    window.downloadTrendTableAsPDF = function() {
-        const table = document.getElementById('trend-prices-table');
-        if (!table || typeof window.jspdf === 'undefined') {
-            alert("PDF library not loaded or table missing.");
-            return;
-        }
-
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'pt', 'a4');
-
-        const headers = [];
-        table.querySelectorAll('thead th').forEach(th => {
-            headers.push(th.textContent.trim());
-        });
-
-        const rows = [];
-        table.querySelectorAll('tbody tr').forEach(tr => {
-            const cells = [];
-            tr.querySelectorAll('td').forEach(td => {
-                cells.push(td.textContent.trim());
-            });
-            rows.push(cells);
-        });
-
-        // Column widths for 7 columns (Landscape A4: 842 pt total width, 760 pt usable content width)
-        // Product: 150, China Reg: 100, China 7d: 80, China 1m: 80, Europe Reg: 150, Europe 7d: 80, Europe 1m: 80
-        const colWidths = [150, 100, 80, 80, 150, 80, 80];
-        const colX = [];
-        let curX = 60;
-        colWidths.forEach(w => {
-            colX.push(curX);
-            curX += w;
-        });
-
-        let pageNum = 1;
-
-        const drawHeader = () => {
-            doc.setFillColor(15, 23, 42); // slate 900
-            doc.rect(0, 0, 842, 60, 'F');
-
-            doc.setTextColor(255, 255, 255);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(14);
-            doc.text("DAXX Pricing Intelligence - Regional Price Trend Report", 40, 36);
-
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            doc.setTextColor(148, 163, 184); // slate 400
-            doc.text(`Generated: ${new Date().toLocaleString()}`, 620, 35);
-
-            // Table Header Background
-            doc.setFillColor(30, 41, 59); // slate 800
-            doc.rect(40, 70, 762, 25, 'F');
-
-            // Table Header Labels
-            doc.setTextColor(255, 255, 255);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(9);
-
-            headers.forEach((h, idx) => {
-                const alignRight = idx === 2 || idx === 3 || idx === 5 || idx === 6;
-                if (alignRight) {
-                    doc.text(h, colX[idx] + colWidths[idx] - 10, 86, { align: 'right' });
-                } else {
-                    doc.text(h, colX[idx], 86);
-                }
-            });
-        };
-
-        const drawFooter = () => {
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8);
-            doc.setTextColor(148, 163, 184);
-            doc.text("CONFIDENTIAL - FOR INTERNAL USE ONLY", 40, 565);
-            doc.text(`Page ${pageNum}`, 780, 565, { align: 'right' });
-        };
-
-        drawHeader();
-        drawFooter();
-
-        let curY = 110;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-
-        rows.forEach((row, rowIndex) => {
-            if (curY > 520) {
-                doc.addPage();
-                pageNum++;
-                drawHeader();
-                drawFooter();
-                curY = 110;
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(9);
-            }
-
-            // Alternating backgrounds
-            if (rowIndex % 2 === 1) {
-                doc.setFillColor(248, 250, 252);
-                doc.rect(40, curY - 12, 762, 18, 'F');
-            }
-
-            // Row line
-            doc.setDrawColor(241, 245, 249);
-            doc.setLineWidth(0.5);
-            doc.line(40, curY + 6, 802, curY + 6);
-
-            doc.setTextColor(15, 23, 42); // Default text color dark
-            row.forEach((cell, idx) => {
-                const alignRight = idx === 2 || idx === 3 || idx === 5 || idx === 6;
-                
-                if (alignRight) {
-                    if (cell.includes('+')) {
-                        doc.setTextColor(16, 185, 129); // Green #10b981
-                    } else if (cell.includes('-') && !cell.startsWith('- ')) {
-                        if (cell !== '-' && !cell.includes('0.00%')) {
-                            doc.setTextColor(244, 63, 94); // Red #f43f5e
-                        } else {
-                            doc.setTextColor(148, 163, 184); // Slate 400
-                        }
-                    } else {
-                        doc.setTextColor(148, 163, 184); // Slate 400
-                    }
-                    doc.text(cell, colX[idx] + colWidths[idx] - 10, curY, { align: 'right' });
-                } else {
-                    if (idx === 0) {
-                        doc.setFont('helvetica', 'bold');
-                        doc.setTextColor(15, 23, 42);
-                    } else {
-                        doc.setFont('helvetica', 'normal');
-                        doc.setTextColor(51, 65, 85); // dark gray
-                    }
-                    doc.text(cell, colX[idx], curY);
-                }
-            });
-
-            curY += 18;
-        });
-
-        doc.save(`regional_price_trends_${new Date().toISOString().split('T')[0]}.pdf`);
-    };
-
     function populateCustomCompareSelectors() {
         const container = document.getElementById('custom-compare-checkboxes-grid');
         if (!container) return;
@@ -2771,7 +2558,6 @@ document.addEventListener("DOMContentLoaded", () => {
         tbody.innerHTML = '';
 
         if (rawPricesData.length === 0) return;
-        const latestRow = rawPricesData[rawPricesData.length - 1];
         const allProducts = { ...TARGET_CONFIGS, ...RAW_MATERIALS_CONFIGS };
         const curr = getCurrencySymbol();
 
@@ -2780,6 +2566,16 @@ document.addEventListener("DOMContentLoaded", () => {
             if (suffix.startsWith('Domestic_')) return suffix.replace('Domestic_', '');
             if (suffix.startsWith('Europe_')) return suffix.replace('Europe_', '');
             return suffix;
+        }
+
+        function getLatestValue(col) {
+            for (let i = rawPricesData.length - 1; i >= 0; i--) {
+                const val = rawPricesData[i][col];
+                if (val !== undefined && val !== null && val !== '') {
+                    return { val: val, date: rawPricesData[i].Date, row: rawPricesData[i] };
+                }
+            }
+            return null;
         }
 
         Object.entries(allProducts).forEach(([key, cfg]) => {
@@ -2826,20 +2622,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
             europeCols.forEach(europeCol => {
                 chinaCols.forEach(chinaCol => {
-                    const chinaVal = latestRow[chinaCol];
-                    const europeVal = latestRow[europeCol];
+                    const latestChina = getLatestValue(chinaCol);
+                    const latestEurope = getLatestValue(europeCol);
 
-                    if (chinaVal === undefined || chinaVal === null || europeVal === undefined || europeVal === null) return;
+                    if (!latestChina || !latestEurope) return;
 
-                    const chinaConverted = convertValue(chinaVal, latestRow.Date);
-                    const europeConverted = convertValue(europeVal, latestRow.Date);
+                    const chinaVal = latestChina.val;
+                    const europeVal = latestEurope.val;
+
+                    const chinaConverted = convertValue(chinaVal, latestChina.date, chinaCol);
+                    const europeConverted = convertValue(europeVal, latestEurope.date, europeCol);
                     const spread = europeConverted - chinaConverted;
 
                     const chinaReg = getRegionFromHeader(chinaCol, baseProd);
                     const europeReg = getRegionFromHeader(europeCol, baseProd);
 
-                    const chinaMargin = calculateMargin(latestRow, key, chinaReg);
-                    const europeMargin = calculateMargin(latestRow, key, europeReg);
+                    const chinaMargin = calculateMargin(latestChina.row, key, chinaReg);
+                    const europeMargin = calculateMargin(latestEurope.row, key, europeReg);
 
                     const tr = document.createElement('tr');
                     tr.style.cssText = 'border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;';
@@ -2873,7 +2672,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     window.downloadMatrixAsCSV = function() {
-        const table = document.querySelector('.prices-table');
+        const table = document.getElementById('compare-matrix-table');
         if (!table) return;
         let csvContent = "data:text/csv;charset=utf-8,";
         const rows = table.querySelectorAll('tr');
@@ -2892,14 +2691,15 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     window.downloadMatrixAsPDF = function() {
-        const table = document.querySelector('.prices-table');
-        if (!table || typeof window.jspdf === 'undefined') {
+        const table = document.getElementById('compare-matrix-table');
+        const jsPDFNamespace = window.jspdf || window.jsPDF;
+        if (!table || typeof jsPDFNamespace === 'undefined') {
             alert("PDF library not loaded or table missing.");
             return;
         }
 
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'pt', 'a4');
+        const jsPDFClass = jsPDFNamespace.jsPDF || jsPDFNamespace;
+        const doc = new jsPDFClass('l', 'pt', 'a4');
 
         const headers = [];
         table.querySelectorAll('thead th').forEach(th => {
@@ -3031,6 +2831,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 // CRITICAL FIX: Replace non-breaking spaces (\u00a0) and narrow non-breaking spaces (\u202f) with standard spaces to avoid slashes in French localizations
                 cleanText = cleanText.replace(/[\s\u00a0\u202f]/g, ' ');
+
+                // Replace currency symbols to avoid jsPDF font encoding crashes (Euro is not supported in Helvetica WinAnsi)
+                cleanText = cleanText.replace(/€/g, 'EUR ');
+
+                // Remove remaining non-ASCII characters, except Yen (\u00A5) which is supported in WinAnsi
+                cleanText = cleanText.replace(/[^\x00-\x7F\u00A5]/g, '');
                 
                 doc.text(cleanText, xPos, y + 13, { align });
             });
@@ -3044,6 +2850,314 @@ document.addEventListener("DOMContentLoaded", () => {
 
         drawFooter(pageNum);
         doc.save(`spreads_matrix_${new Date().toISOString().split('T')[0]}.pdf`);
+    };
+
+    function updateTrendSubtabsDOM() {
+        const trendTableContainer = document.getElementById('trend-table-container');
+        const mainChart = document.getElementById('main-chart');
+        const timeRangeEl = document.getElementById('time-range-controls');
+        const selectorContainerEl = document.querySelector('.series-selector-container');
+        const trendSubtabsEl = document.getElementById('trend-subtabs-container');
+        
+        if (currentChartView === 'trend') {
+            if (trendSubtabsEl) trendSubtabsEl.style.display = 'flex';
+            if (currentTrendSubtab === 'chart') {
+                if (mainChart) mainChart.style.display = 'block';
+                if (trendTableContainer) trendTableContainer.style.display = 'none';
+                if (timeRangeEl) timeRangeEl.style.display = 'flex';
+                if (selectorContainerEl) selectorContainerEl.style.display = 'block';
+            } else { // 'table'
+                if (mainChart) mainChart.style.display = 'none';
+                if (trendTableContainer) trendTableContainer.style.display = 'block';
+                if (timeRangeEl) timeRangeEl.style.display = 'none';
+                if (selectorContainerEl) selectorContainerEl.style.display = 'none';
+                renderTrendTable();
+            }
+        } else {
+            if (trendSubtabsEl) trendSubtabsEl.style.display = 'none';
+            if (trendTableContainer) trendTableContainer.style.display = 'none';
+        }
+    }
+
+    function renderTrendTable() {
+        const tbody = document.getElementById('trend-prices-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (rawPricesData.length === 0) return;
+
+        function findRowClosestTo(dateStr, daysAgo) {
+            const dateObj = new Date(dateStr);
+            const targetTime = dateObj.getTime() - (daysAgo * 24 * 60 * 60 * 1000);
+            let closest = rawPricesData[0];
+            let minDiff = Math.abs(new Date(closest.Date).getTime() - targetTime);
+            for (let i = 1; i < rawPricesData.length; i++) {
+                const diff = Math.abs(new Date(rawPricesData[i].Date).getTime() - targetTime);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = rawPricesData[i];
+                }
+            }
+            return closest;
+        }
+
+        function getLatestValue(col) {
+            for (let i = rawPricesData.length - 1; i >= 0; i--) {
+                const val = rawPricesData[i][col];
+                if (val !== undefined && val !== null && val !== '') {
+                    return { val: val, date: rawPricesData[i].Date };
+                }
+            }
+            return null;
+        }
+
+        const allProducts = { ...TARGET_CONFIGS, ...RAW_MATERIALS_CONFIGS };
+
+        function getVarPctForVal(currentVal, col, rowHist) {
+            if (!rowHist) return null;
+            const histVal = rowHist[col];
+            if (currentVal === undefined || currentVal === null || currentVal === '' || histVal === undefined || histVal === null || histVal === '' || parseFloat(histVal) === 0) return null;
+            return ((parseFloat(currentVal) - parseFloat(histVal)) / parseFloat(histVal)) * 100;
+        }
+
+        const formatBadge = pct => {
+            if (pct === null || pct === undefined || isNaN(pct)) return '<span class="kpi-trend-badge neutral">—</span>';
+            const sign = pct > 0 ? '+' : '';
+            const arrow = pct > 0 ? '▲ ' : (pct < 0 ? '▼ ' : '● ');
+            const cls = pct > 0 ? 'positive' : (pct < 0 ? 'negative' : 'neutral');
+            return `<span class="kpi-trend-badge ${cls}">${arrow}${sign}${pct.toFixed(1)}%</span>`;
+        };
+
+        const fmtColName = (c, cfg, baseProd, cleanBase) => {
+            if (!c) return 'N/A';
+            let name = translateTextRegions(c).replace(/_/g,' ').replace('Domestic','').trim();
+            const prefixes = [cfg.title, baseProd.replace(/_/g, ' '), cleanBase.replace(/_/g, ' ')];
+            prefixes.forEach(p => {
+                if (name.startsWith(p)) {
+                    name = name.substring(p.length).trim();
+                }
+            });
+            return name;
+        };
+
+        Object.entries(allProducts).forEach(([key, cfg]) => {
+            let baseProd = '';
+            if (cfg.precursors) {
+                baseProd = cfg.precursors.butyl || cfg.precursors[Object.keys(cfg.precursors)[0]] || '';
+            } else {
+                baseProd = cfg.base || '';
+            }
+
+            const cleanBase = baseProd.replace(/-/g, '_');
+            const productCols = priceHeaders.filter(h => 
+                h.startsWith(baseProd + '_') || h.startsWith(cleanBase + '_') || h === baseProd || h === cleanBase
+            );
+
+            const europeCols = productCols.filter(h => {
+                const lh = h.toLowerCase();
+                return lh.includes('europe') || lh.includes('rotterdam') || lh.includes('nwe') || lh.includes('ara') || lh.includes('ttf') || lh.includes('global');
+            });
+
+            const chinaCols = productCols.filter(h => !europeCols.includes(h));
+
+            const priorityRegions = ['华东', 'East_China', '山东', 'Shandong', '华南', 'South_China', '江苏', 'Jiangsu', 'Domestic'];
+            chinaCols.sort((a, b) => {
+                let indexA = priorityRegions.findIndex(r => a.includes(r));
+                let indexB = priorityRegions.findIndex(r => b.includes(r));
+                if (indexA === -1) indexA = 999;
+                if (indexB === -1) indexB = 999;
+                return indexA - indexB;
+            });
+
+            europeCols.forEach(europeCol => {
+                chinaCols.forEach(chinaCol => {
+                    const latestChina = getLatestValue(chinaCol);
+                    const latestEurope = getLatestValue(europeCol);
+
+                    if (!latestChina || !latestEurope) return;
+
+                    const chinaVal = latestChina.val;
+                    const europeVal = latestEurope.val;
+
+                    const rowChina7d = findRowClosestTo(latestChina.date, 7);
+                    const rowChina30d = findRowClosestTo(latestChina.date, 30);
+                    const rowEurope7d = findRowClosestTo(latestEurope.date, 7);
+                    const rowEurope30d = findRowClosestTo(latestEurope.date, 30);
+
+                    const china7dPct = getVarPctForVal(chinaVal, chinaCol, rowChina7d);
+                    const china1mPct = getVarPctForVal(chinaVal, chinaCol, rowChina30d);
+                    const europe7dPct = getVarPctForVal(europeVal, europeCol, rowEurope7d);
+                    const europe1mPct = getVarPctForVal(europeVal, europeCol, rowEurope30d);
+
+                    const tr = document.createElement('tr');
+                    tr.style.cssText = 'border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;';
+                    tr.onmouseenter = () => tr.style.background = 'rgba(255,255,255,0.02)';
+                    tr.onmouseleave = () => tr.style.background = 'transparent';
+
+                    tr.innerHTML = `
+                        <td style="padding: 12px 10px; font-weight: 600; color: var(--text-primary); border-left: 3px solid var(--accent-blue);">${cfg.title}</td>
+                        <td style="padding: 12px 10px; color: var(--text-secondary);"><span style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">${fmtColName(chinaCol, cfg, baseProd, cleanBase)}</span></td>
+                        <td style="padding: 12px 10px;">${formatBadge(china7dPct)}</td>
+                        <td style="padding: 12px 10px;">${formatBadge(china1mPct)}</td>
+                        <td style="padding: 12px 10px; color: var(--text-secondary);"><span style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">${fmtColName(europeCol, cfg, baseProd, cleanBase)}</span></td>
+                        <td style="padding: 12px 10px;">${formatBadge(europe7dPct)}</td>
+                        <td style="padding: 12px 10px;">${formatBadge(europe1mPct)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        });
+    }
+
+    window.downloadTrendTableAsPDF = function() {
+        const table = document.getElementById('trend-prices-table');
+        const jsPDFNamespace = window.jspdf || window.jsPDF;
+        if (!table || typeof jsPDFNamespace === 'undefined') {
+            alert("PDF library not loaded or table missing.");
+            return;
+        }
+
+        const jsPDFClass = jsPDFNamespace.jsPDF || jsPDFNamespace;
+        const doc = new jsPDFClass('l', 'pt', 'a4');
+
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+
+        const rows = [];
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const cells = [];
+            tr.querySelectorAll('td').forEach(td => {
+                cells.push(td.textContent.trim());
+            });
+            rows.push(cells);
+        });
+
+        const colWidths = [150, 100, 90, 90, 110, 110, 112];
+        const colX = [];
+        let curX = 40;
+        colWidths.forEach(w => {
+            colX.push(curX);
+            curX += w;
+        });
+
+        let pageNum = 1;
+
+        function drawHeader(page) {
+            doc.setFont('Helvetica', 'Bold');
+            doc.setFontSize(14);
+            doc.setTextColor(79, 70, 229); // #4f46e5 (Accent Indigo)
+            doc.text("DAXX Pricing Intel", 40, 45);
+
+            doc.setFont('Helvetica', 'Normal');
+            doc.setFontSize(10);
+            doc.setTextColor(100, 116, 139); // #64748b
+            doc.text("Price Series Trend Report", 40, 58);
+
+            const lastUpdatedEl = document.getElementById('last-updated-date');
+            const lastUpdated = lastUpdatedEl ? lastUpdatedEl.textContent.trim() : new Date().toISOString().split('T')[0];
+            doc.text(`Data Date: ${lastUpdated}`, 802, 45, { align: 'right' });
+            doc.text(`Exported on: ${new Date().toISOString().split('T')[0]}`, 802, 58, { align: 'right' });
+
+            // Line separator
+            doc.setDrawColor(226, 232, 240); // #e2e8f0
+            doc.setLineWidth(1);
+            doc.line(40, 68, 802, 68);
+        }
+
+        function drawFooter(page) {
+            doc.setFont('Helvetica', 'Normal');
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184); // #94a3b8
+            doc.text("CONFIDENTIAL - FOR INTERNAL USE ONLY", 40, 565);
+            doc.text(`Page ${page}`, 802, 565, { align: 'right' });
+        }
+
+        function drawTableHeader(yVal) {
+            doc.setFillColor(241, 245, 249); // #f1f5f9
+            doc.rect(40, yVal, 762, 24, 'F');
+
+            doc.setFont('Helvetica', 'Bold');
+            doc.setFontSize(9);
+            doc.setTextColor(71, 85, 105); // #475569
+
+            headers.forEach((h, i) => {
+                const align = (i === 2 || i === 3 || i === 5 || i === 6) ? 'right' : 'left';
+                const xPos = (align === 'right') ? colX[i] + colWidths[i] - 10 : colX[i] + 10;
+                doc.text(h, xPos, yVal + 15, { align });
+            });
+
+            doc.setDrawColor(203, 213, 225); // #cbd5e1
+            doc.line(40, yVal + 24, 802, yVal + 24);
+        }
+
+        drawHeader(pageNum);
+        let y = 85;
+        drawTableHeader(y);
+        y += 24;
+
+        rows.forEach((row, rowIndex) => {
+            if (y + 20 > 530) {
+                drawFooter(pageNum);
+                doc.addPage();
+                pageNum++;
+                drawHeader(pageNum);
+                y = 85;
+                drawTableHeader(y);
+                y += 24;
+            }
+
+            if (rowIndex % 2 === 1) {
+                doc.setFillColor(248, 250, 252); // #f8fafc
+                doc.rect(40, y, 762, 20, 'F');
+            }
+
+            doc.setFont('Helvetica', 'Normal');
+            doc.setFontSize(9);
+            doc.setTextColor(15, 23, 42); // #0f172a
+
+            row.forEach((cell, i) => {
+                const align = (i === 2 || i === 3 || i === 5 || i === 6) ? 'right' : 'left';
+                const xPos = (align === 'right') ? colX[i] + colWidths[i] - 10 : colX[i] + 10;
+
+                if (i === 2 || i === 3 || i === 5 || i === 6) {
+                    doc.setFont('Helvetica', 'Bold');
+                    if (cell.includes('+') || cell.includes('▲')) {
+                        doc.setTextColor(0, 104, 56); // Green (#006838)
+                    } else if (cell.includes('-') || cell.includes('▼')) {
+                        doc.setTextColor(244, 63, 94); // Red (#f43f5e)
+                    } else {
+                        doc.setTextColor(71, 85, 105);
+                    }
+                } else if (i === 0) {
+                    doc.setFont('Helvetica', 'Bold');
+                    doc.setTextColor(15, 23, 42);
+                } else {
+                    doc.setFont('Helvetica', 'Normal');
+                    doc.setTextColor(15, 23, 42);
+                }
+
+                let cleanText = cell.replace(/[\uE000-\uF8FF]/g, '').trim();
+                cleanText = cleanText.replace(/[\s\u00a0\u202f]/g, ' ');
+
+                // Replace currency symbols to avoid jsPDF font encoding crashes (Euro is not supported in Helvetica WinAnsi)
+                cleanText = cleanText.replace(/€/g, 'EUR ');
+
+                // Remove remaining non-ASCII characters, except Yen (\u00A5) which is supported in WinAnsi
+                cleanText = cleanText.replace(/[^\x00-\x7F\u00A5]/g, '');
+                
+                doc.text(cleanText, xPos, y + 13, { align });
+            });
+
+            doc.setDrawColor(241, 245, 249); // #f1f5f9
+            doc.line(40, y + 20, 802, y + 20);
+
+            y += 20;
+        });
+
+        drawFooter(pageNum);
+        doc.save(`trend_report_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
     function updateCompareArbitrageDashboard() {
@@ -3091,8 +3205,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const chinaConverted = convertValue(chinaVal, latestRow.Date);
-            const europeConverted = convertValue(europeVal, latestRow.Date);
+            const chinaConverted = convertValue(chinaVal, latestRow.Date, chinaCol);
+            const europeConverted = convertValue(europeVal, latestRow.Date, europeCol);
 
             const grossSpread = europeConverted - chinaConverted;
             const spreadColor = grossSpread > 0 ? "#006838" : (grossSpread < 0 ? "#f43f5e" : "#94a3b8");
@@ -3376,7 +3490,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             yaxis: {
                 title: {
-                    text: (currentChartView === 'compare') ? `Market Price (${getCurrencySymbol()}/Ton)` : ((isSeasonal && seasonalMetricMode === 'margin') ? `Theoretical Margin (${getCurrencySymbol()}/Ton)` : `Market Price (${getCurrencySymbol()}/Ton)`),
+                    text: (currentChartView === 'compare') ? `Market Price (${getCurrencySymbol()}/${currentProduct === 'Brent' ? 'bbl' : 'Ton'})` : ((isSeasonal && seasonalMetricMode === 'margin') ? `Theoretical Margin (${getCurrencySymbol()}/Ton)` : `Market Price (${getCurrencySymbol()}/${currentProduct === 'Brent' ? 'bbl' : 'Ton'})`),
                     style: {
                         color: '#94a3b8',
                         fontSize: '12px',
@@ -3385,7 +3499,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 labels: {
                     formatter: function (val) {
-                        return val ? val.toLocaleString('en-US') : '';
+                        if (val === null || val === undefined || isNaN(val)) return '';
+                        return Number(val).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
                     },
                     style: {
                         fontFamily: 'Plus Jakarta Sans, sans-serif'
@@ -3441,7 +3556,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             const val = row[header];
                             return {
                                 x: new Date(row.Date).getTime(),
-                                y: val !== undefined && val !== null ? convertValue(val, row.Date) : null
+                                y: val !== undefined && val !== null ? convertValue(val, row.Date, header) : null
                             };
                         }).filter(d => d.y !== null)
                     });
@@ -3486,7 +3601,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             const val = row[europeCol];
                             return {
                                 x: new Date(row.Date).getTime(),
-                                y: val !== undefined && val !== null ? convertValue(val, row.Date) : null
+                                y: val !== undefined && val !== null ? convertValue(val, row.Date, europeCol) : null
                             };
                         }).filter(d => d.y !== null)
                     });
@@ -3501,7 +3616,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             const chinaVal = row[chinaCol];
                             return {
                                 x: new Date(row.Date).getTime(),
-                                y: chinaVal !== undefined && chinaVal !== null ? convertValue(chinaVal, row.Date) : null
+                                y: chinaVal !== undefined && chinaVal !== null ? convertValue(chinaVal, row.Date, chinaCol) : null
                             };
                         }).filter(d => d.y !== null)
                     });
@@ -3539,10 +3654,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     : row[targetCol];
                     
                 if (val !== undefined && val !== null) {
-                    yearsData[year].push({
-                        x: dummyDate.getTime(),
-                        y: convertValue(val)
-                    });
+                    const convertedVal = convertValue(val, null, targetCol);
+                    if (convertedVal !== null) {
+                        yearsData[year].push({
+                            x: dummyDate.getTime(),
+                            y: convertedVal
+                        });
+                    }
                 }
             });
             
@@ -3615,8 +3733,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 type: 'line',
                 data: slicedData.map(row => ({
                     x: new Date(row.Date).getTime(),
-                    y: convertValue(row[col], row.Date)
-                }))
+                    y: convertValue(row[col], row.Date, col)
+                })).filter(d => d.y !== null)
             });
         });
 
@@ -3712,7 +3830,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const seriesData = getChartSeries();
         const dashArrayOpt = seriesData.map(s => s.name.includes('Forecast') ? 5 : (s.name.includes('Simulated') ? 4 : 0));
         const widthOpt = seriesData.map(s => s.name.includes('Simulated') ? 2.5 : 3.5);
-        
         console.log("Updating chart options with shared tooltip: true, intersect: false");
         chartInstance.updateOptions({
             series: seriesData,
@@ -3720,6 +3837,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 type: 'datetime',
                 labels: {
                     format: undefined
+                }
+            },
+            yaxis: {
+                title: {
+                    text: `Market Price (${getCurrencySymbol()}/${currentProduct === 'Brent' ? 'bbl' : 'Ton'})`,
+                    style: {
+                        color: '#94a3b8',
+                        fontSize: '12px',
+                        fontFamily: 'Plus Jakarta Sans, sans-serif'
+                    }
                 }
             },
             tooltip: {
@@ -4560,6 +4687,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             currentTrendSubtab = btn.getAttribute('data-subtab');
             updateTrendSubtabsDOM();
+            initializeChart();
         });
     });
 
