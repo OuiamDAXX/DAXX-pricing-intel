@@ -3731,10 +3731,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: sName,
                 color: color,
                 type: 'line',
-                data: slicedData.map(row => ({
+                data: applyGapLimitToSeries(slicedData.map(row => ({
                     x: new Date(row.Date).getTime(),
                     y: convertValue(row[col], row.Date, col)
-                })).filter(d => d.y !== null)
+                })), col)
             });
         });
 
