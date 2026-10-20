@@ -2,8 +2,8 @@ name: Daily OilChem Price Update
 
 on:
   schedule:
-    # Runs at 03:00 UTC (05:00 Spanish/French time) every morning
-    - cron: '0 3 * * *'
+    # Runs at 11:30 Spanish time (09:30 UTC in Summer CEST / 10:30 UTC in Winter CET)
+    - cron: '30 9 * * *'
   workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
 
 jobs:
@@ -50,6 +50,16 @@ jobs:
         PRICING_INTEL_API_KEY: ${{ secrets.PRICING_INTEL_API_KEY }}
       run: |
         python "upload_outputs.py"
+
+    - name: Generate Pricing Report and Send Email
+      env:
+        SMTP_HOST: ${{ secrets.SMTP_HOST }}
+        SMTP_PORT: ${{ secrets.SMTP_PORT }}
+        SMTP_USER: ${{ secrets.SMTP_USER }}
+        SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        SMTP_FROM: ${{ secrets.SMTP_FROM }}
+      run: |
+        python "oilchem_daily_report.py" --recipient "j.veiga@daxxgrp.com"
 
     - name: Commit and Push Changes
       run: |

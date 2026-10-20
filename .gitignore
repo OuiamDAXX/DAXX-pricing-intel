@@ -10,6 +10,7 @@ __pycache__/
 
 # Scratch or temporary local files
 scratch/
+reports/
 test_*.py
 check_bts.py
 csv_to_excel.py
