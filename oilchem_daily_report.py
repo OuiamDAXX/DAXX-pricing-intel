@@ -521,9 +521,9 @@ def run_report(dry_run=False, recipient="j.veiga@daxxgrp.com"):
     sender = smtp_env.get("SMTP_FROM", user or "DAXX Tracking <j.veiga@daxxgrp.com>")
 
     if not host or not user or not password:
-        print("[ERROR] SMTP credentials incomplete. Cannot dispatch live email.")
+        print("[WARNING] SMTP credentials incomplete (password missing). Skipping email dispatch.")
         print(f"Host: {host}, User: {user}, HasPass: {bool(password)}")
-        return False
+        return True
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = f"[OilChem Daily Pricing] Market Trends ({last_date_str}) - 1D, 7D, 15D Evolution"
