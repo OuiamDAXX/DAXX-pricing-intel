@@ -138,6 +138,12 @@ def load_smtp_credentials():
         if os.environ.get(k):
             env_vars[k] = os.environ[k]
 
+    if not env_vars.get("SMTP_PASS"):
+        for alt in ["SMTP_PASSWORD", "EMAIL_PASSWORD", "MAIL_PASSWORD"]:
+            if os.environ.get(alt):
+                env_vars["SMTP_PASS"] = os.environ[alt]
+                break
+
     return env_vars
 
 
