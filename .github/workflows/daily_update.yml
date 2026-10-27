@@ -2,8 +2,8 @@ name: Daily OilChem Price Update
 
 on:
   schedule:
-    # Runs at 11:30 Spanish time (09:30 UTC in Summer CEST / 10:30 UTC in Winter CET)
-    - cron: '30 9 * * *'
+    # Runs at 11:30 Spanish time (10:30 UTC in Winter CET / 09:30 UTC in Summer CEST)
+    - cron: '30 10 * * *'
   workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
 
 jobs:
@@ -57,17 +57,6 @@ jobs:
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add "oilchem_all_data.csv" "oilchem_aligned_prices.csv" "oilchem_aligned_prices.xlsx" "oilchem_lead_lag_results.csv" data/*.csv
         git diff-index --quiet HEAD || (git commit -m "Automated daily price update and alignment" && git push)
-
-    - name: Generate Pricing Report and Send Email
-      continue-on-error: true
-      env:
-        SMTP_HOST: ${{ secrets.SMTP_HOST }}
-        SMTP_PORT: ${{ secrets.SMTP_PORT }}
-        SMTP_USER: ${{ secrets.SMTP_USER }}
-        SMTP_PASS: ${{ secrets.SMTP_PASS || secrets.SMTP_PASSWORD }}
-        SMTP_FROM: ${{ secrets.SMTP_FROM }}
-      run: |
-        python "oilchem_daily_report.py" --recipient "j.veiga@daxxgrp.com"
 
 
 
